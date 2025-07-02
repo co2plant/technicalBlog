@@ -3,5 +3,23 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "name": "technicalblog",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/co2plant/technicalBlog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/co2plant/technicalBlog/issues"
+  },
+  "homepage": "https://github.com/co2plant/technicalBlog#readme",
+  "description": ""
 }
