@@ -1,0 +1,93 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+}
+
+header {
+    background: #333;
+    color: white;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+header h1 {
+    margin-bottom: 0.5rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    padding: 0.5rem;
+}
+
+nav a:hover {
+    background: #555;
+    border-radius: 3px;
+}
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.hero {
+    text-align: center;
+    padding: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.hero h2 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.recent-posts {
+    padding: 2rem;
+}
+
+.recent-posts h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.post-preview {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.post-preview h4 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.post-preview h4 a:hover {
+    color: #007bff;
+}
+
+.post-date {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background: #333;
+    color: white;
+    margin-top: 2rem;
+}

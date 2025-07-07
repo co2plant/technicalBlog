@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1><%= title %></h1>
+        <nav>
+            <a href="/">홈</a>
+            <a href="/posts">게시글</a>
+            <a href="/about">소개</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>환영합니다!</h2>
+            <p>기술과 개발에 대한 이야기를 나누는 공간입니다.</p>
+        </section>
+
+        <section class="recent-posts">
+            <h3>최근 게시글</h3>
+            <% if (posts && posts.length > 0) { %>
+                <% posts.forEach(post => { %>
+                    <article class="post-preview">
+                        <h4><a href="/posts/<%= post.id %>"><%= post.title %></a></h4>
+                        <p class="post-date"><%= post.date %></p>
+                        <p><%= post.excerpt %></p>
+                    </article>
+                <% }) %>
+            <% } else { %>
+                <p>아직 게시글이 없습니다.</p>
+            <% } %>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 기술 블로그. All rights reserved.</p>
+    </footer>
+</body>
+</html>
