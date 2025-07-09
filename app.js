@@ -1,16 +1,17 @@
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 
 const app = express();
 
-// 템플릿 엔진 설정
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+// CORS 설정
+app.use(cors());
+app.use(express.json());
 
-// 정적 파일 제공
-app.use(express.static(path.join(__dirname, 'public')));
+// 정적 파일 제공 (빌드된 Vue 앱)
+app.use(express.static(path.join(__dirname, 'dist')));
 
-app.set('port', process.env.PORT || 8080);
+app.set('port', process.env.PORT || 3000);
 
 // 메인 페이지
 app.get('/', (req, res) => {

@@ -5,41 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <h1><%= title %></h1>
-        <nav>
-            <a href="/">홈</a>
-            <a href="/posts">게시글</a>
-            <a href="/about">소개</a>
-        </nav>
+<body class="bg-gray-100">
+    <header class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold mb-4"><%= title %></h1>
+            <nav class="flex space-x-6">
+                <a href="/" class="text-blue-300 hover:text-white">홈</a>
+                <a href="/posts" class="hover:text-gray-300">게시글</a>
+                <a href="/about" class="hover:text-gray-300">소개</a>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <section class="hero">
-            <h2>환영합니다!</h2>
-            <p>기술과 개발에 대한 이야기를 나누는 공간입니다.</p>
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <section class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 mb-12">
+            <h2 class="text-4xl font-bold mb-4">환영합니다!</h2>
+            <p class="text-xl">기술과 개발에 대한 이야기를 나누는 공간입니다.</p>
         </section>
 
-        <section class="recent-posts">
-            <h3>최근 게시글</h3>
+        <section>
+            <h3 class="text-2xl font-bold mb-6">최근 게시글</h3>
             <% if (posts && posts.length > 0) { %>
-                <% posts.forEach(post => { %>
-                    <article class="post-preview">
-                        <h4><a href="/posts/<%= post.id %>"><%= post.title %></a></h4>
-                        <p class="post-date"><%= post.date %></p>
-                        <p><%= post.excerpt %></p>
-                    </article>
-                <% }) %>
+                <div class="grid gap-6">
+                    <% posts.forEach(post => { %>
+                        <article class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                            <h4 class="text-xl font-semibold mb-2">
+                                <a href="/posts/<%= post.id %>" class="text-gray-900 hover:text-blue-600"><%= post.title %></a>
+                            </h4>
+                            <p class="text-gray-600 text-sm mb-3"><%= post.date %></p>
+                            <p class="text-gray-700"><%= post.excerpt %></p>
+                        </article>
+                    <% }) %>
+                </div>
             <% } else { %>
-                <p>아직 게시글이 없습니다.</p>
+                <p class="text-gray-600">아직 게시글이 없습니다.</p>
             <% } %>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 기술 블로그. All rights reserved.</p>
+    <footer class="bg-gray-800 text-white text-center py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>&copy; 2024 기술 블로그. All rights reserved.</p>
+        </div>
     </footer>
 </body>
 </html>
