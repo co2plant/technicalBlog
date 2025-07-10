@@ -8,13 +8,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 정적 파일 제공 (빌드된 Vue 앱)
-app.use(express.static(path.join(__dirname, 'dist')));
+// 뷰 엔진 설정
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// 정적 파일 제공
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.set('port', process.env.PORT || 3000);
 
+// 디버깅용 간단한 테스트 라우트
+app.get('/test', (req, res) => {
+    res.send('<h1>Test Page - Server is working!</h1>');
+});
+
 // 메인 페이지
 app.get('/', (req, res) => {
+    console.log('Main page accessed');
+    
     const samplePosts = [
         {
             id: 1,
@@ -30,10 +41,19 @@ app.get('/', (req, res) => {
         }
     ];
     
-    res.render('index', {
+    const data = {
         title: '기술 블로그',
         posts: samplePosts
-    });
+    };
+    
+    console.log('Rendering with data:', data);
+    
+    try {
+        res.render('index', data);
+    } catch (error) {
+        console.error('Render error:', error);
+        res.status(500).send('Server Error: ' + error.message);
+    }
 });
 
 // 포스트 상세 페이지
