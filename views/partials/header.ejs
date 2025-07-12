@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : '기술 블로그' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold mb-4"><%= typeof title !== 'undefined' ? title : '기술 블로그' %></h1>
+            <nav class="flex space-x-6">
+                <a href="/" class="text-blue-300 hover:text-white">홈</a>
+                <a href="/posts" class="hover:text-gray-300">게시글</a>
+                <a href="https://co2plant.github.io/" class="hover:text-gray-300">소개</a>
+            </nav>
+        </div>
+    </header>

@@ -24,8 +24,6 @@ app.get('/test', (req, res) => {
 
 // 메인 페이지
 app.get('/', (req, res) => {
-    console.log('Main page accessed');
-    
     const samplePosts = [
         {
             id: 1,
