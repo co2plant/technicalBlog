@@ -3,6 +3,7 @@
     "cors": "^2.8.5",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "marked": "^16.0.0",
     "sqlite3": "^5.1.7"
   },
   "name": "technicalblog",
