@@ -76,30 +76,51 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
     console.log('메인 페이지 요청');
     db.all("SELECT * FROM posts ORDER BY date DESC", (err, posts) => {
         if (err) {
             console.error('데이터베이스 조회 오류:', err);
-            return res.status(500).send('서버 오류');
+            return next(err); // 에러 미들웨어로 전달
         }
         console.log('조회된 게시글 수:', posts.length);
-        res.render('index', { posts });
+        res.render('index', { 
+            title: 'co2plant 기술 블로그',
+            posts 
+        });
     });
 });
 
-app.get('/posts/:id', (req, res) => {
+app.get('/posts', (req, res, next) => {
+    console.log('게시글 목록 요청');
+    db.all("SELECT * FROM posts ORDER BY date DESC", (err, posts) => {
+        if (err) {
+            console.error('데이터베이스 조회 오류:', err);
+            return next(err); // 에러 미들웨어로 전달
+        }
+        console.log('조회된 게시글 수:', posts.length);
+        res.render('posts', { 
+            title: '모든 게시글 - 기술 블로그',
+            posts 
+        });
+    });
+})
+
+app.get('/posts/:id', (req, res, next) => {
     const id = req.params.id;
     console.log('게시글 상세 요청, ID:', id);
     
     db.get("SELECT * FROM posts WHERE id = ?", [id], (err, post) => {
         if (err) {
             console.error('데이터베이스 조회 오류:', err);
-            return res.status(500).send('서버 오류');
+            return next(err); // 에러 미들웨어로 전달
         }
         if (!post) {
             console.log('게시글을 찾을 수 없음, ID:', id);
-            return res.status(404).send('게시글을 찾을 수 없습니다');
+            // 404 에러 객체 생성하여 전달
+            const error = new Error('게시글을 찾을 수 없습니다');
+            error.status = 404;
+            return next(error);
         }
         
         console.log('게시글 찾음:', post.title);
@@ -108,10 +129,45 @@ app.get('/posts/:id', (req, res) => {
         const htmlContent = marked(post.content);
         post.htmlContent = htmlContent;
         
-        res.render('post', { post });
+        res.render('post', { 
+            title: post.title + ' - 기술 블로그',
+            post 
+        });
     });
 });
 
+// About 페이지
+// app.get('/about', (req, res) => {
+//     console.log('About 페이지 요청');
+//     res.render('about');
+// });
+
+// 404 에러 처리 (모든 라우트 후에 위치)
+app.use((req, res, next) => {
+    console.log('404 오류: 페이지를 찾을 수 없음 -', req.url);
+    res.status(404).render('error', {
+        status: 404,
+        message: '페이지를 찾을 수 없습니다.',
+        error: null
+    });
+});
+
+// 전역 에러 처리 미들웨어
+app.use((error, req, res, next) => {
+    console.error('서버 오류 발생:', error);
+    
+    // 상태 코드 설정 (기본값: 500)
+    const status = error.status || error.statusCode || 500;
+    
+    // 개발 환경에서는 상세 에러 정보 포함
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    res.status(status).render('error', {
+        status: status,
+        message: status === 500 ? '서버 내부 오류가 발생했습니다.' : error.message || '오류가 발생했습니다.',
+        error: isDevelopment ? error : null
+    });
+});
 
 
 // 데이터베이스 초기화 후 서버 시작
