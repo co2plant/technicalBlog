@@ -1,25 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모든 게시글 - 기술 블로그</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-    <nav class="bg-gray-800 text-white">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <a class="text-xl font-bold" href="/">기술 블로그</a>
-                <div class="flex space-x-4">
-                    <a class="hover:text-gray-300" href="/">홈</a>
-                    <a class="text-blue-300" href="/posts">글 목록</a>
-                    <a class="hover:text-gray-300" href="/about">소개</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<%- include('partials/header') %>
     
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -81,10 +60,4 @@
         </div>
     </div>
     
-    <footer class="bg-gray-800 text-white text-center py-6 mt-12">
-        <div class="max-w-7xl mx-auto px-4">
-            <p>&copy; 2024 기술 블로그. All rights reserved.</p>
-        </div>
-    </footer>
-</body>
-</html>
+<%- include('partials/postFooter') %>
