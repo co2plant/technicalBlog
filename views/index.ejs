@@ -1,5 +1,4 @@
-
-<%- include('partials/header', {title: 'Co2plant Blog'}) %>
+<%- include('partials/header')%>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
         <section class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 mb-12">
@@ -7,7 +6,7 @@
             <p class="text-xl">기술과 개발에 대한 이야기를 나누는 공간입니다.</p>
         </section>
 
-        <section>
+        <section class="h-full">
             <h3 class="text-2xl font-bold mb-6">최근 게시글</h3>
             <% if (posts && posts.length > 0) { %>
                 <div class="grid gap-6">
