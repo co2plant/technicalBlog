@@ -1,10 +1,64 @@
-<%- include('partials/header', {title: 'Co2plant Blog'}) %>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류 - 기술 블로그</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold mb-4">기술 블로그</h1>
+            <nav class="flex space-x-6">
+                <a href="/" class="text-blue-300 hover:text-white">홈</a>
+                <a href="/posts" class="hover:text-gray-300">게시글</a>
+                <a href="/about" class="hover:text-gray-300">소개</a>
+            </nav>
+        </div>
+    </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <section class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 mb-12">
-            <h2 class="text-4xl font-bold mb-4">에러가 발생했습니다.</h2>
-            <p class="text-xl"></p>
-        </section>
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-md p-8 text-center">
+            <div class="mb-8">
+                <div class="text-6xl text-red-500 mb-4">⚠️</div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">
+                    <%= status || '500' %> 오류
+                </h1>
+                <p class="text-xl text-gray-600 mb-6">
+                    <%= message || '서버에서 오류가 발생했습니다.' %>
+                </p>
+            </div>
+
+            <div class="mb-8">
+                <% if (status == 404) { %>
+                    <p class="text-gray-700 mb-4">요청하신 페이지를 찾을 수 없습니다.</p>
+                    <p class="text-gray-600">URL을 다시 확인해주세요.</p>
+                <% } else if (status == 500) { %>
+                    <p class="text-gray-700 mb-4">일시적인 서버 오류가 발생했습니다.</p>
+                    <p class="text-gray-600">잠시 후 다시 시도해주세요.</p>
+                <% } else { %>
+                    <p class="text-gray-700 mb-4">예상치 못한 오류가 발생했습니다.</p>
+                    <p class="text-gray-600">문제가 지속되면 관리자에게 문의해주세요.</p>
+                <% } %>
+            </div>
+
+            <div class="flex justify-center space-x-4">
+                <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors">
+                    홈으로 돌아가기
+                </a>
+                <button onclick="history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors">
+                    이전 페이지
+                </button>
+            </div>
+
+            <% if (process.env.NODE_ENV === 'development' && error) { %>
+                <div class="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+                    <h3 class="text-red-800 font-semibold mb-2">개발자 정보:</h3>
+                    <pre class="text-red-700 text-sm overflow-auto"><%= error.stack || error.message || error %></pre>
+                </div>
+            <% } %>
+        </div>
     </main>
-
 <%- include('partials/footer') %>
