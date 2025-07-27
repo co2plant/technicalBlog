@@ -142,6 +142,119 @@ app.get('/posts/:id', (req, res, next) => {
 //     res.render('about');
 // });
 
+// ===== 관리자 대시보드 라우트 =====
+
+// 관리자 대시보드 메인
+app.get('/admin', (req, res, next) => {
+    console.log('관리자 대시보드 요청');
+    db.all("SELECT * FROM posts ORDER BY date DESC", (err, posts) => {
+        if (err) {
+            console.error('데이터베이스 조회 오류:', err);
+            return next(err);
+        }
+        
+        const postsWithStats = posts.map(post => ({
+            ...post,
+            contentLength: post.content.length,
+            contentPreview: post.content.substring(0, 100) + '...'
+        }));
+        
+        res.render('admin/dashboard', { 
+            title: '관리자 대시보드 - 기술 블로그',
+            posts: postsWithStats,
+            totalPosts: posts.length
+        });
+    });
+});
+
+// 새 게시글 작성 페이지
+app.get('/admin/posts/new', (req, res) => {
+    console.log('새 게시글 작성 페이지 요청');
+    res.render('admin/post-form', {
+        title: '새 게시글 작성 - 관리자',
+        post: null,
+        action: 'create'
+    });
+});
+
+// 게시글 수정 페이지
+app.get('/admin/posts/:id/edit', (req, res, next) => {
+    const id = req.params.id;
+    console.log('게시글 수정 페이지 요청, ID:', id);
+    
+    db.get("SELECT * FROM posts WHERE id = ?", [id], (err, post) => {
+        if (err) {
+            console.error('데이터베이스 조회 오류:', err);
+            return next(err);
+        }
+        if (!post) {
+            const error = new Error('게시글을 찾을 수 없습니다');
+            error.status = 404;
+            return next(error);
+        }
+        
+        res.render('admin/post-form', {
+            title: '게시글 수정 - 관리자',
+            post: post,
+            action: 'edit'
+        });
+    });
+});
+
+// 게시글 생성 (POST)
+app.post('/admin/posts', (req, res, next) => {
+    const { title, content, excerpt } = req.body;
+    console.log('새 게시글 생성:', { title, excerpt });
+    
+    const stmt = db.prepare("INSERT INTO posts (title, content, excerpt) VALUES (?, ?, ?)");
+    stmt.run(title, content, excerpt, function(err) {
+        if (err) {
+            console.error('게시글 생성 오류:', err);
+            return next(err);
+        }
+        console.log('게시글 생성 완료, ID:', this.lastID);
+        res.redirect('/admin');
+    });
+    stmt.finalize();
+});
+
+// 게시글 수정 (POST)
+app.post('/admin/posts/:id', (req, res, next) => {
+    const id = req.params.id;
+    const { title, content, excerpt } = req.body;
+    console.log('게시글 수정:', { id, title, excerpt });
+    
+    const stmt = db.prepare("UPDATE posts SET title = ?, content = ?, excerpt = ? WHERE id = ?");
+    stmt.run(title, content, excerpt, id, function(err) {
+        if (err) {
+            console.error('게시글 수정 오류:', err);
+            return next(err);
+        }
+        console.log('게시글 수정 완료, ID:', id);
+        res.redirect('/admin');
+    });
+    stmt.finalize();
+});
+
+// 게시글 삭제 (POST)
+app.post('/admin/posts/:id/delete', (req, res, next) => {
+    const id = req.params.id;
+    console.log('게시글 삭제 요청, ID:', id);
+    
+    const stmt = db.prepare("DELETE FROM posts WHERE id = ?");
+    stmt.run(id, function(err) {
+        if (err) {
+            console.error('게시글 삭제 오류:', err);
+            return next(err);
+        }
+        console.log('게시글 삭제 완료, ID:', id);
+        res.redirect('/admin');
+    });
+    stmt.finalize();
+});
+
+// ===== 관리자 라우트 끝 =====
+
 // 404 에러 처리 (모든 라우트 후에 위치)
 app.use((req, res, next) => {
     console.log('404 오류: 페이지를 찾을 수 없음 -', req.url);

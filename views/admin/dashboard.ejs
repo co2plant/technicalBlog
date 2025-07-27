@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- 네비게이션 바 -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold">관리자 대시보드</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-home mr-2"></i>블로그 홈
+                    </a>
+                    <a href="/posts" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-list mr-2"></i>게시글 목록
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- 헤더 섹션 -->
+        <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900">기술 블로그 관리</h2>
+                        <p class="mt-1 text-sm text-gray-600">게시글을 작성, 수정, 삭제할 수 있습니다.</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-blue-600"><%= totalPosts %></div>
+                        <div class="text-sm text-gray-500">총 게시글</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="mb-6">
+            <a href="/admin/posts/new" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center font-medium">
+                <i class="fas fa-plus mr-2"></i>새 게시글 작성
+            </a>
+        </div>
+
+        <!-- 게시글 목록 -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">게시글 목록</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">모든 게시글을 관리할 수 있습니다.</p>
+            </div>
+            
+            <% if (posts.length === 0) { %>
+                <div class="text-center py-12">
+                    <i class="fas fa-file-alt text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">게시글이 없습니다</h3>
+                    <p class="text-gray-500 mb-6">첫 번째 게시글을 작성해보세요!</p>
+                    <a href="/admin/posts/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+                        <i class="fas fa-plus mr-2"></i>게시글 작성
+                    </a>
+                </div>
+            <% } else { %>
+                <ul class="divide-y divide-gray-200">
+                    <% posts.forEach(post => { %>
+                        <li class="px-4 py-4 hover:bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-lg font-medium text-gray-900 truncate">
+                                            <%= post.title %>
+                                        </h4>
+                                        <div class="ml-4 flex-shrink-0">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <%= post.contentLength %>자
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500 line-clamp-2">
+                                        <%= post.excerpt || post.contentPreview %>
+                                    </p>
+                                    <div class="mt-2 flex items-center text-sm text-gray-500">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        <time><%= new Date(post.date).toLocaleDateString('ko-KR') %></time>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-hashtag mr-1"></i>
+                                        ID: <%= post.id %>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-shrink-0 flex space-x-2">
+                                    <a href="/posts/<%= post.id %>" 
+                                       class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm font-medium"
+                                       target="_blank">
+                                        <i class="fas fa-eye mr-1"></i>보기
+                                    </a>
+                                    <a href="/admin/posts/<%= post.id %>/edit" 
+                                       class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                        <i class="fas fa-edit mr-1"></i>수정
+                                    </a>
+                                    <form method="POST" action="/admin/posts/<%= post.id %>/delete" 
+                                          class="inline-block"
+                                          onsubmit="return confirm('정말로 이 게시글을 삭제하시겠습니까?')">
+                                        <button type="submit" 
+                                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium">
+                                            <i class="fas fa-trash mr-1"></i>삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } %>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="mt-8 text-center text-sm text-gray-500">
+            <p>기술 블로그 관리자 대시보드 © 2024</p>
+        </div>
+    </div>
+</body>
+</html>
