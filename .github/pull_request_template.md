@@ -1,24 +1,24 @@
-## Purpose
-<!-- Describe the single micro-goal this PR achieves. -->
+## 목적
+<!-- 이 PR이 달성하는 단일 마이크로 목표를 작성하세요. -->
 
-## Files Changed
-<!-- List the exact files modified or added. -->
+## 변경 파일
+<!-- 수정/추가된 파일을 정확히 적어주세요. -->
 
-## Verification
-<!-- Describe the verification steps run (e.g., npm test, manual check). -->
+## 검증
+<!-- 실행한 검증 절차를 작성하세요 (예: npm test, 수동 확인). -->
 
-## Out of Scope
-<!-- List items explicitly NOT handled in this PR to maintain micro-scope. -->
+## 범위 제외
+<!-- 마이크로 범위를 유지하기 위해 이번 PR에서 의도적으로 제외한 항목을 적어주세요. -->
 
-## Rollback Impact
-<!-- Describe the impact of reverting this PR. -->
+## 롤백 영향
+<!-- 이 PR을 되돌릴 때의 영향 범위를 설명하세요. -->
 
-## Checklist
-- [ ] Scope is minimal
-- [ ] Commit(s) are atomic
-- [ ] Verification passed for the slice
-- [ ] Docs updated if needed
-- [ ] No unrelated changes
+## 체크리스트
+- [ ] 범위가 최소이다
+- [ ] 커밋이 원자적이다
+- [ ] 해당 슬라이스의 검증이 통과했다
+- [ ] 필요 시 문서를 업데이트했다
+- [ ] 무관한 변경이 없다
 
 ---
-**Note**: Keep PRs tiny. Aim for 1 micro-goal and ideally 1 commit per PR.
+**참고**: PR은 작게 유지하세요. 1개의 마이크로 목표, 가능하면 PR당 1커밋을 목표로 합니다.

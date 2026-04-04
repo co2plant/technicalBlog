@@ -1,42 +1,42 @@
-# Contributing
+# 기여 가이드
 
-## Purpose
-This project follows a strict micro-commit and PR-driven workflow to ensure high quality and maintainability, even for solo development. Every change must be verifiable, reversible, and easy to review.
+## 목적
+이 프로젝트는 1인 개발 상황에서도 품질과 유지보수성을 유지하기 위해 엄격한 마이크로 커밋/PR 워크플로를 사용합니다. 모든 변경은 검증 가능하고, 되돌릴 수 있으며, 리뷰하기 쉬워야 합니다.
 
-## Commit Rules
-- Commit message format is mandatory: `type(scope): concise intent`.
-- Allowed `type` values: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
-- Examples:
-  - `feat(app): scaffold nextjs starter baseline`
-  - `docs(github): add contributing rules`
-- Each commit must represent exactly one narrow change and must leave the branch in a verifiable state for that slice.
-- Do not mix behavior changes, refactors, docs rewrites, and test harness changes in the same commit unless the test is required to validate that exact behavior change.
-- If a commit cannot be explained in one sentence without using `and`, it is too large and must be split.
-- Large batch commits are strictly forbidden.
+## 커밋 규칙
+- 커밋 메시지 형식은 필수입니다: `type: concise intent`.
+- 허용되는 `type` 값: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
+- 예시:
+  - `feat: scaffold nextjs starter baseline`
+  - `docs: add contributing rules`
+- 각 커밋은 정확히 하나의 좁은 변경만 담아야 하며, 해당 변경 단위에서 검증 가능한 상태를 유지해야 합니다.
+- 동일 커밋에 동작 변경, 리팩터링, 문서 대규모 수정, 테스트 하네스 변경을 섞지 않습니다. 단, 해당 동작 변경을 검증하기 위한 테스트는 함께 포함할 수 있습니다.
+- 커밋 설명을 한 문장으로 말할 때 `and`가 꼭 들어가야 한다면 커밋이 너무 큰 것이므로 분리해야 합니다.
+- 대규모 배치 커밋은 엄격히 금지합니다.
 
-## Micro-Commit Rules
-- Every implementation task must be broken into the smallest safe coding slices; do not batch unrelated changes just because they belong to the same numbered task.
-- Preferred commit size: one narrow behavior, one contract, one validator, one route, one docs slice, or one verification slice per commit.
-- If a task touches multiple concerns, sequence them as separate micro-commits that each leave the repo in a passing state.
-- After each micro-commit, the relevant local verification for that slice must pass before moving to the next slice.
-- When uncertain, split further; optimize for reviewability and reversibility over speed.
+## 마이크로 커밋 규칙
+- 모든 구현 작업은 가장 작은 안전 단위로 쪼갭니다. 같은 번호의 작업이라는 이유로 무관한 변경을 묶지 않습니다.
+- 권장 커밋 크기: 한 가지 동작, 한 가지 계약, 한 가지 검증기, 한 라우트, 한 문서 조각, 또는 한 검증 조각.
+- 하나의 작업이 여러 관심사를 건드리면, 각 커밋이 통과 가능한 상태를 유지하도록 별도 마이크로 커밋으로 순차 분리합니다.
+- 각 마이크로 커밋 이후에는 그 커밋 범위에 해당하는 로컬 검증이 통과해야 다음 단계로 진행합니다.
+- 애매하면 더 쪼개세요. 속도보다 리뷰 용이성과 롤백 용이성을 우선합니다.
 
-## Branch Naming
-- Preferred branch naming: `task-<NN>-<short-slug>` for planned work and `followup-<short-slug>` for post-review fixes.
+## 브랜치 네이밍
+- 계획 작업은 `task-<NN>-<short-slug>`, 리뷰 후속 수정은 `followup-<short-slug>` 형식을 권장합니다.
 
-## Pull Request Rules
-- Preferred PR size: one micro-goal per PR. Default target is 1 commit per PR; 2-3 commits are acceptable only when they are tightly sequential parts of the same micro-goal.
-- Each PR must map to one specific slice from the plan, not a whole wave and not a whole feature cluster.
-- Open PRs as **draft** first, then promote to **ready** only after the PR checklist passes locally.
-- Every PR description must include: purpose, exact files changed, verification run, out-of-scope items, and rollback impact.
+## PR 규칙
+- 권장 PR 크기는 마이크로 목표 1개입니다. 기본 목표는 PR당 1커밋이며, 같은 마이크로 목표의 강한 순차 변경일 때만 2-3커밋을 허용합니다.
+- 각 PR은 계획의 특정 슬라이스 1개에 대응해야 하며, 전체 웨이브나 기능 묶음을 한 번에 담지 않습니다.
+- PR은 먼저 **draft**로 열고, PR 체크리스트를 로컬에서 통과한 뒤 **ready**로 전환합니다.
+- PR 설명에는 반드시 목적, 정확한 변경 파일, 실행한 검증, 범위 제외 항목, 롤백 영향을 포함합니다.
 
-## Merge Strategy
-- Preferred merge strategy is `Rebase and merge` so the tiny commit history is preserved without merge bubbles. If the hosting settings force squash merge, then keep the PR to one commit.
+## 병합 전략
+- 기본 병합 전략은 `Rebase and merge`입니다. 작은 커밋 히스토리를 merge commit 없이 유지하기 위함입니다. 저장소 설정상 squash merge만 가능하다면 PR을 1커밋으로 유지합니다.
 
-## Self-Review Checklist
-- Every PR must pass a self-review checklist before merge:
-  - Scope is minimal.
-  - Commit(s) are atomic.
-  - Tests/build for the slice passed.
-  - Docs updated if needed.
-  - No unrelated file changes remain.
+## 셀프 리뷰 체크리스트
+- 모든 PR은 병합 전에 셀프 리뷰 체크리스트를 통과해야 합니다:
+  - 범위가 최소인가?
+  - 커밋이 원자적인가?
+  - 해당 슬라이스의 테스트/빌드가 통과했는가?
+  - 필요 시 문서를 업데이트했는가?
+  - 무관한 파일 변경이 남아 있지 않은가?

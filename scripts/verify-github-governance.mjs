@@ -2,20 +2,20 @@ import fs from "node:fs";
 import path from "node:path";
 
 const REQUIRED_CONTRIBUTING_HEADINGS = [
-  "Commit Rules",
-  "Branch Naming",
-  "Pull Request Rules",
-  "Merge Strategy",
-  "Self-Review Checklist"
+  "커밋 규칙",
+  "브랜치 네이밍",
+  "PR 규칙",
+  "병합 전략",
+  "셀프 리뷰 체크리스트"
 ];
 
 const REQUIRED_PR_TEMPLATE_HEADINGS = [
-  "Purpose",
-  "Files Changed",
-  "Verification",
-  "Out of Scope",
-  "Rollback Impact",
-  "Checklist"
+  "목적",
+  "변경 파일",
+  "검증",
+  "범위 제외",
+  "롤백 영향",
+  "체크리스트"
 ];
 
 const REQUIRED_TYPES = ["feat", "fix", "refactor", "test", "docs", "chore"];
@@ -85,8 +85,8 @@ function verifyContributing(content, filePath, failures) {
     }
   }
 
-  if (!lower.includes("large batch")) {
-    failures.push(`Missing prohibition phrase in ${filePath}: large batch`);
+  if (!lower.includes("대규모 배치") && !lower.includes("large batch")) {
+    failures.push(`Missing prohibition phrase in ${filePath}: 대규모 배치 또는 large batch`);
   }
 }
 
