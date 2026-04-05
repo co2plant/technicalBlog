@@ -1,17 +1,36 @@
 {
+  "private": true,
   "dependencies": {
     "cors": "^2.8.5",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "marked": "^16.0.0",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^20.19.22",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "16.2.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   },
   "name": "technicalblog",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src tests --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
     "verify:github-governance": "node scripts/verify-github-governance.mjs"
   },
   "repository": {
