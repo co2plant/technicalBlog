@@ -1,0 +1,68 @@
+:root {
+  --bg: #f8fafc;
+  --fg: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Inter, "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.site-header__inner,
+.site-main,
+.site-footer {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.site-brand {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.site-nav {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.site-main {
+  flex: 1;
+}
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
