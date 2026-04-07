@@ -10,6 +10,7 @@ tags:
   - overriding
   - polymorphism
 originalUrl: "https://co2plant.tistory.com/4"
+coverImage: "/posts/java-override-overriding/cover.png"
 ---
 
 Inheritance > Override
@@ -113,11 +114,11 @@ public class Solution {
 
 위 코드는 어노테이션 없이 작성된 예시입니다. 매개변수 타입이 달라졌기 때문에 오버라이딩이 아니라 오버로딩이 일어나도 개발자가 바로 알아차리기 어렵습니다.
 
-![](https://blog.kakaocdn.net/dna/eEKC2Y/btsPsmsRUhm/AAAAAAAAAAAAAAAAAAAAAP7lu-O0_h2mc8xP5mxFf4O1efkr2ZC31Z_LvdMDkBda/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=iwBtGJxgCpEkczAXylea6Mi4ZRI%3D)
+![오버라이드 어노테이션 미적용 예시](/posts/java-override-overriding/cover.png)
 
 이처럼 `move`의 매개변수를 바꿔도 곧바로 오류가 드러나지 않을 수 있습니다. 그래서 오버라이딩을 의도했다면 `@Override`를 붙여 컴파일러가 검증하도록 만드는 것이 안전합니다.
 
-![](https://blog.kakaocdn.net/dna/DtjCD/btsPsUo6ex3/AAAAAAAAAAAAAAAAAAAAAAh72nrzt1DjupKwQxARU1I_cqH0athW6buQWKxI4Bm6/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=3lF%2FHHrGCb%2BeEd45cznQ9%2B2ilCI%3D)
+![오버라이드 어노테이션 적용 후 컴파일 체크 예시](/posts/java-override-overriding/override-annotation-check.png)
 
 어노테이션을 적용하면 컴파일러가 규칙 위반을 더 명확하게 잡아 줍니다.
 

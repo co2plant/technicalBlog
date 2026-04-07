@@ -10,6 +10,7 @@ tags:
   - inheritance
   - interface
 originalUrl: "https://co2plant.tistory.com/7"
+coverImage: "/posts/java-diamond-problem-multi-inheritance/cover.png"
 ---
 
 ## 다이아몬드 문제(The Diamond Problem)
@@ -19,7 +20,7 @@ originalUrl: "https://co2plant.tistory.com/7"
 3. `B`와 `C`는 `A`의 특정 메서드를 각각 **재정의(Override)** 합니다.
 4. 또 다른 자식 클래스 `D`가 `B`와 `C`를 동시에 상속받으려고 합니다.
 
-![](https://blog.kakaocdn.net/dna/mVI7U/btsPHDUvfBB/AAAAAAAAAAAAAAAAAAAAABShvdCRenglRWyOqgnJz2PQN6P3hmG7Jo-kCgiyuxdp/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=LWimvSasm1k2zhtrtw2RWwjVbtc%3D)
+![다이아몬드 문제 구조 설명 이미지](/posts/java-diamond-problem-multi-inheritance/cover.png)
 
 위처럼 `Vehicle`을 상속받아 `Chariot`, `Boat`를 만들고, 다시 이 둘을 동시에 상속하는 `AmphibiousChariot`를 상상해 보면 문제가 보입니다. `Chariot`와 `Boat`가 서로 다른 `fillFuel()` 메서드를 오버라이딩했다면, 수륙양용 전차는 어떤 메서드를 상속받아야 할지 결정할 수 없게 됩니다.
 

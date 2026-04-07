@@ -16,9 +16,21 @@ describe("content loader", () => {
     const posts = await getPublishedPosts();
 
     expect(posts.length).toBeGreaterThan(0);
-    expect(posts[0]?.slug).toBe("egovframe-training");
-    expect(posts[1]?.slug).toBe("git-commit-message-convention");
-    expect(posts[0]?.publishedAt >= posts[1]?.publishedAt).toBe(true);
+    expect(posts.every((post) => post.draft === false)).toBe(true);
+    expect(posts).toEqual(
+      [...posts].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)),
+    );
+    expect(posts.map((post) => post.slug)).toEqual(
+      expect.arrayContaining([
+        "egovframe-training",
+        "git-commit-message-convention",
+        "java-override-overriding",
+        "standard-framework-open-community-offline-seminar-review",
+        "java-diamond-problem-multi-inheritance",
+        "standard-framework-contribution",
+        "standard-framework-contribution-developer-evaluation-and-goods-unboxing",
+      ]),
+    );
     expect(posts.every((post) => post.draft === false)).toBe(true);
   });
 });
