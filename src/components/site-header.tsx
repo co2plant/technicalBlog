@@ -9,12 +9,16 @@ const NAV_ITEMS = [
 
 export function SiteHeader() {
   return (
-    <header className="site-header" data-testid="site-header">
-      <div className="site-header__inner">
-        <p className="site-brand">co2plant 기술 블로그</p>
-        <nav className="site-nav" aria-label="주요 내비게이션">
+    <header className="sticky top-0 z-50 w-full border-b border-gh-border bg-gh-bg/80 backdrop-blur" data-testid="site-header">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+        <p className="font-semibold text-gh-text text-lg">co2plant 기술 블로그</p>
+        <nav className="flex items-center space-x-6 text-sm font-medium" aria-label="주요 내비게이션">
           {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href}>
+            <Link 
+              key={item.href} 
+              href={item.href}
+              className="text-gh-muted transition-colors hover:text-gh-accent"
+            >
               {item.label}
             </Link>
           ))}
