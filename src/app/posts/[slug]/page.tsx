@@ -39,27 +39,27 @@ export default async function PostDetailPage({ params }: PostPageProps) {
   }
 
   return (
-    <article>
-      <header>
-        <p>게시글</p>
+    <article className="post-detail">
+      <header className="post-detail__header">
+        <p className="post-detail__eyebrow">게시글</p>
         <h1>{post.title}</h1>
-        <p>{post.description}</p>
-        <p>
+        <p className="post-detail__description">{post.description}</p>
+        <p className="post-detail__meta">
           <span>{post.publishedAt}</span>
           {post.author ? ` · ${post.author}` : ""}
         </p>
-        {post.tags.length > 0 ? <p>태그: {post.tags.join(", ")}</p> : null}
+        {post.tags.length > 0 ? <p className="post-detail__tags">태그: {post.tags.join(", ")}</p> : null}
         {post.originalUrl ? (
-          <p>
+          <p className="post-detail__source">
             원문: <Link href={post.originalUrl}>Velog 원문 보기</Link>
           </p>
         ) : null}
       </header>
 
-      <section dangerouslySetInnerHTML={{ __html: post.html }} />
+      <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
 
       {post.attachments.length > 0 ? (
-        <section>
+        <section className="post-detail__attachments">
           <h2>첨부 문서</h2>
           <ul>
             {post.attachments.map((attachment) => (
