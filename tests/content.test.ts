@@ -16,7 +16,9 @@ describe("content loader", () => {
     const posts = await getPublishedPosts();
 
     expect(posts.length).toBeGreaterThan(0);
-    expect(posts[0]?.slug).toBe("git-commit-message-convention");
+    expect(posts[0]?.slug).toBe("egovframe-training");
+    expect(posts[1]?.slug).toBe("git-commit-message-convention");
+    expect(posts[0]?.publishedAt >= posts[1]?.publishedAt).toBe(true);
     expect(posts.every((post) => post.draft === false)).toBe(true);
   });
 });
