@@ -1,0 +1,69 @@
+---
+title: "2025 표준프레임워크 컨트리뷰션 기여"
+slug: "standard-framework-contribution"
+description: "전자정부표준프레임워크 기여 과정에서 찾은 개선 포인트와 PR이 반영되기까지의 경험을 정리한 글"
+excerpt: "문서 수정에서 시작해 코드 기여까지 이어진 과정, Apache Commons Text를 활용한 개선 아이디어, 리뷰에서 배운 점을 기록했습니다."
+publishedAt: "2025-11-02"
+author: "co2plant"
+tags:
+  - egovframe
+  - oss
+  - contribution
+  - apache
+originalUrl: "https://co2plant.tistory.com/10"
+---
+
+올해 5월 19일, 2025 전자정부표준프레임워크 컨트리뷰션이 시작돼 9월 19일에 끝이 났습니다.
+
+저는 이번 OSSCA(Open Source Contribution Academy)에 참가해 허광남 멘토님을 만난 이후로 전자정부표준프레임워크(이하 `eGovFramework`)에 더욱 관심을 갖게 됐고, 어떤 방식으로 기여할 수 있을지 꾸준히 고민해 왔습니다.
+
+![](https://blog.kakaocdn.net/dna/bdQpef/dJMcacnRCkD/AAAAAAAAAAAAAAAAAAAAAJSCeLoONCR52HU7TNtt_2_b8Ov_btoTus7HI7RMS_hT/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=o8SUy25fPZxEQn2Hp3OOX0aWGkk%3D)
+
+그러다 5월 10일, `common-components-msa-krds` 레포지토리의 `README` 문서에서 오타를 찾아 처음 기여했습니다. 문서 수정도 의미 있었지만, 점점 **개발자로서 코드 수정으로 기여해 보고 싶다**는 생각이 커졌습니다.
+
+레포지토리를 살펴보다가 `EgovSearch`에서 입력 문자열의 특수문자를 변환하는 로직을 봤고, 문자열을 `.replace()`로 수동 처리하고 있다는 점을 발견했습니다.
+
+```xml
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-text</artifactId>
+    <version>${apache.commons.text}</version>
+</dependency>
+```
+
+`String`이 불변 객체이기 때문에 `.replace()`를 여러 번 호출하면 그만큼 새로운 문자열 객체가 계속 생성됩니다. 처음에는 `StringBuilder`로 바꾸는 방향을 떠올렸지만, `pom.xml`을 확인하던 중 특수 문자 변환에 활용할 수 있는 `Apache Commons Text`가 이미 포함되어 있다는 점을 알게 됐습니다.
+
+![](https://blog.kakaocdn.net/dna/1mhIc/dJMcabvIWje/AAAAAAAAAAAAAAAAAAAAAFDLSdN3C_kZtQ9FnC5fd2vXjkkhNCvRZjahY94qsY2-/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=YtOl%2FCkWbKQMeRg%2FV2f3%2FbNswhw%3D)
+
+그 결과 `"<", ">", "&", "/", "'", "\\", 공백` 등에 대해 흩어져 있던 `.replace()` 호출을 정리하면서 **15번의 `.replace()`를 9번으로 줄일 수 있었습니다.**
+
+![](https://blog.kakaocdn.net/dna/bDFfvN/dJMcacnRCkB/AAAAAAAAAAAAAAAAAAAAAJcSZm87jvaXrCpRqFwH-Wdi48FRlMRfZ-RswtAOkmfF/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=eJpFpudybLPQrMZF7UlHU2PDqAE%3D)
+
+Closed 처리된 PR을 보고 처음에는 반영되지 않은 줄 알았지만, 커밋 내역을 더 살펴보니 내용 자체는 실제 코드에 반영되어 있었습니다.
+
+![](https://blog.kakaocdn.net/dna/P1j1g/dJMcabibQno/AAAAAAAAAAAAAAAAAAAAABrBnqm1TOFGuzc1_vFDdlCi2-bUU25R3n3iaMJ9jv7H/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=RwFqqI71vYkk6%2BUkgpiJJvq8%2Bf4%3D)
+![](https://blog.kakaocdn.net/dna/cb4Dud/dJMcabibQnn/AAAAAAAAAAAAAAAAAAAAAGi_I4GDm-rN8rxK3G_PEKrIMFs_sW2VokWuwS6_LGEP/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=X6G1niEaKG0R%2F%2BKr3SKObYnXiVM%3D)
+
+이 부분이 왜 `Closed` 처리됐는지 다시 살펴보니, 다음 같은 맥락이 있었습니다.
+
+1. `unescapeHtml4`를 적용하면서 일부 `replace`는 제거됐지만, 나머지 로직은 여전히 남아 있었습니다.
+2. 두 방식이 혼재된 상태라서 코드를 처음 보는 사람이 오해할 여지가 있었습니다.
+3. 관련 설명 주석이 없어 다음 커밋에서 중복 수정이 일어날 가능성도 있었습니다.
+
+![](https://blog.kakaocdn.net/dna/bz0MzB/dJMcagRkQlQ/AAAAAAAAAAAAAAAAAAAAADFt6wLYnkDQMjs1RLlSqaiTGBsFm7_IyRUiDQZR2D4I/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=YOxM7jZCxzpntu4JhEY8i%2Fzc2SA%3D)
+![](https://blog.kakaocdn.net/dna/RxaF3/dJMcaboXnAP/AAAAAAAAAAAAAAAAAAAAALEHLq78M9FTVuSFnCvNij5RjB-0Lov5spbaKA__4ahf/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=%2F1eKgBuUZ%2FU0w3aNJS0G%2Fm2gfhU%3D)
+
+게다가 2025 전자정부표준프레임워크 컨트리뷰션 마감일과 PR이 올라온 날짜가 모두 9월 19일이어서, 리뷰를 길게 끌기보다 주석을 보완하고 이벤트 참여 이력을 살려 주는 쪽으로 정리된 것으로 이해하게 됐습니다.
+
+## 고찰
+
+이번 컨트리뷰션은 제가 처음으로 **코드 수정으로 기여해 본 경험**이었습니다. 전체를 바꿀지, 이미 주입된 라이브러리를 활용할지를 고민했고, `String`이 불변 객체라는 점을 실제 개선 아이디어에 연결해 봤다는 점이 특히 기억에 남습니다.
+
+학부 시절 프로젝트를 위해 직접 만들던 코드와 달리, 이미 잘 작동하는 다른 사람의 코드를 읽고 더 나은 방향을 제안하는 경험은 또 다른 재미가 있었습니다.
+
+다음에는 PR 설명만 잘 쓰는 데서 멈추지 않고, 코드에 주석을 남기거나 리뷰어 입장에서 더 이해하기 쉬운 형태로 기여하는 방법도 함께 고민해 보고 싶습니다.
+
+## References
+
+- [원문 Tistory 글](https://co2plant.tistory.com/10)
+- [OSSCA](https://www.oss.kr/oss_aca)

@@ -1,0 +1,95 @@
+---
+title: "자바는 왜 다중 상속을 막았을까? 다이아몬드 문제 파헤치기"
+slug: "java-diamond-problem-multi-inheritance"
+description: "자바가 클래스 다중 상속을 허용하지 않는 이유를 다이아몬드 문제와 인터페이스 예제로 설명한 글"
+excerpt: "다이아몬드 문제가 왜 모호성을 만들고, 자바가 이를 인터페이스와 명시적 오버라이드로 어떻게 해결하는지 정리합니다."
+publishedAt: "2025-08-04"
+author: "co2plant"
+tags:
+  - java
+  - inheritance
+  - interface
+originalUrl: "https://co2plant.tistory.com/7"
+---
+
+## 다이아몬드 문제(The Diamond Problem)
+
+1. 최상위 부모 클래스 `A`가 있습니다.
+2. 두 개의 자식 클래스 `B`, `C`가 모두 `A`를 상속받습니다.
+3. `B`와 `C`는 `A`의 특정 메서드를 각각 **재정의(Override)** 합니다.
+4. 또 다른 자식 클래스 `D`가 `B`와 `C`를 동시에 상속받으려고 합니다.
+
+![](https://blog.kakaocdn.net/dna/mVI7U/btsPHDUvfBB/AAAAAAAAAAAAAAAAAAAAABShvdCRenglRWyOqgnJz2PQN6P3hmG7Jo-kCgiyuxdp/img.png?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1777561199&allow_ip=&allow_referer=&signature=LWimvSasm1k2zhtrtw2RWwjVbtc%3D)
+
+위처럼 `Vehicle`을 상속받아 `Chariot`, `Boat`를 만들고, 다시 이 둘을 동시에 상속하는 `AmphibiousChariot`를 상상해 보면 문제가 보입니다. `Chariot`와 `Boat`가 서로 다른 `fillFuel()` 메서드를 오버라이딩했다면, 수륙양용 전차는 어떤 메서드를 상속받아야 할지 결정할 수 없게 됩니다.
+
+## 해결책
+
+자바는 이 문제를 해결하기 위해 **클래스는 단일 상속만 허용**하고, 대신 **인터페이스를 여러 개 구현**해서 다중 상속과 비슷한 효과를 내도록 설계했습니다.
+
+### 구현이 없는 인터페이스
+
+```java
+// 만약 자바가 다중 상속을 허용한다면... (가상 코드)
+class Chariot extends Vehicle {
+    @Override
+    public void fillFuel() {
+        System.out.println("마차에 건초를 공급합니다.");
+    }
+}
+
+class Boat extends Vehicle {
+    @Override
+    public void fillFuel() {
+        System.out.println("보트에 돛을 답니다.");
+    }
+}
+
+class AmphibiousChariot extends Chariot, Boat {
+    public void refuel() {
+        // Chariot의 fillFuel()? Boat의 fillFuel()?
+        fillFuel();
+    }
+}
+```
+
+인터페이스는 선언만 있고 구현이 없기 때문에, 여러 인터페이스를 `implements` 하더라도 어떤 부모 구현을 가져와야 할지 고민하지 않고 구현 클래스에서 직접 메서드를 작성하면 됩니다.
+
+### default 메서드의 경우
+
+```java
+interface HasGasoline {
+    default void fillFuel() {
+        System.out.println("주유소에서 휘발유를 채웁니다.");
+    }
+}
+
+interface HasElectricity {
+    default void fillFuel() {
+        System.out.println("충전소에서 전기를 충전합니다.");
+    }
+}
+
+class HybridCar implements HasGasoline, HasElectricity {
+    @Override
+    public void fillFuel() {
+        HasGasoline.super.fillFuel();
+        HasElectricity.super.fillFuel();
+        System.out.println("하이브리드 자동차의 연료를 모두 채웁니다.");
+    }
+}
+```
+
+Java 8부터는 인터페이스에 `default` 메서드가 도입되어 인터페이스 내부에도 구현을 둘 수 있게 됐습니다. 이때 서로 다른 인터페이스가 같은 시그니처의 `default` 메서드를 제공하면 모호성이 다시 생깁니다.
+
+자바는 이 경우 구현 클래스가 **반드시 직접 오버라이드해서 모호성을 제거하도록 강제**합니다.
+
+## 결론
+
+자바는 다중 상속이 주는 유연함보다, 그로 인해 발생할 수 있는 예측 불가능성과 복잡성이 더 큰 비용이라고 판단했습니다.
+
+즉, 인터페이스를 통해 **다형성의 장점은 유지**하면서도, 구현 충돌이라는 모호함은 차단하는 방향을 택한 것입니다. 이런 설계 덕분에 자바는 단순함, 명확성, 안정성을 더 잘 유지할 수 있습니다.
+
+## References
+
+- [원문 Tistory 글](https://co2plant.tistory.com/7)
