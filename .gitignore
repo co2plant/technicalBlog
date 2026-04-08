@@ -25,10 +25,6 @@ test-results/
 .env.*
 !.env.example
 
-# Local databases
-blog.db
-blog.db-*
-
 # Caches
 .npm/
 .eslintcache
