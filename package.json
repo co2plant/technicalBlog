@@ -28,8 +28,7 @@
     "lint": "eslint src tests --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test",
-    "verify:github-governance": "node scripts/verify-github-governance.mjs"
+    "test:e2e": "playwright test"
   },
   "repository": {
     "type": "git",
