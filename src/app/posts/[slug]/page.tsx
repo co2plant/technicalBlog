@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PdfViewer } from "@/components/pdf-viewer.client";
 import { getPostBySlug, getPublishedPosts } from "@/lib/content";
 
 type PostPageProps = {
@@ -37,6 +38,10 @@ export default async function PostDetailPage({ params }: PostPageProps) {
   if (!post || post.draft) {
     notFound();
   }
+
+  const secondaryAttachments = post.primaryPdf
+    ? post.attachments.filter((attachment) => attachment.url !== post.primaryPdf)
+    : post.attachments;
 
   return (
     <article className="max-w-3xl mx-auto py-10 px-4 w-full">
@@ -91,13 +96,20 @@ export default async function PostDetailPage({ params }: PostPageProps) {
         )}
       </header>
 
-      <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
+      {post.kind === "pdf" && post.primaryPdf ? (
+        <>
+          {post.body ? <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} /> : null}
+          <PdfViewer file={post.primaryPdf} title={post.title} />
+        </>
+      ) : (
+        <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
+      )}
 
-      {post.attachments.length > 0 && (
+      {secondaryAttachments.length > 0 && (
         <section className="mt-16 pt-8 border-t border-gh-border/60">
           <h2 className="text-2xl font-bold text-gh-text mb-4">첨부 문서</h2>
           <ul className="grid gap-3">
-            {post.attachments.map((attachment) => (
+            {secondaryAttachments.map((attachment) => (
               <li key={attachment.url}>
                 <Link href={attachment.url} className="flex items-center gap-3 p-4 bg-gh-surface/50 border border-gh-border/50 rounded-xl hover:bg-gh-surface hover:border-gh-border transition-all group">
                   <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg group-hover:scale-110 transition-transform">
