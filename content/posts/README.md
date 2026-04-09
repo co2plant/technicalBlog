@@ -25,6 +25,18 @@ public/posts/vercel-deploy-guide/slides.pptx
 - **PPT / PPTX**: 기본은 다운로드 링크 제공, 필요하면 별도 PDF 버전을 함께 제공
 - 핵심 원칙: Markdown/MDX가 본문이고, PDF/PPT/PPTX는 게시글에 연결되는 첨부 문서 자산입니다.
 
+## PDF 중심 포트폴리오 글
+- 일반 글은 `kind`를 생략하거나 `kind: "article"`로 둡니다.
+- PDF가 메인 콘텐츠인 포트폴리오 글은 아래 필드를 추가합니다.
+
+```yaml
+kind: "pdf"
+primaryPdf: "/posts/<slug>/portfolio.pdf"
+```
+
+- 이 경우 Markdown/MDX 본문은 PDF를 설명하는 도입부 역할을 하고, 개별 글 페이지에서는 PDF viewer가 메인 콘텐츠로 렌더링됩니다.
+
+
 ## 다음 구현 단계
 - `src/app/posts/page.tsx`에서 이 디렉터리의 파일 목록을 읽어 게시글 목록을 렌더링합니다.
 - `src/app/posts/[slug]/page.tsx`에서 slug 기준으로 개별 글 페이지를 생성합니다.

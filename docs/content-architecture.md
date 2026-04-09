@@ -23,6 +23,16 @@ public/posts/vercel-deploy-guide/slides.pptx
 - **PDF**: inline preview 또는 다운로드 링크 제공 대상
 - **PPT / PPTX**: 기본적으로 다운로드 링크 제공 대상
 
+## 포스트 타입
+- 기본값은 `kind: "article"` 입니다.
+- 포트폴리오형 문서를 메인 콘텐츠로 보여주고 싶다면 `kind: "pdf"`와 `primaryPdf`를 사용합니다.
+- 예시:
+
+```yaml
+kind: "pdf"
+primaryPdf: "/posts/my-portfolio/portfolio.pdf"
+```
+
 ## 라우팅 모델
 - 목록: `src/app/posts/page.tsx`
 - 상세: `src/app/posts/[slug]/page.tsx`
@@ -45,3 +55,4 @@ public/posts/vercel-deploy-guide/slides.pptx
 - 게시글 자산은 반드시 `public/posts/<slug>/` 아래에 둔다.
 - Markdown/MDX 렌더링은 sanitize 후 출력한다.
 - PDF는 preview-safe, PPT/PPTX는 download-first 전략을 기본값으로 둔다.
+- `kind: "pdf"` 포스트는 PDF가 메인 콘텐츠이고, Markdown 본문은 소개/설명 영역으로 사용한다.

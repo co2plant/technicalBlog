@@ -24,6 +24,7 @@ describe("content loader", () => {
       expect.arrayContaining([
         "egovframe-training",
         "git-commit-message-convention",
+        "portfolio-pdf-sample",
         "java-override-overriding",
         "standard-framework-open-community-offline-seminar-review",
         "java-diamond-problem-multi-inheritance",
@@ -32,5 +33,14 @@ describe("content loader", () => {
       ]),
     );
     expect(posts.every((post) => post.draft === false)).toBe(true);
+  });
+
+  it("loads a pdf-first portfolio post with primaryPdf metadata", async () => {
+    const post = await getPostBySlug("portfolio-pdf-sample");
+
+    expect(post).not.toBeNull();
+    expect(post?.kind).toBe("pdf");
+    expect(post?.primaryPdf).toBe("/posts/portfolio-pdf-sample/portfolio.pdf");
+    expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/portfolio-pdf-sample/portfolio.pdf");
   });
 });
