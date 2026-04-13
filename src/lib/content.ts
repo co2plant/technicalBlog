@@ -87,6 +87,11 @@ export async function getPublishedPosts(): Promise<Post[]> {
   return posts.filter((post) => !post.draft);
 }
 
+export async function getPublishedPortfolioPosts(): Promise<Post[]> {
+  const posts = await getPublishedPosts();
+  return posts.filter((post) => post.tags.includes("portfolio"));
+}
+
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   const posts = await getAllPosts();
   return posts.find((post) => post.slug === slug) ?? null;
