@@ -35,12 +35,11 @@ describe("content loader", () => {
     expect(posts.every((post) => post.draft === false)).toBe(true);
   });
 
-  it("loads a pdf-first portfolio post with primaryPdf metadata", async () => {
+  it("loads an embedded-pdf portfolio post", async () => {
     const post = await getPostBySlug("portfolio-pdf-sample");
 
     expect(post).not.toBeNull();
-    expect(post?.kind).toBe("pdf");
-    expect(post?.primaryPdf).toBe("/posts/portfolio-pdf-sample/portfolio.pdf");
+    expect(post?.embeddedPdf).toBe("/posts/portfolio-pdf-sample/portfolio.pdf");
     expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/portfolio-pdf-sample/portfolio.pdf");
   });
 });

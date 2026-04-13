@@ -39,8 +39,8 @@ export default async function PostDetailPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const secondaryAttachments = post.primaryPdf
-    ? post.attachments.filter((attachment) => attachment.url !== post.primaryPdf)
+  const secondaryAttachments = post.embeddedPdf
+    ? post.attachments.filter((attachment) => attachment.url !== post.embeddedPdf)
     : post.attachments;
 
   return (
@@ -96,14 +96,13 @@ export default async function PostDetailPage({ params }: PostPageProps) {
         )}
       </header>
 
-      {post.kind === "pdf" && post.primaryPdf ? (
+      <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
+
+      {post.embeddedPdf ? (
         <>
-          {post.body ? <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} /> : null}
-          <PdfViewer file={post.primaryPdf} title={post.title} />
+          <PdfViewer file={post.embeddedPdf} title={post.title} />
         </>
-      ) : (
-        <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
-      )}
+      ) : null}
 
       {secondaryAttachments.length > 0 && (
         <section className="mt-16 pt-8 border-t border-gh-border/60">

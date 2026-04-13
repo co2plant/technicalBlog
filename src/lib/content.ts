@@ -13,8 +13,6 @@ export type PostAttachment = {
   url: string;
 };
 
-export type PostKind = "article" | "pdf";
-
 export type Post = {
   title: string;
   slug: string;
@@ -26,8 +24,7 @@ export type Post = {
   tags: string[];
   originalUrl?: string;
   coverImage?: string;
-  kind: PostKind;
-  primaryPdf?: string;
+  embeddedPdf?: string;
   draft: boolean;
   extension: "md" | "mdx";
   body: string;
@@ -136,15 +133,10 @@ function parseFrontmatter(source: string, slugFromFileName: string): {
   const updatedAt = optionalString(rawFrontmatter.updatedAt);
   const originalUrl = optionalString(rawFrontmatter.originalUrl);
   const coverImage = optionalString(rawFrontmatter.coverImage);
-  const kind = parsePostKind(rawFrontmatter.kind, slugFromFileName);
-  const primaryPdf = optionalString(rawFrontmatter.primaryPdf);
+  const embeddedPdf = optionalString(rawFrontmatter.embeddedPdf);
 
   if (slug !== slugFromFileName) {
     throw new Error(`Frontmatter slug mismatch in ${slugFromFileName}: expected ${slugFromFileName}, received ${slug}`);
-  }
-
-  if (kind === "pdf" && !primaryPdf) {
-    throw new Error(`PDF 포스트는 primaryPdf가 필요합니다: ${slugFromFileName}`);
   }
 
   return {
@@ -159,8 +151,7 @@ function parseFrontmatter(source: string, slugFromFileName: string): {
       tags,
       originalUrl,
       coverImage,
-      kind,
-      primaryPdf,
+      embeddedPdf,
       draft,
     },
     body: body.trim(),
@@ -243,18 +234,6 @@ function optionalString(value: unknown): string | undefined {
   }
 
   return value;
-}
-
-function parsePostKind(value: unknown, slug: string): PostKind {
-  if (value === undefined) {
-    return "article";
-  }
-
-  if (value === "article" || value === "pdf") {
-    return value;
-  }
-
-  throw new Error(`지원하지 않는 post kind입니다 (${slug}): ${String(value)}`);
 }
 
 function requireStringArray(value: unknown, field: string, slug: string): string[] {

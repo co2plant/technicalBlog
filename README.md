@@ -47,8 +47,17 @@
 - **PPT/PPTX**: 기본은 다운로드 링크로 제공하고, 이후 외부 viewer/embed 지원이 필요할 때 확장
 - 핵심 원칙: Markdown/MDX가 source of truth이고, PDF/PPT/PPTX는 게시글에 연결되는 첨부 자산으로 취급
 
+## PDF 임베딩 포스트
+- 일반 글은 Markdown/MDX 본문을 중심으로 렌더링합니다.
+- PDF를 글 안에 자연스럽게 붙이고 싶다면 frontmatter에 아래 필드를 추가합니다.
+
+```yaml
+embeddedPdf: "/posts/<slug>/portfolio.pdf"
+```
+
+- 이 경우 상세 페이지에서는 Markdown 본문을 먼저 보여주고, 그 아래에 PDF viewer를 렌더링합니다.
+
 ## 참고
-- 설계 기준 문서: `docs/content-architecture.md`
 - 작업용 계획 초안은 `.sisyphus/plans/technical-blog-vercel-file-content.ko.md`에 정리되어 있습니다.
 
 ## 폴더 구조 예시 (계획 기준)

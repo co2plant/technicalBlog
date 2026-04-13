@@ -26,7 +26,7 @@ export default async function PostsPage() {
             <Link key={post.slug} href={`/posts/${post.slug}`} className="group block h-full">
               <article className="flex flex-col h-full bg-gh-surface/60 backdrop-blur-md border border-gh-border/70 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-500/30 relative overflow-hidden">
                 <div className="flex-1 space-y-3">
-                  {post.kind === "pdf" ? (
+                  {post.embeddedPdf ? (
                     <span className="inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-400">
                       PDF
                     </span>

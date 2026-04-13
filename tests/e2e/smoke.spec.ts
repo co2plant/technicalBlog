@@ -14,7 +14,7 @@ test("app shell and not-found shell render", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "[Git] Commit Message Convention" })).toBeVisible();
 
   await page.goto("/posts/portfolio-pdf-sample");
-  await expect(page.getByRole("heading", { name: "[Portfolio] 프로젝트 포트폴리오 PDF 샘플" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "[Portfolio] 프로젝트 포트폴리오 PDF 임베딩 샘플" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "PDF 미리보기" })).toBeVisible();
   await expect(page.getByRole("link", { name: "다운로드" })).toBeVisible();
 
