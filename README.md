@@ -6,7 +6,7 @@
 - **Next.js App Router + TypeScript** 기반 공개 블로그
 - **Git 저장소 기반 콘텐츠 관리** (`content/posts/*.md(x)` + `public/posts/<slug>/*`)
 - **Vercel** 중심의 Preview/Production 배포 전략
-- Markdown/MDX 원문 저장 + 서버 측 sanitize 렌더링
+- Markdown 원문 저장 + 서버 측 sanitize 렌더링 (`.mdx` 확장자도 현재는 Markdown 호환 본문만 지원)
 - PDF 미리보기/다운로드와 PPT/PPTX 다운로드 확장을 고려한 문서 첨부 구조
 - 태그/검색/SEO(robots, sitemap, RSS) 포함 운영형 구조
 
@@ -15,7 +15,7 @@
 ### 언어
 - **TypeScript**: Next.js 애플리케이션 및 서버 로직
 - **HTML/CSS**: App Router 기반 UI 렌더링
-- **Markdown / MDX**: 게시글 원문 저장 및 렌더링 파이프라인 입력
+- **Markdown / MDX**: 게시글 원문 저장 형식 (`.mdx`는 JSX/ESM 없이 Markdown 호환 본문만 지원)
 - **PDF / PPT / PPTX**: 게시글별 첨부 문서 자산
 
 ### 프레임워크 / 라이브러리
@@ -37,6 +37,7 @@
 
 ## 콘텐츠 / 자산 규칙
 - 글 본문: `content/posts/<slug>.md` 또는 `content/posts/<slug>.mdx`
+- 현재 렌더링 파이프라인은 **Markdown 호환 본문만 지원**하며, `.mdx` 파일 안의 JSX/`import`/`export`/표현식 문법은 허용하지 않습니다.
 - 게시글 이미지 및 문서 자산: `public/posts/<slug>/*`
 - 예시:
   - `content/posts/vercel-deploy-guide.mdx`
