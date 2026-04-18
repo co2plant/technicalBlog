@@ -10,8 +10,7 @@ export default function HomePage() {
         </span> Blog
       </h1>
       <p className="max-w-2xl text-lg md:text-xl text-gh-muted leading-relaxed mt-4">
-        현재 Next.js App Router 기반의 공개 블로그 셸을 준비하고 있습니다.
-        게시글은 저장소의 마크다운 파일을 기준으로 안정적이고 유연하게 관리됩니다.
+        co2plant의 기술 블로그에 오신것을 환영합니다.
       </p>
 
       <div className="flex gap-4 mt-10 pt-4">
