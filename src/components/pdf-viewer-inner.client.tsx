@@ -49,7 +49,7 @@ export function PdfViewerInner({ file, title }: PdfViewerInnerProps) {
   }
 
   return (
-    <section className="mt-10 space-y-5" aria-label="PDF 미리보기">
+    <section className="mt-10 space-y-5" aria-label="PDF 미리보기" data-testid="pdf-viewer-section">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gh-text">PDF 미리보기</h2>
@@ -68,6 +68,7 @@ export function PdfViewerInner({ file, title }: PdfViewerInnerProps) {
           <a
             href={file}
             download
+            data-testid="pdf-download-link"
             className="inline-flex items-center gap-2 rounded-lg bg-gh-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             다운로드
