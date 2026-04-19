@@ -7,7 +7,7 @@ export default async function PortfolioPage() {
   return (
     <div className="space-y-8 relative z-10">
       <div className="border-b border-gh-border/60 pb-6">
-        <h1 className="text-3xl font-bold text-gh-text tracking-tight flex items-center gap-3">
+        <h1 className="text-3xl font-bold text-gh-text tracking-tight flex items-center gap-3" data-testid="portfolio-page-heading">
           <span className="w-1.5 h-8 bg-gradient-to-b from-emerald-500 to-cyan-500 rounded-full inline-block"></span>
           포트폴리오
         </h1>

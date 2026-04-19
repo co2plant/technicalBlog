@@ -32,7 +32,26 @@ export type Post = {
   attachments: PostAttachment[];
 };
 
-type ParsedFrontmatter = Omit<Post, "body" | "html" | "attachments" | "extension">;
+export type ParsedFrontmatter = Omit<Post, "body" | "html" | "attachments" | "extension">;
+
+const UNSUPPORTED_MDX_PATTERNS = [
+  {
+    pattern: /^\s*import\s.+from\s+['"][^'"]+['"];?\s*$/m,
+    message: "import statements are not supported",
+  },
+  {
+    pattern: /^\s*export\s+(?:const|function|class|default)\b/m,
+    message: "export statements are not supported",
+  },
+  {
+    pattern: /<\/?[A-Za-z][A-Za-z0-9.-]*(?:\s[^>]*)?\/?>(?:\s*<\/\s*[A-Za-z][A-Za-z0-9.-]*\s*>)?/m,
+    message: "HTML or JSX-style tags are not supported",
+  },
+  {
+    pattern: /(^|\n)\s*\{[^\n{}][^\n]*\}\s*(?=\n|$)/m,
+    message: "inline expressions are not supported",
+  },
+] as const;
 
 const markdown = new Marked({
   async: false,
@@ -79,7 +98,7 @@ export async function getAllPosts(): Promise<Post[]> {
       .map((fileName) => readPostFile(fileName)),
   );
 
-  return posts.sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
+  return posts.sort(comparePostsByPublishedAtDescending);
 }
 
 export async function getPublishedPosts(): Promise<Post[]> {
@@ -103,6 +122,7 @@ async function readPostFile(fileName: string): Promise<Post> {
   const slugFromFileName = path.basename(fileName, path.extname(fileName));
   const extension = path.extname(fileName).slice(1) as Post["extension"];
   const { frontmatter, body } = parseFrontmatter(fileContent, slugFromFileName);
+  assertSupportedPostSyntax(body, extension, slugFromFileName);
   const attachments = await readAttachments(frontmatter.slug);
 
   return {
@@ -114,11 +134,12 @@ async function readPostFile(fileName: string): Promise<Post> {
   };
 }
 
-function parseFrontmatter(source: string, slugFromFileName: string): {
+export function parseFrontmatter(source: string, slugFromFileName: string): {
   frontmatter: ParsedFrontmatter;
   body: string;
 } {
-  const frontmatterMatch = source.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  const normalizedSource = normalizeLineEndings(source);
+  const frontmatterMatch = normalizedSource.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
 
   if (!frontmatterMatch) {
     throw new Error(`Missing frontmatter block in post: ${slugFromFileName}`);
@@ -137,8 +158,14 @@ function parseFrontmatter(source: string, slugFromFileName: string): {
   const draft = rawFrontmatter.draft === true;
   const updatedAt = optionalString(rawFrontmatter.updatedAt);
   const originalUrl = optionalString(rawFrontmatter.originalUrl);
-  const coverImage = optionalString(rawFrontmatter.coverImage);
-  const embeddedPdf = optionalString(rawFrontmatter.embeddedPdf);
+  const coverImage = normalizePostAssetReference(optionalString(rawFrontmatter.coverImage), slug);
+  const embeddedPdf = normalizePostAssetReference(optionalString(rawFrontmatter.embeddedPdf), slug);
+
+  assertDateOnlyString(publishedAt, "publishedAt", slugFromFileName);
+
+  if (updatedAt) {
+    assertDateOnlyString(updatedAt, "updatedAt", slugFromFileName);
+  }
 
   if (slug !== slugFromFileName) {
     throw new Error(`Frontmatter slug mismatch in ${slugFromFileName}: expected ${slugFromFileName}, received ${slug}`);
@@ -161,6 +188,25 @@ function parseFrontmatter(source: string, slugFromFileName: string): {
     },
     body: body.trim(),
   };
+}
+
+export function assertSupportedPostSyntax(body: string, extension: Post["extension"], slug: string): void {
+  if (extension !== "mdx") {
+    return;
+  }
+
+  const normalizedBody = normalizeLineEndings(body);
+  const bodyWithoutCodeFences = stripMarkdownCodeFences(normalizedBody);
+
+  for (const rule of UNSUPPORTED_MDX_PATTERNS) {
+    if (rule.pattern.test(bodyWithoutCodeFences)) {
+      throw new Error(`Unsupported MDX syntax in post: ${slug}. ${rule.message}.`);
+    }
+  }
+}
+
+export function buildPostAssetUrl(slug: string, fileName: string): string {
+  return `/posts/${encodePathSegment(slug)}/${encodePathSegment(fileName)}`;
 }
 
 function parseYamlLikeFrontmatter(block: string): Record<string, unknown> {
@@ -225,6 +271,68 @@ function parseScalar(rawValue: string): unknown {
   return trimmed;
 }
 
+function comparePostsByPublishedAtDescending(left: Pick<Post, "publishedAt">, right: Pick<Post, "publishedAt">): number {
+  return parseDateOnlyToUtcTimestamp(right.publishedAt, "publishedAt", "<sort comparator>") - parseDateOnlyToUtcTimestamp(left.publishedAt, "publishedAt", "<sort comparator>");
+}
+
+function normalizeLineEndings(value: string): string {
+  return value.replace(/\r\n?/g, "\n");
+}
+
+function stripMarkdownCodeFences(value: string): string {
+  return value.replace(/(^|\n)(```|~~~)[^\n]*\n[\s\S]*?\n\2(?=\n|$)/g, "$1");
+}
+
+function assertDateOnlyString(value: string, field: string, slug: string): void {
+  parseDateOnlyToUtcTimestamp(value, field, slug);
+}
+
+function parseDateOnlyToUtcTimestamp(value: string, field: string, slug: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+  if (!match) {
+    throw new Error(`Invalid ${field} in post: ${slug}. Use YYYY-MM-DD.`);
+  }
+
+  const [, yearString, monthString, dayString] = match;
+  const year = Number(yearString);
+  const month = Number(monthString);
+  const day = Number(dayString);
+  const timestamp = Date.UTC(year, month - 1, day);
+  const parsedDate = new Date(timestamp);
+
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() !== month - 1 ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    throw new Error(`Invalid ${field} in post: ${slug}. Use a real calendar date in YYYY-MM-DD.`);
+  }
+
+  return timestamp;
+}
+
+function normalizePostAssetReference(value: string | undefined, slug: string): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const match = /^\/posts\/([^/]+)\/(.+)$/.exec(value);
+
+  if (!match) {
+    return value;
+  }
+
+  const [, assetSlugSegment, assetFileSegment] = match;
+  const decodedSlug = safeDecodeURIComponent(assetSlugSegment);
+
+  if (decodedSlug !== slug) {
+    return value;
+  }
+
+  return buildPostAssetUrl(slug, safeDecodeURIComponent(assetFileSegment));
+}
+
 function requireString(value: unknown, field: string, slug: string): string {
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`Missing or invalid ${field} in post: ${slug}`);
@@ -260,7 +368,7 @@ async function readAttachments(slug: string): Promise<PostAttachment[]> {
       .map((fileName) => ({
         name: fileName,
         kind: path.extname(fileName).slice(1).toLowerCase() as PostAttachment["kind"],
-        url: `/posts/${slug}/${fileName}`,
+        url: buildPostAssetUrl(slug, fileName),
       }));
   } catch (error) {
     if (isMissingDirectory(error)) {
@@ -285,6 +393,18 @@ function isSafeLink(href: string): boolean {
 
 function isSafeAsset(href: string): boolean {
   return /^(https?:|\/)/i.test(href);
+}
+
+function encodePathSegment(value: string): string {
+  return encodeURIComponent(value);
+}
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 function escapeAttribute(value: string): string {

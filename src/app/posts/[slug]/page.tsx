@@ -50,7 +50,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
           <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
           <span className="text-indigo-500 font-semibold tracking-wider uppercase text-sm">게시글</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gh-text mb-6 leading-[1.15]">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gh-text mb-6 leading-[1.15]" data-testid="post-detail-heading">
           {post.title}
         </h1>
         <p className="text-xl text-gh-muted leading-relaxed mb-6">
