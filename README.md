@@ -40,10 +40,8 @@
 - 현재 렌더링 파이프라인은 **Markdown 호환 본문만 지원**하며, `.mdx` 파일 안의 JSX/`import`/`export`/표현식 문법은 허용하지 않습니다.
 - 게시글 이미지 및 문서 자산: `public/posts/<slug>/*`
 - 예시:
-  - `content/posts/vercel-deploy-guide.mdx`
-  - `public/posts/vercel-deploy-guide/cover.png`
-  - `public/posts/vercel-deploy-guide/architecture.pdf`
-  - `public/posts/vercel-deploy-guide/slides.pptx`
+  - `content/posts/webassembly-what-and-why.mdx`
+  - `public/posts/portfolio-pdf-sample/portfolio.pdf`
 - **PDF**: 브라우저 호환 범위에서 inline preview 또는 다운로드 링크로 제공
 - **PPT/PPTX**: 기본은 다운로드 링크로 제공하고, 이후 외부 viewer/embed 지원이 필요할 때 확장
 - 핵심 원칙: Markdown/MDX가 source of truth이고, PDF/PPT/PPTX는 게시글에 연결되는 첨부 자산으로 취급
@@ -58,9 +56,6 @@ embeddedPdf: "/posts/<slug>/portfolio.pdf"
 
 - 이 경우 상세 페이지에서는 Markdown 본문을 먼저 보여주고, 그 아래에 PDF viewer를 렌더링합니다.
 
-## 참고
-- 작업용 계획 초안은 `.sisyphus/plans/technical-blog-vercel-file-content.ko.md`에 정리되어 있습니다.
-
 ## 폴더 구조 예시 (계획 기준)
 ```
 /project-root
@@ -69,7 +64,6 @@ embeddedPdf: "/posts/<slug>/portfolio.pdf"
   /src
     /app         # Next.js App Router 라우트
     /lib         # 공용 도메인/콘텐츠 접근 모듈
-  /scripts       # build/운영 보조 스크립트
   /tests         # unit/integration/e2e 테스트
   /public
     /posts       # slug별 이미지/PDF/PPT/PPTX 정적 자산
