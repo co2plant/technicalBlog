@@ -1,5 +1,8 @@
 {
+  "name": "technicalblog",
+  "version": "1.0.0",
   "private": true,
+  "description": "Next.js App Router technical blog powered by file-based Markdown content.",
   "dependencies": {
     "marked": "^16.0.0",
     "next": "16.2.2",
@@ -21,8 +24,6 @@
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
-  "name": "technicalblog",
-  "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -32,16 +33,9 @@
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
+  "license": "ISC",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/co2plant/technicalBlog.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/co2plant/technicalBlog/issues"
-  },
-  "homepage": "https://github.com/co2plant/technicalBlog#readme",
-  "description": ""
+  }
 }
