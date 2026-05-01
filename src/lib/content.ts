@@ -148,6 +148,13 @@ export function parseFrontmatter(source: string, slugFromFileName: string): {
   const [, frontmatterBlock, body] = frontmatterMatch;
   const rawFrontmatter = parseYamlLikeFrontmatter(frontmatterBlock);
 
+  return {
+    frontmatter: buildParsedFrontmatter(rawFrontmatter, slugFromFileName),
+    body: body.trim(),
+  };
+}
+
+function buildParsedFrontmatter(rawFrontmatter: Record<string, unknown>, slugFromFileName: string): ParsedFrontmatter {
   const title = requireString(rawFrontmatter.title, "title", slugFromFileName);
   const slug = requireString(rawFrontmatter.slug, "slug", slugFromFileName);
   const description = requireString(rawFrontmatter.description, "description", slugFromFileName);
@@ -172,21 +179,18 @@ export function parseFrontmatter(source: string, slugFromFileName: string): {
   }
 
   return {
-    frontmatter: {
-      title,
-      slug,
-      description,
-      excerpt,
-      publishedAt,
-      updatedAt,
-      author,
-      tags,
-      originalUrl,
-      coverImage,
-      embeddedPdf,
-      draft,
-    },
-    body: body.trim(),
+    title,
+    slug,
+    description,
+    excerpt,
+    publishedAt,
+    updatedAt,
+    author,
+    tags,
+    originalUrl,
+    coverImage,
+    embeddedPdf,
+    draft,
   };
 }
 
