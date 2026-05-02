@@ -102,13 +102,11 @@ export async function getAllPosts(): Promise<Post[]> {
 }
 
 export async function getPublishedPosts(): Promise<Post[]> {
-  const posts = await getAllPosts();
-  return posts.filter((post) => !post.draft);
+  return (await getAllPosts()).filter((post) => !post.draft);
 }
 
 export async function getPublishedPortfolioPosts(): Promise<Post[]> {
-  const posts = await getPublishedPosts();
-  return posts.filter((post) => post.tags.includes("portfolio"));
+  return (await getPublishedPosts()).filter((post) => post.tags.includes("portfolio"));
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
@@ -168,10 +166,10 @@ function buildParsedFrontmatter(rawFrontmatter: Record<string, unknown>, slugFro
   const coverImage = normalizePostAssetReference(optionalString(rawFrontmatter.coverImage), slug);
   const embeddedPdf = normalizePostAssetReference(optionalString(rawFrontmatter.embeddedPdf), slug);
 
-  assertDateOnlyString(publishedAt, "publishedAt", slugFromFileName);
+  parseDateOnlyToUtcTimestamp(publishedAt, "publishedAt", slugFromFileName);
 
   if (updatedAt) {
-    assertDateOnlyString(updatedAt, "updatedAt", slugFromFileName);
+    parseDateOnlyToUtcTimestamp(updatedAt, "updatedAt", slugFromFileName);
   }
 
   if (slug !== slugFromFileName) {
@@ -285,10 +283,6 @@ function normalizeLineEndings(value: string): string {
 
 function stripMarkdownCodeFences(value: string): string {
   return value.replace(/(^|\n)(```|~~~)[^\n]*\n[\s\S]*?\n\2(?=\n|$)/g, "$1");
-}
-
-function assertDateOnlyString(value: string, field: string, slug: string): void {
-  parseDateOnlyToUtcTimestamp(value, field, slug);
 }
 
 function parseDateOnlyToUtcTimestamp(value: string, field: string, slug: string): number {

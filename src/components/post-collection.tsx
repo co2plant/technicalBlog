@@ -28,8 +28,7 @@ const ACCENT_STYLES: Record<
   indigo: {
     headingBar: "bg-gradient-to-b from-blue-500 to-purple-500",
     cardHover: "hover:shadow-indigo-500/5 hover:border-indigo-500/30",
-    titleHover:
-      "group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-indigo-500",
+    titleHover: "group-hover:text-indigo-500",
     dateIcon: "text-indigo-400",
     tag: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400/90",
     accentLine:
@@ -39,8 +38,7 @@ const ACCENT_STYLES: Record<
   emerald: {
     headingBar: "bg-gradient-to-b from-emerald-500 to-cyan-500",
     cardHover: "hover:shadow-emerald-500/5 hover:border-emerald-500/30",
-    titleHover:
-      "group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-cyan-500",
+    titleHover: "group-hover:text-emerald-500",
     dateIcon: "text-emerald-400",
     tag: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400/90",
     accentLine:

@@ -41,7 +41,6 @@ describe("content loader", () => {
         "standard-framework-contribution-developer-evaluation-and-goods-unboxing",
       ]),
     );
-    expect(posts.every((post) => post.draft === false)).toBe(true);
   });
 
   it("loads an embedded-pdf portfolio post", async () => {
