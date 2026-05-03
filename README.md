@@ -2,21 +2,14 @@
 
 Next.js App Router와 파일 기반 콘텐츠로 운영하는 기술 블로그입니다.
 
+<img width="1012" height="912" alt="{901073BC-98B1-445B-83A5-84017D9CFA1A}" src="https://github.com/user-attachments/assets/b93f58ab-a61c-452e-bee1-7982144c9c81" />
+
 ## 핵심 요약
 - Next.js App Router + TypeScript 기반 공개 블로그
 - 콘텐츠 저장 위치: `content/posts/*.md(x)`
 - 게시글 자산 위치: `public/posts/<slug>/*`
 - `.mdx` 확장자도 현재는 Markdown 호환 본문만 지원
 - PDF는 미리보기/다운로드, PPT/PPTX는 다운로드 중심으로 지원
-
-## 실행 명령어
-- `npm run dev`
-- `npm run build`
-- `npm run start`
-- `npm run lint`
-- `npm run typecheck`
-- `npm run test`
-- `npm run test:e2e`
 
 ## 구조
 ```text
