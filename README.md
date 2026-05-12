@@ -1,43 +1,36 @@
-# 기술 블로그 프로젝트
+# co2plant 기술 블로그
 
-Next.js App Router와 파일 기반 콘텐츠로 운영하는 기술 블로그입니다.
+개발하면서 배운 개념, 직접 겪은 시행착오, 오픈소스 기여 경험을 차분히 기록하는 기술 블로그입니다.
 
-<img width="1012" height="912" alt="{901073BC-98B1-445B-83A5-84017D9CFA1A}" src="https://github.com/user-attachments/assets/b93f58ab-a61c-452e-bee1-7982144c9c81" />
+<img width="1012" height="912" alt="co2plant 기술 블로그 미리보기" src="https://github.com/user-attachments/assets/b93f58ab-a61c-452e-bee1-7982144c9c81" />
 
-## 핵심 요약
-- Next.js App Router + TypeScript 기반 공개 블로그
-- 콘텐츠 저장 위치: `content/posts/*.md(x)`
-- 게시글 자산 위치: `public/posts/<slug>/*`
-- `.mdx` 확장자도 현재는 Markdown 호환 본문만 지원
-- PDF는 미리보기/다운로드, PPT/PPTX는 다운로드 중심으로 지원
+## 어떤 글을 쓰나요?
 
-## 구조
-```text
-content/posts/          Markdown/MDX 게시글 원문
-public/posts/<slug>/    이미지/PDF/PPT/PPTX 같은 정적 자산
-src/app/                App Router 라우트
-src/lib/                콘텐츠 로더와 공용 로직
-tests/                  unit / e2e 테스트
-```
+- **웹과 브라우저**: HTTP 통신 방식, WebAssembly, fetch 이후 알림 처리처럼 웹 개발 중 마주치는 개념을 정리합니다.
+- **Java와 백엔드 기초**: 오버라이딩, 다중 상속, 프레임워크 학습처럼 다시 설명할 수 있어야 하는 내용을 풀어 씁니다.
+- **오픈소스 기여 기록**: 전자정부표준프레임워크 컨트리뷰션처럼 실제로 참여하며 배운 점을 남깁니다.
+- **포트폴리오와 결과물**: 프로젝트 문서, 발표 자료, PDF 산출물을 함께 보여줄 수 있는 글도 정리합니다.
+- **프로젝트 기록**: 포트폴리오에는 들어가지 않지만 노력했던 기록을 적어 남깁니다.
 
-## 콘텐츠 규칙
-- 글 파일명 stem과 frontmatter `slug`는 같아야 합니다.
-- 필수 frontmatter: `title`, `slug`, `description`, `excerpt`, `publishedAt`, `author`, `tags`, `draft`
-- 날짜는 실제 `YYYY-MM-DD` 형식이어야 합니다.
-- `.mdx`에서도 JSX, `import`, `export`, 인라인 표현식은 허용하지 않습니다.
-- Markdown/MDX가 source of truth이고, 첨부 자산은 게시글에 연결되는 파일로 취급합니다.
+## 블로그의 방향
 
-## PDF 임베딩
-frontmatter에 아래 값을 넣으면 본문 아래에 PDF viewer가 렌더링됩니다.
+단순히 “알게 된 것”을 모으기보다, 시간이 지나도 다시 꺼내 읽을 수 있는 글을 목표로 합니다.
 
-```yaml
-embeddedPdf: "/posts/<slug>/portfolio.pdf"
-```
+개념 글은 처음 보는 사람도 흐름을 따라올 수 있게 쓰고, 경험 글은 당시의 선택과 고민이 드러나도록 남깁니다. 잘 몰랐던 내용을 공부한 뒤 제 언어로 다시 설명하는 과정 자체를 블로그의 중심에 두고 있습니다.
 
-## 배포/운영
-- 앱은 읽기 전용으로 운영합니다.
-- 콘텐츠 작성/수정은 GitHub PR 또는 웹 에디터 흐름을 전제로 합니다.
-- 새 글 추가 후 merge되면 배포 파이프라인이 반영하는 구조입니다.
+## 관심 있는 주제
 
-## 라이선스
-MIT
+- 웹 플랫폼과 브라우저 동작 방식
+- Java, Spring, 전자정부표준프레임워크
+- 오픈소스 기여와 코드 리뷰 경험
+- Git, 협업 규칙, 개발 생산성
+- 프로젝트 회고와 포트폴리오 정리
+
+## 더 보기
+
+- GitHub: [github.com/co2plant](https://github.com/co2plant)
+- 이전 글 아카이브: [Tistory](https://co2plant.tistory.com), [Velog](https://velog.io/@co2plant)
+
+---
+
+읽고 난 뒤 “나도 이 개념을 설명할 수 있겠다”는 느낌이 남는 글을 쓰고 싶습니다.
