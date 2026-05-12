@@ -6,6 +6,13 @@ const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 const POST_ASSETS_DIR = path.join(process.cwd(), "public", "posts");
 const POST_EXTENSIONS = new Set([".md", ".mdx"]);
 const DOWNLOADABLE_EXTENSIONS = new Set([".pdf", ".ppt", ".pptx"]);
+const UNCATEGORIZED_POST_CATEGORY = "uncategorized";
+
+type PostFile = {
+  category: string;
+  fullPath: string;
+  fileName: string;
+};
 
 export type PostAttachment = {
   name: string;
@@ -16,6 +23,7 @@ export type PostAttachment = {
 export type Post = {
   title: string;
   slug: string;
+  category: string;
   description: string;
   excerpt: string;
   publishedAt: string;
@@ -32,7 +40,7 @@ export type Post = {
   attachments: PostAttachment[];
 };
 
-export type ParsedFrontmatter = Omit<Post, "body" | "html" | "attachments" | "extension">;
+export type ParsedFrontmatter = Omit<Post, "body" | "html" | "attachments" | "category" | "extension">;
 
 const UNSUPPORTED_MDX_PATTERNS = [
   {
@@ -88,15 +96,8 @@ const markdown = new Marked({
 });
 
 export async function getAllPosts(): Promise<Post[]> {
-  const fileNames = await fs.readdir(POSTS_DIR);
-  const posts = await Promise.all(
-    fileNames
-      .filter(
-        (fileName) =>
-          POST_EXTENSIONS.has(path.extname(fileName)) && path.basename(fileName, path.extname(fileName)).toLowerCase() !== "readme",
-      )
-      .map((fileName) => readPostFile(fileName)),
-  );
+  const postFiles = await collectPostFiles(POSTS_DIR);
+  const posts = await Promise.all(postFiles.map((postFile) => readPostFile(postFile)));
 
   return posts.sort(comparePostsByPublishedAtDescending);
 }
@@ -106,7 +107,7 @@ export async function getPublishedPosts(): Promise<Post[]> {
 }
 
 export async function getPublishedPortfolioPosts(): Promise<Post[]> {
-  return (await getPublishedPosts()).filter((post) => post.tags.includes("portfolio"));
+  return (await getPublishedPosts()).filter((post) => post.category === "portfolio");
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
@@ -114,8 +115,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   return posts.find((post) => post.slug === slug) ?? null;
 }
 
-async function readPostFile(fileName: string): Promise<Post> {
-  const fullPath = path.join(POSTS_DIR, fileName);
+async function readPostFile({ category, fullPath, fileName }: PostFile): Promise<Post> {
   const fileContent = await fs.readFile(fullPath, "utf8");
   const slugFromFileName = path.basename(fileName, path.extname(fileName));
   const extension = path.extname(fileName).slice(1) as Post["extension"];
@@ -125,11 +125,54 @@ async function readPostFile(fileName: string): Promise<Post> {
 
   return {
     ...frontmatter,
+    category,
     extension,
     body,
     html: renderMarkdown(body),
     attachments,
   };
+}
+
+async function collectPostFiles(directory: string): Promise<PostFile[]> {
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+  const postFiles = await Promise.all(
+    entries.map(async (entry) => {
+      const fullPath = path.join(directory, entry.name);
+
+      if (entry.isDirectory()) {
+        return collectPostFiles(fullPath);
+      }
+
+      if (!entry.isFile() || !isPostFileName(entry.name)) {
+        return [];
+      }
+
+      return [
+        {
+          category: getPostCategoryFromPath(fullPath),
+          fullPath,
+          fileName: entry.name,
+        },
+      ];
+    }),
+  );
+
+  return postFiles.flat();
+}
+
+function isPostFileName(fileName: string): boolean {
+  return POST_EXTENSIONS.has(path.extname(fileName)) && path.basename(fileName, path.extname(fileName)).toLowerCase() !== "readme";
+}
+
+function getPostCategoryFromPath(fullPath: string): string {
+  const relativePath = path.relative(POSTS_DIR, fullPath);
+  const [category] = relativePath.split(path.sep);
+
+  if (!category || category === path.basename(relativePath)) {
+    return UNCATEGORIZED_POST_CATEGORY;
+  }
+
+  return category;
 }
 
 export function parseFrontmatter(source: string, slugFromFileName: string): {

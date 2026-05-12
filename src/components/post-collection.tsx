@@ -47,6 +47,10 @@ const ACCENT_STYLES: Record<
   },
 };
 
+function formatCategory(category: string): string {
+  return category.replaceAll("-", " ");
+}
+
 export function PostCollection({
   title,
   description,
@@ -81,13 +85,18 @@ export function PostCollection({
               >
                 <div className="flex-1 space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    {primaryBadgeLabel ? (
+                    {primaryBadgeLabel && primaryBadgeLabel.toLowerCase() !== post.category ? (
                       <span
                         className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${styles.primaryBadge}`}
                       >
                         {primaryBadgeLabel}
                       </span>
                     ) : null}
+                    <span
+                      className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${styles.primaryBadge}`}
+                    >
+                      {formatCategory(post.category)}
+                    </span>
                     {post.embeddedPdf ? (
                       <span className="inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-400">
                         PDF

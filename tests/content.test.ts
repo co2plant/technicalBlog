@@ -13,6 +13,7 @@ describe("content loader", () => {
 
     expect(post).not.toBeNull();
     expect(post?.title).toBe("[Git] Commit Message Convention");
+    expect(post?.category).toBe("git");
     expect(post?.originalUrl).toBe("https://velog.io/@co2plant/Git-Commit-Message-Convention");
     expect(post?.html).toContain("Git Commit Message Convention");
     expect(post?.coverImage).toBe("/posts/git-commit-message-convention/cover.png");
@@ -41,12 +42,26 @@ describe("content loader", () => {
         "standard-framework-contribution-developer-evaluation-and-goods-unboxing",
       ]),
     );
+    expect(posts.map((post) => [post.slug, post.category])).toEqual(
+      expect.arrayContaining([
+        ["webassembly-what-and-why", "web"],
+        ["http-long-polling-vs-short-polling", "web"],
+        ["notify-fetch-pattern", "web"],
+        ["java-override-overriding", "java"],
+        ["java-diamond-problem-multi-inheritance", "java"],
+        ["standard-framework-contribution", "opensource"],
+        ["egovframe-training", "opensource"],
+        ["git-commit-message-convention", "git"],
+        ["portfolio-pdf-sample", "portfolio"],
+      ]),
+    );
   });
 
   it("loads an embedded-pdf portfolio post", async () => {
     const post = await getPostBySlug("portfolio-pdf-sample");
 
     expect(post).not.toBeNull();
+    expect(post?.category).toBe("portfolio");
     expect(post?.embeddedPdf).toBe("/posts/portfolio-pdf-sample/portfolio.pdf");
     expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/portfolio-pdf-sample/portfolio.pdf");
   });
