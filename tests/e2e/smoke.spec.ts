@@ -6,6 +6,8 @@ const smokeRoutes = {
   gitPost: "/posts/git-commit-message-convention",
   portfolioPost: "/posts/portfolio-pdf-sample",
   portfolio: "/portfolio",
+  tools: "/tools",
+  goldenRatio: "/tools/golden-ratio",
   missing: "/does-not-exist",
 } as const;
 
@@ -43,6 +45,18 @@ test("app shell and critical routes render", async ({ page }) => {
     await page.goto(smokeRoutes.portfolio);
     await expect(page.getByTestId("portfolio-page-heading")).toBeVisible();
     await expect(page.locator('a[href="/posts/portfolio-pdf-sample"]').first()).toBeVisible();
+  });
+
+  await test.step("tools index renders golden ratio tool entry point", async () => {
+    await page.goto(smokeRoutes.tools);
+    await expect(page.getByTestId("tools-page-heading")).toBeVisible();
+    await expect(page.locator('a[href="/tools/golden-ratio"]').first()).toBeVisible();
+  });
+
+  await test.step("golden ratio calculator renders", async () => {
+    await page.goto(smokeRoutes.goldenRatio);
+    await expect(page.getByTestId("golden-ratio-page-heading")).toBeVisible();
+    await expect(page.getByTestId("golden-ratio-calculator")).toBeVisible();
   });
 
   await test.step("missing routes show not-found shell", async () => {

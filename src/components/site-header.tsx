@@ -3,6 +3,7 @@ import Link from "next/link";
 const NAV_ITEMS = [
   { href: "/posts", label: "게시글" },
   { href: "/portfolio", label: "포트폴리오" },
+  { href: "/tools", label: "도구" },
 ];
 
 export function SiteHeader() {
