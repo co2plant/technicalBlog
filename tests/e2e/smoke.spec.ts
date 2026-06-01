@@ -7,6 +7,7 @@ const smokeRoutes = {
   portfolioPost: "/posts/portfolio-pdf-sample",
   portfolio: "/portfolio",
   tools: "/tools",
+  techStack: "/tools/tech-stack",
   goldenRatio: "/tools/golden-ratio",
   missing: "/does-not-exist",
 } as const;
@@ -50,7 +51,14 @@ test("app shell and critical routes render", async ({ page }) => {
   await test.step("tools index renders golden ratio tool entry point", async () => {
     await page.goto(smokeRoutes.tools);
     await expect(page.getByTestId("tools-page-heading")).toBeVisible();
+    await expect(page.locator('a[href="/tools/tech-stack"]').first()).toBeVisible();
     await expect(page.locator('a[href="/tools/golden-ratio"]').first()).toBeVisible();
+  });
+
+  await test.step("tech stack generator renders", async () => {
+    await page.goto(smokeRoutes.techStack);
+    await expect(page.getByTestId("tech-stack-page-heading")).toBeVisible();
+    await expect(page.getByTestId("tech-stack-generator")).toBeVisible();
   });
 
   await test.step("golden ratio calculator renders", async () => {
