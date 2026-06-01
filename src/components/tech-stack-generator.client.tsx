@@ -17,11 +17,518 @@ type TechStackItem = {
 
 type TechStackField = keyof Omit<TechStackItem, "id">;
 
+type TechCategory = "language" | "frontend" | "backend" | "database" | "infra" | "tooling" | "mobile" | "ai";
+
+type TechCatalogItem = {
+  aliases: string[];
+  category: TechCategory;
+  color: string;
+  logoColor: string;
+  name: string;
+  shieldLogo: string;
+  skillIconId: string;
+};
+
 type SvgAsset = {
   height: number;
   href: string;
   width: number;
 };
+
+const TECH_CATEGORY_LABELS: Record<TechCategory | "all", string> = {
+  all: "전체",
+  ai: "AI",
+  backend: "Backend",
+  database: "Database",
+  frontend: "Frontend",
+  infra: "Infra",
+  language: "Language",
+  mobile: "Mobile",
+  tooling: "Tooling",
+};
+
+const TECH_CATEGORIES: Array<TechCategory | "all"> = [
+  "all",
+  "frontend",
+  "backend",
+  "language",
+  "database",
+  "infra",
+  "tooling",
+  "mobile",
+  "ai",
+];
+
+const TECH_CATALOG: TechCatalogItem[] = [
+  {
+    name: "TypeScript",
+    skillIconId: "ts",
+    shieldLogo: "typescript",
+    color: "3178C6",
+    logoColor: "white",
+    category: "language",
+    aliases: ["ts"],
+  },
+  {
+    name: "JavaScript",
+    skillIconId: "js",
+    shieldLogo: "javascript",
+    color: "F7DF1E",
+    logoColor: "black",
+    category: "language",
+    aliases: ["js", "ecmascript"],
+  },
+  {
+    name: "Java",
+    skillIconId: "java",
+    shieldLogo: "openjdk",
+    color: "ED8B00",
+    logoColor: "white",
+    category: "language",
+    aliases: ["openjdk", "jvm"],
+  },
+  {
+    name: "Kotlin",
+    skillIconId: "kotlin",
+    shieldLogo: "kotlin",
+    color: "7F52FF",
+    logoColor: "white",
+    category: "language",
+    aliases: ["kt"],
+  },
+  {
+    name: "Python",
+    skillIconId: "python",
+    shieldLogo: "python",
+    color: "3776AB",
+    logoColor: "white",
+    category: "language",
+    aliases: ["py"],
+  },
+  {
+    name: "Go",
+    skillIconId: "go",
+    shieldLogo: "go",
+    color: "00ADD8",
+    logoColor: "white",
+    category: "language",
+    aliases: ["golang"],
+  },
+  {
+    name: "Rust",
+    skillIconId: "rust",
+    shieldLogo: "rust",
+    color: "000000",
+    logoColor: "white",
+    category: "language",
+    aliases: ["rs"],
+  },
+  {
+    name: "React",
+    skillIconId: "react",
+    shieldLogo: "react",
+    color: "61DAFB",
+    logoColor: "black",
+    category: "frontend",
+    aliases: ["reactjs"],
+  },
+  {
+    name: "Next.js",
+    skillIconId: "nextjs",
+    shieldLogo: "nextdotjs",
+    color: "000000",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["next", "nextjs"],
+  },
+  {
+    name: "Vue",
+    skillIconId: "vue",
+    shieldLogo: "vuedotjs",
+    color: "4FC08D",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["vuejs"],
+  },
+  {
+    name: "Nuxt",
+    skillIconId: "nuxtjs",
+    shieldLogo: "nuxt",
+    color: "00DC82",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["nuxtjs"],
+  },
+  {
+    name: "Angular",
+    skillIconId: "angular",
+    shieldLogo: "angular",
+    color: "DD0031",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["angularjs"],
+  },
+  {
+    name: "Svelte",
+    skillIconId: "svelte",
+    shieldLogo: "svelte",
+    color: "FF3E00",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["sveltekit"],
+  },
+  {
+    name: "Tailwind CSS",
+    skillIconId: "tailwind",
+    shieldLogo: "tailwindcss",
+    color: "06B6D4",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["tailwind", "css"],
+  },
+  {
+    name: "HTML",
+    skillIconId: "html",
+    shieldLogo: "html5",
+    color: "E34F26",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["html5"],
+  },
+  {
+    name: "CSS",
+    skillIconId: "css",
+    shieldLogo: "css",
+    color: "663399",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["css3"],
+  },
+  {
+    name: "Sass",
+    skillIconId: "sass",
+    shieldLogo: "sass",
+    color: "CC6699",
+    logoColor: "white",
+    category: "frontend",
+    aliases: ["scss"],
+  },
+  {
+    name: "Node.js",
+    skillIconId: "nodejs",
+    shieldLogo: "nodedotjs",
+    color: "5FA04E",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["node", "nodejs"],
+  },
+  {
+    name: "Express",
+    skillIconId: "express",
+    shieldLogo: "express",
+    color: "000000",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["expressjs"],
+  },
+  {
+    name: "NestJS",
+    skillIconId: "nestjs",
+    shieldLogo: "nestjs",
+    color: "E0234E",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["nest"],
+  },
+  {
+    name: "Spring Boot",
+    skillIconId: "spring",
+    shieldLogo: "springboot",
+    color: "6DB33F",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["spring", "springboot"],
+  },
+  {
+    name: "Django",
+    skillIconId: "django",
+    shieldLogo: "django",
+    color: "092E20",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["python django"],
+  },
+  {
+    name: "Flask",
+    skillIconId: "flask",
+    shieldLogo: "flask",
+    color: "000000",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["python flask"],
+  },
+  {
+    name: "FastAPI",
+    skillIconId: "fastapi",
+    shieldLogo: "fastapi",
+    color: "009688",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["fast api"],
+  },
+  {
+    name: "GraphQL",
+    skillIconId: "graphql",
+    shieldLogo: "graphql",
+    color: "E10098",
+    logoColor: "white",
+    category: "backend",
+    aliases: ["gql"],
+  },
+  {
+    name: "MySQL",
+    skillIconId: "mysql",
+    shieldLogo: "mysql",
+    color: "4479A1",
+    logoColor: "white",
+    category: "database",
+    aliases: ["mariadb", "sql"],
+  },
+  {
+    name: "PostgreSQL",
+    skillIconId: "postgres",
+    shieldLogo: "postgresql",
+    color: "4169E1",
+    logoColor: "white",
+    category: "database",
+    aliases: ["postgres", "psql"],
+  },
+  {
+    name: "MongoDB",
+    skillIconId: "mongodb",
+    shieldLogo: "mongodb",
+    color: "47A248",
+    logoColor: "white",
+    category: "database",
+    aliases: ["mongo"],
+  },
+  {
+    name: "Redis",
+    skillIconId: "redis",
+    shieldLogo: "redis",
+    color: "FF4438",
+    logoColor: "white",
+    category: "database",
+    aliases: ["cache"],
+  },
+  {
+    name: "SQLite",
+    skillIconId: "sqlite",
+    shieldLogo: "sqlite",
+    color: "003B57",
+    logoColor: "white",
+    category: "database",
+    aliases: ["sql lite"],
+  },
+  {
+    name: "Firebase",
+    skillIconId: "firebase",
+    shieldLogo: "firebase",
+    color: "DD2C00",
+    logoColor: "white",
+    category: "database",
+    aliases: ["firestore"],
+  },
+  {
+    name: "Docker",
+    skillIconId: "docker",
+    shieldLogo: "docker",
+    color: "2496ED",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["container"],
+  },
+  {
+    name: "Kubernetes",
+    skillIconId: "kubernetes",
+    shieldLogo: "kubernetes",
+    color: "326CE5",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["k8s"],
+  },
+  {
+    name: "AWS",
+    skillIconId: "aws",
+    shieldLogo: "amazonwebservices",
+    color: "232F3E",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["amazon web services"],
+  },
+  {
+    name: "GCP",
+    skillIconId: "gcp",
+    shieldLogo: "googlecloud",
+    color: "4285F4",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["google cloud"],
+  },
+  {
+    name: "Azure",
+    skillIconId: "azure",
+    shieldLogo: "azuredevops",
+    color: "0078D7",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["microsoft azure"],
+  },
+  {
+    name: "Vercel",
+    skillIconId: "vercel",
+    shieldLogo: "vercel",
+    color: "000000",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["deployment"],
+  },
+  {
+    name: "Nginx",
+    skillIconId: "nginx",
+    shieldLogo: "nginx",
+    color: "009639",
+    logoColor: "white",
+    category: "infra",
+    aliases: ["web server"],
+  },
+  {
+    name: "Linux",
+    skillIconId: "linux",
+    shieldLogo: "linux",
+    color: "FCC624",
+    logoColor: "black",
+    category: "infra",
+    aliases: ["ubuntu", "server"],
+  },
+  {
+    name: "Git",
+    skillIconId: "git",
+    shieldLogo: "git",
+    color: "F05032",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["vcs"],
+  },
+  {
+    name: "GitHub",
+    skillIconId: "github",
+    shieldLogo: "github",
+    color: "181717",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["github"],
+  },
+  {
+    name: "GitHub Actions",
+    skillIconId: "githubactions",
+    shieldLogo: "githubactions",
+    color: "2088FF",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["actions", "ci", "cd"],
+  },
+  {
+    name: "Vite",
+    skillIconId: "vite",
+    shieldLogo: "vite",
+    color: "646CFF",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["bundler"],
+  },
+  {
+    name: "Vitest",
+    skillIconId: "vitest",
+    shieldLogo: "vitest",
+    color: "6E9F18",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["test"],
+  },
+  {
+    name: "Playwright",
+    skillIconId: "playwright",
+    shieldLogo: "playwright",
+    color: "2EAD33",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["e2e"],
+  },
+  {
+    name: "Postman",
+    skillIconId: "postman",
+    shieldLogo: "postman",
+    color: "FF6C37",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["api client"],
+  },
+  {
+    name: "Figma",
+    skillIconId: "figma",
+    shieldLogo: "figma",
+    color: "F24E1E",
+    logoColor: "white",
+    category: "tooling",
+    aliases: ["design"],
+  },
+  {
+    name: "Android",
+    skillIconId: "androidstudio",
+    shieldLogo: "android",
+    color: "3DDC84",
+    logoColor: "black",
+    category: "mobile",
+    aliases: ["android studio"],
+  },
+  {
+    name: "Flutter",
+    skillIconId: "flutter",
+    shieldLogo: "flutter",
+    color: "02569B",
+    logoColor: "white",
+    category: "mobile",
+    aliases: ["dart"],
+  },
+  {
+    name: "TensorFlow",
+    skillIconId: "tensorflow",
+    shieldLogo: "tensorflow",
+    color: "FF6F00",
+    logoColor: "white",
+    category: "ai",
+    aliases: ["ml", "machine learning"],
+  },
+  {
+    name: "PyTorch",
+    skillIconId: "pytorch",
+    shieldLogo: "pytorch",
+    color: "EE4C2C",
+    logoColor: "white",
+    category: "ai",
+    aliases: ["torch", "deep learning"],
+  },
+  {
+    name: "OpenCV",
+    skillIconId: "opencv",
+    shieldLogo: "opencv",
+    color: "5C3EE8",
+    logoColor: "white",
+    category: "ai",
+    aliases: ["computer vision"],
+  },
+];
 
 const INITIAL_ITEMS: TechStackItem[] = [
   {
@@ -289,6 +796,26 @@ function createEmptyItem(): TechStackItem {
   };
 }
 
+function createItemFromCatalog(catalogItem: TechCatalogItem): TechStackItem {
+  return {
+    id: `${catalogItem.skillIconId}-${Date.now()}`,
+    name: catalogItem.name,
+    skillIconId: catalogItem.skillIconId,
+    shieldLogo: catalogItem.shieldLogo,
+    version: "",
+    color: catalogItem.color,
+    logoColor: catalogItem.logoColor,
+  };
+}
+
+function isEmptyItem(item: TechStackItem): boolean {
+  return item.name.trim() === "" && item.skillIconId.trim() === "" && item.shieldLogo.trim() === "" && item.version.trim() === "";
+}
+
+function normalizeSearchText(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s._-]+/g, "");
+}
+
 type CopyButtonProps = {
   copyKey: string;
   copiedKey: string | null;
@@ -329,6 +856,107 @@ function DownloadButton({ disabled = false, downloadKey, downloadedKey, label, o
     >
       {downloadedKey === downloadKey ? "다운로드됨" : label}
     </button>
+  );
+}
+
+type TechCatalogProps = {
+  activeCategory: TechCategory | "all";
+  items: TechCatalogItem[];
+  query: string;
+  selectedSkillIconIds: Set<string>;
+  onAdd: (catalogItem: TechCatalogItem) => void;
+  onCategoryChange: (category: TechCategory | "all") => void;
+  onQueryChange: (query: string) => void;
+};
+
+function TechCatalog({
+  activeCategory,
+  items,
+  query,
+  selectedSkillIconIds,
+  onAdd,
+  onCategoryChange,
+  onQueryChange,
+}: TechCatalogProps) {
+  return (
+    <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+      <div className="mb-5">
+        <h2 className="text-xl font-semibold text-gh-text">기술 검색</h2>
+        <p className="mt-1 text-sm text-gh-muted">기술명을 검색하거나 카테고리에서 골라 바로 추가합니다.</p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(14rem,0.8fr)_minmax(0,1.2fr)]">
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-gh-muted">검색어</span>
+          <input
+            className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 text-gh-text outline-none transition-colors focus:border-cyan-500"
+            data-testid="tech-search-input"
+            placeholder="React, Spring, Docker"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+          />
+        </label>
+
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-gh-muted">카테고리</span>
+          <div className="flex flex-wrap gap-2">
+            {TECH_CATEGORIES.map((category) => (
+              <button
+                key={category}
+                type="button"
+                aria-pressed={activeCategory === category}
+                className={`h-9 rounded-lg border px-3 text-sm font-semibold transition-colors ${
+                  activeCategory === category
+                    ? "border-cyan-500/40 bg-cyan-500 text-white"
+                    : "border-gh-border bg-gh-bg text-gh-muted hover:bg-gh-hover hover:text-gh-text"
+                }`}
+                onClick={() => onCategoryChange(category)}
+              >
+                {TECH_CATEGORY_LABELS[category]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="tech-catalog-results">
+        {items.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-gh-border p-4 text-sm text-gh-muted sm:col-span-2 lg:col-span-3">
+            일치하는 기술이 없습니다.
+          </div>
+        ) : (
+          items.map((item) => {
+            const isSelected = selectedSkillIconIds.has(item.skillIconId);
+
+            return (
+              <button
+                key={`${item.category}-${item.skillIconId}-${item.name}`}
+                type="button"
+                className="min-h-24 rounded-lg border border-gh-border/70 bg-gh-bg/70 p-3 text-left transition-colors hover:border-cyan-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-55"
+                data-testid={`tech-catalog-add-${item.skillIconId}`}
+                disabled={isSelected}
+                onClick={() => onAdd(item)}
+              >
+                <span className="flex items-start justify-between gap-3">
+                  <span>
+                    <span className="block font-semibold text-gh-text">{item.name}</span>
+                    <span className="mt-1 block font-mono text-xs text-gh-muted">
+                      {item.skillIconId} / {item.shieldLogo}
+                    </span>
+                  </span>
+                  <span className="rounded-md border border-gh-border bg-gh-surface px-2 py-0.5 text-[11px] font-semibold text-gh-muted">
+                    {TECH_CATEGORY_LABELS[item.category]}
+                  </span>
+                </span>
+                <span className="mt-3 inline-block text-sm font-semibold text-gh-accent">
+                  {isSelected ? "추가됨" : "추가"}
+                </span>
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -412,10 +1040,43 @@ export function TechStackGenerator() {
   const [items, setItems] = useState<TechStackItem[]>(INITIAL_ITEMS);
   const [theme, setTheme] = useState<SkillIconsTheme>("light");
   const [perLine, setPerLine] = useState(6);
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<TechCategory | "all">("all");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [downloadedKey, setDownloadedKey] = useState<string | null>(null);
 
   const skillIconsUrl = useMemo(() => buildSkillIconsUrl(items, theme, perLine), [items, perLine, theme]);
+
+  const selectedSkillIconIds = useMemo(
+    () => new Set(items.map((item) => sanitizeSkillIconId(item.skillIconId)).filter(Boolean)),
+    [items],
+  );
+
+  const filteredCatalogItems = useMemo(() => {
+    const normalizedQuery = normalizeSearchText(catalogQuery);
+
+    return TECH_CATALOG.filter((item) => {
+      if (activeCategory !== "all" && item.category !== activeCategory) {
+        return false;
+      }
+
+      if (normalizedQuery === "") {
+        return true;
+      }
+
+      const searchableText = [
+        item.name,
+        item.skillIconId,
+        item.shieldLogo,
+        TECH_CATEGORY_LABELS[item.category],
+        ...item.aliases,
+      ]
+        .map(normalizeSearchText)
+        .join(" ");
+
+      return searchableText.includes(normalizedQuery);
+    }).slice(0, 24);
+  }, [activeCategory, catalogQuery]);
 
   const skillIconCount = useMemo(
     () => items.filter((item) => item.skillIconId.trim() !== "").length,
@@ -461,10 +1122,29 @@ export function TechStackGenerator() {
     setItems((currentItems) => [...currentItems, createEmptyItem()]);
   }
 
+  function addCatalogItem(catalogItem: TechCatalogItem) {
+    setItems((currentItems) => {
+      if (currentItems.some((item) => sanitizeSkillIconId(item.skillIconId) === catalogItem.skillIconId)) {
+        return currentItems;
+      }
+
+      const nextItem = createItemFromCatalog(catalogItem);
+      const emptyItemIndex = currentItems.findIndex(isEmptyItem);
+
+      if (emptyItemIndex === -1) {
+        return [...currentItems, nextItem];
+      }
+
+      return currentItems.map((item, index) => (index === emptyItemIndex ? nextItem : item));
+    });
+  }
+
   function resetItems() {
     setItems(INITIAL_ITEMS);
     setTheme("light");
     setPerLine(6);
+    setCatalogQuery("");
+    setActiveCategory("all");
   }
 
   function copyText(copyKey: string, value: string) {
@@ -509,6 +1189,16 @@ export function TechStackGenerator() {
   return (
     <div className="space-y-6" data-testid="tech-stack-generator">
       <section className="space-y-6">
+        <TechCatalog
+          activeCategory={activeCategory}
+          items={filteredCatalogItems}
+          query={catalogQuery}
+          selectedSkillIconIds={selectedSkillIconIds}
+          onAdd={addCatalogItem}
+          onCategoryChange={setActiveCategory}
+          onQueryChange={setCatalogQuery}
+        />
+
         <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
