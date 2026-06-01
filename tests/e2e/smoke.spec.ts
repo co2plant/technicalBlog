@@ -59,6 +59,8 @@ test("app shell and critical routes render", async ({ page }) => {
     await page.goto(smokeRoutes.techStack);
     await expect(page.getByTestId("tech-stack-page-heading")).toBeVisible();
     await expect(page.getByTestId("tech-stack-generator")).toBeVisible();
+    await expect(page.getByTestId("tech-catalog-idle")).toBeVisible();
+    await expect(page.getByTestId("tech-catalog-add-spring")).toHaveCount(0);
     await page.getByTestId("tech-search-input").fill("spring");
     await expect(page.getByTestId("tech-catalog-add-spring")).toBeVisible();
     await page.getByTestId("tech-catalog-add-spring").click();
