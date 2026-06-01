@@ -17,6 +17,12 @@ type TechStackItem = {
 
 type TechStackField = keyof Omit<TechStackItem, "id">;
 
+type SvgAsset = {
+  height: number;
+  href: string;
+  width: number;
+};
+
 const INITIAL_ITEMS: TechStackItem[] = [
   {
     id: "typescript",
@@ -130,6 +136,147 @@ function buildShieldMarkdown(item: TechStackItem): string {
   return `![${label}](${buildShieldUrl(item)})`;
 }
 
+function estimateSkillIconsSize(iconCount: number, perLine: number): Pick<SvgAsset, "height" | "width"> {
+  const iconSize = 48;
+  const gap = 8;
+  const columns = Math.max(1, Math.min(iconCount, perLine));
+  const rows = Math.max(1, Math.ceil(iconCount / perLine));
+
+  return {
+    height: rows * iconSize + (rows - 1) * gap,
+    width: columns * iconSize + (columns - 1) * gap,
+  };
+}
+
+function readSvgSize(svg: string, fallback: Pick<SvgAsset, "height" | "width">): Pick<SvgAsset, "height" | "width"> {
+  const width = Number.parseFloat(svg.match(/\bwidth=["']?([\d.]+)/)?.[1] ?? "");
+  const height = Number.parseFloat(svg.match(/\bheight=["']?([\d.]+)/)?.[1] ?? "");
+
+  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+    return { height, width };
+  }
+
+  const viewBoxValues = svg
+    .match(/\bviewBox=["']([^"']+)["']/)?.[1]
+    ?.trim()
+    .split(/\s+/)
+    .map(Number);
+
+  if (viewBoxValues?.length === 4 && viewBoxValues.every(Number.isFinite)) {
+    return {
+      height: viewBoxValues[3],
+      width: viewBoxValues[2],
+    };
+  }
+
+  return fallback;
+}
+
+function svgToDataUri(svg: string): string {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function buildSvgProxyUrl(url: string): string {
+  return `/api/tech-stack-svg?url=${encodeURIComponent(url)}`;
+}
+
+function escapeSvgAttribute(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function downloadTextFile(fileName: string, content: string, mimeType: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+async function fetchSvgAsset(url: string, fallback: Pick<SvgAsset, "height" | "width">): Promise<SvgAsset> {
+  try {
+    const response = await fetch(buildSvgProxyUrl(url));
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch SVG");
+    }
+
+    const svg = await response.text();
+    const size = readSvgSize(svg, fallback);
+
+    return {
+      ...size,
+      href: svgToDataUri(svg),
+    };
+  } catch {
+    return {
+      ...fallback,
+      href: url,
+    };
+  }
+}
+
+type StackSvgOptions = {
+  badges: SvgAsset[];
+  includeBadges: boolean;
+  includeSkillIcons: boolean;
+  skillIcons: SvgAsset | null;
+};
+
+function createStackSvg({ badges, includeBadges, includeSkillIcons, skillIcons }: StackSvgOptions): string {
+  const maxContentWidth = 720;
+  const sectionGap = 18;
+  const badgeGap = 10;
+  const elements: string[] = [];
+  let width = 0;
+  let y = 0;
+
+  if (includeSkillIcons && skillIcons !== null) {
+    elements.push(
+      `<image href="${escapeSvgAttribute(skillIcons.href)}" x="0" y="0" width="${skillIcons.width}" height="${skillIcons.height}" />`,
+    );
+    width = Math.max(width, skillIcons.width);
+    y += skillIcons.height;
+  }
+
+  if (includeBadges && badges.length > 0) {
+    if (y > 0) {
+      y += sectionGap;
+    }
+
+    let rowX = 0;
+    let rowHeight = 0;
+
+    for (const badge of badges) {
+      if (rowX > 0 && rowX + badge.width > maxContentWidth) {
+        width = Math.max(width, rowX - badgeGap);
+        rowX = 0;
+        y += rowHeight + badgeGap;
+        rowHeight = 0;
+      }
+
+      elements.push(
+        `<image href="${escapeSvgAttribute(badge.href)}" x="${rowX}" y="${y}" width="${badge.width}" height="${badge.height}" />`,
+      );
+      rowX += badge.width + badgeGap;
+      rowHeight = Math.max(rowHeight, badge.height);
+    }
+
+    width = Math.max(width, rowX - badgeGap);
+    y += rowHeight;
+  }
+
+  const height = Math.max(1, y);
+  const svgWidth = Math.max(1, width);
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${height}" viewBox="0 0 ${svgWidth} ${height}">`,
+    ...elements,
+    "</svg>",
+  ].join("");
+}
+
 function createEmptyItem(): TechStackItem {
   return {
     id: `tech-${Date.now()}`,
@@ -160,6 +307,27 @@ function CopyButton({ copyKey, copiedKey, disabled = false, label, value, onCopy
       onClick={() => onCopy(copyKey, value)}
     >
       {copiedKey === copyKey ? "복사됨" : label}
+    </button>
+  );
+}
+
+type DownloadButtonProps = {
+  disabled?: boolean;
+  downloadKey: string;
+  downloadedKey: string | null;
+  label: string;
+  onDownload: (downloadKey: string) => void;
+};
+
+function DownloadButton({ disabled = false, downloadKey, downloadedKey, label, onDownload }: DownloadButtonProps) {
+  return (
+    <button
+      type="button"
+      className="min-h-11 rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left text-sm font-semibold text-gh-text transition-colors hover:border-emerald-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
+      onClick={() => onDownload(downloadKey)}
+    >
+      {downloadedKey === downloadKey ? "다운로드됨" : label}
     </button>
   );
 }
@@ -245,6 +413,7 @@ export function TechStackGenerator() {
   const [theme, setTheme] = useState<SkillIconsTheme>("light");
   const [perLine, setPerLine] = useState(6);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [downloadedKey, setDownloadedKey] = useState<string | null>(null);
 
   const skillIconsUrl = useMemo(() => buildSkillIconsUrl(items, theme, perLine), [items, perLine, theme]);
 
@@ -307,6 +476,34 @@ export function TechStackGenerator() {
       setCopiedKey(copyKey);
       window.setTimeout(() => setCopiedKey(null), 1200);
     });
+  }
+
+  async function downloadGeneratedSvg(downloadKey: string) {
+    const skillIconsAsset =
+      skillIconsUrl === ""
+        ? null
+        : await fetchSvgAsset(skillIconsUrl, estimateSkillIconsSize(skillIconCount, perLine));
+    const badgeAssets = await Promise.all(
+      badgeItems.map((item) => fetchSvgAsset(buildShieldUrl(item), { height: 28, width: 160 })),
+    );
+
+    const svg = createStackSvg({
+      badges: badgeAssets,
+      includeBadges: downloadKey !== "skill-icons-svg",
+      includeSkillIcons: downloadKey !== "badges-svg",
+      skillIcons: skillIconsAsset,
+    });
+
+    const fileName =
+      downloadKey === "skill-icons-svg"
+        ? "tech-stack-skill-icons.svg"
+        : downloadKey === "badges-svg"
+          ? "tech-stack-version-badges.svg"
+          : "tech-stack-full.svg";
+
+    downloadTextFile(fileName, svg, "image/svg+xml;charset=utf-8");
+    setDownloadedKey(downloadKey);
+    window.setTimeout(() => setDownloadedKey(null), 1200);
   }
 
   return (
@@ -445,8 +642,8 @@ export function TechStackGenerator() {
         <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gh-text">복사</h2>
-              <p className="mt-1 text-sm text-gh-muted">생성된 URL과 Markdown을 바로 가져갑니다.</p>
+              <h2 className="text-xl font-semibold text-gh-text">복사와 다운로드</h2>
+              <p className="mt-1 text-sm text-gh-muted">생성된 URL, Markdown, SVG 파일을 바로 가져갑니다.</p>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:min-w-64">
               <CopyButton
@@ -464,6 +661,27 @@ export function TechStackGenerator() {
                 label="전체 Markdown"
                 value={fullMarkdown}
                 onCopy={copyText}
+              />
+              <DownloadButton
+                downloadKey="skill-icons-svg"
+                downloadedKey={downloadedKey}
+                disabled={skillIconsUrl === ""}
+                label="아이콘 SVG"
+                onDownload={downloadGeneratedSvg}
+              />
+              <DownloadButton
+                downloadKey="badges-svg"
+                downloadedKey={downloadedKey}
+                disabled={badgeItems.length === 0}
+                label="배지 SVG"
+                onDownload={downloadGeneratedSvg}
+              />
+              <DownloadButton
+                downloadKey="full-svg"
+                downloadedKey={downloadedKey}
+                disabled={skillIconsUrl === "" && badgeItems.length === 0}
+                label="전체 SVG"
+                onDownload={downloadGeneratedSvg}
               />
             </div>
           </div>
