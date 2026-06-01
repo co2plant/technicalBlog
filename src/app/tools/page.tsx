@@ -8,6 +8,12 @@ export const metadata: Metadata = {
 
 const TOOLS = [
   {
+    href: "/tools/tech-stack",
+    title: "기술스택 이미지 생성기",
+    description: "Skill Icons 아이콘 묶음과 Shields.io 버전 배지를 포트폴리오용 Markdown으로 생성합니다.",
+    labels: ["Portfolio", "Skill Icons", "Badges"],
+  },
+  {
     href: "/tools/golden-ratio",
     title: "황금비율 계산기",
     description: "프론트엔드 레이아웃에 필요한 1.618 비율, 크기 스케일, CSS 값을 계산합니다.",
@@ -28,7 +34,7 @@ export default function ToolsPage() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {TOOLS.map((tool) => (
-          <Link key={tool.href} href={tool.href} className="group block h-full" data-testid="tool-card-golden-ratio">
+          <Link key={tool.href} href={tool.href} className="group block h-full" data-testid={`tool-card-${tool.href.split("/").pop()}`}>
             <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-gh-border/70 bg-gh-surface/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/5">
               <div className="flex-1 space-y-4">
                 <div className="flex flex-wrap gap-2">
