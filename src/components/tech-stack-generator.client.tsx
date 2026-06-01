@@ -861,9 +861,11 @@ function DownloadButton({ disabled = false, downloadKey, downloadedKey, label, o
 
 type TechCatalogProps = {
   activeCategory: TechCategory | "all";
+  isSearchActive: boolean;
   items: TechCatalogItem[];
   query: string;
   selectedSkillIconIds: Set<string>;
+  totalCount: number;
   onAdd: (catalogItem: TechCatalogItem) => void;
   onCategoryChange: (category: TechCategory | "all") => void;
   onQueryChange: (query: string) => void;
@@ -871,9 +873,11 @@ type TechCatalogProps = {
 
 function TechCatalog({
   activeCategory,
+  isSearchActive,
   items,
   query,
   selectedSkillIconIds,
+  totalCount,
   onAdd,
   onCategoryChange,
   onQueryChange,
@@ -919,47 +923,60 @@ function TechCatalog({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="tech-catalog-results">
-        {items.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gh-border p-4 text-sm text-gh-muted sm:col-span-2 lg:col-span-3">
+      <div className="mt-5" data-testid="tech-catalog-results">
+        {!isSearchActive ? (
+          <div className="rounded-lg border border-dashed border-gh-border p-4 text-sm text-gh-muted" data-testid="tech-catalog-idle">
+            검색어를 입력하거나 카테고리를 선택하면 결과가 표시됩니다.
+          </div>
+        ) : items.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-gh-border p-4 text-sm text-gh-muted" data-testid="tech-catalog-empty">
             일치하는 기술이 없습니다.
           </div>
         ) : (
-          items.map((item) => {
-            const isSelected = selectedSkillIconIds.has(item.skillIconId);
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-gh-muted">
+              <span>
+                검색 결과 {totalCount}개
+                {totalCount > items.length ? ` 중 ${items.length}개 표시` : ""}
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((item) => {
+                const isSelected = selectedSkillIconIds.has(item.skillIconId);
 
-            return (
-              <button
-                key={`${item.category}-${item.skillIconId}-${item.name}`}
-                type="button"
-                className="min-h-24 rounded-lg border border-gh-border/70 bg-gh-bg/70 p-3 text-left transition-colors hover:border-cyan-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-55"
-                data-testid={`tech-catalog-add-${item.skillIconId}`}
-                disabled={isSelected}
-                onClick={() => onAdd(item)}
-              >
-                <span className="flex items-start justify-between gap-3">
-                  <span>
-                    <span className="block font-semibold text-gh-text">{item.name}</span>
-                    <span className="mt-1 block font-mono text-xs text-gh-muted">
-                      {item.skillIconId} / {item.shieldLogo}
+                return (
+                  <button
+                    key={`${item.category}-${item.skillIconId}-${item.name}`}
+                    type="button"
+                    className="min-h-24 rounded-lg border border-gh-border/70 bg-gh-bg/70 p-3 text-left transition-colors hover:border-cyan-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-55"
+                    data-testid={`tech-catalog-add-${item.skillIconId}`}
+                    disabled={isSelected}
+                    onClick={() => onAdd(item)}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className="block font-semibold text-gh-text">{item.name}</span>
+                        <span className="mt-1 block font-mono text-xs text-gh-muted">
+                          {item.skillIconId} / {item.shieldLogo}
+                        </span>
+                      </span>
+                      <span className="rounded-md border border-gh-border bg-gh-surface px-2 py-0.5 text-[11px] font-semibold text-gh-muted">
+                        {TECH_CATEGORY_LABELS[item.category]}
+                      </span>
                     </span>
-                  </span>
-                  <span className="rounded-md border border-gh-border bg-gh-surface px-2 py-0.5 text-[11px] font-semibold text-gh-muted">
-                    {TECH_CATEGORY_LABELS[item.category]}
-                  </span>
-                </span>
-                <span className="mt-3 inline-block text-sm font-semibold text-gh-accent">
-                  {isSelected ? "추가됨" : "추가"}
-                </span>
-              </button>
-            );
-          })
+                    <span className="mt-3 inline-block text-sm font-semibold text-gh-accent">
+                      {isSelected ? "추가됨" : "추가"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
     </div>
   );
 }
-
 type TechRowProps = {
   item: TechStackItem;
   canDelete: boolean;
@@ -1052,15 +1069,20 @@ export function TechStackGenerator() {
     [items],
   );
 
-  const filteredCatalogItems = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(catalogQuery);
+  const normalizedCatalogQuery = normalizeSearchText(catalogQuery);
+  const isCatalogSearchActive = normalizedCatalogQuery !== "" || activeCategory !== "all";
+
+  const catalogMatches = useMemo(() => {
+    if (!isCatalogSearchActive) {
+      return [];
+    }
 
     return TECH_CATALOG.filter((item) => {
       if (activeCategory !== "all" && item.category !== activeCategory) {
         return false;
       }
 
-      if (normalizedQuery === "") {
+      if (normalizedCatalogQuery === "") {
         return true;
       }
 
@@ -1074,9 +1096,11 @@ export function TechStackGenerator() {
         .map(normalizeSearchText)
         .join(" ");
 
-      return searchableText.includes(normalizedQuery);
-    }).slice(0, 24);
-  }, [activeCategory, catalogQuery]);
+      return searchableText.includes(normalizedCatalogQuery);
+    });
+  }, [activeCategory, isCatalogSearchActive, normalizedCatalogQuery]);
+
+  const filteredCatalogItems = useMemo(() => catalogMatches.slice(0, 8), [catalogMatches]);
 
   const skillIconCount = useMemo(
     () => items.filter((item) => item.skillIconId.trim() !== "").length,
@@ -1191,9 +1215,11 @@ export function TechStackGenerator() {
       <section className="space-y-6">
         <TechCatalog
           activeCategory={activeCategory}
+          isSearchActive={isCatalogSearchActive}
           items={filteredCatalogItems}
           query={catalogQuery}
           selectedSkillIconIds={selectedSkillIconIds}
+          totalCount={catalogMatches.length}
           onAdd={addCatalogItem}
           onCategoryChange={setActiveCategory}
           onQueryChange={setCatalogQuery}
