@@ -34,7 +34,7 @@ describe("content loader", () => {
       expect.arrayContaining([
         "egovframe-training",
         "git-commit-message-convention",
-        "portfolio-pdf-sample",
+        "my-portfolio-pdf",
         "java-override-overriding",
         "standard-framework-open-community-offline-seminar-review",
         "java-diamond-problem-multi-inheritance",
@@ -52,18 +52,18 @@ describe("content loader", () => {
         ["standard-framework-contribution", "opensource"],
         ["egovframe-training", "opensource"],
         ["git-commit-message-convention", "git"],
-        ["portfolio-pdf-sample", "portfolio"],
+        ["my-portfolio-pdf", "portfolio"],
       ]),
     );
   });
 
   it("loads an embedded-pdf portfolio post", async () => {
-    const post = await getPostBySlug("portfolio-pdf-sample");
+    const post = await getPostBySlug("my-portfolio-pdf");
 
     expect(post).not.toBeNull();
     expect(post?.category).toBe("portfolio");
-    expect(post?.embeddedPdf).toBe("/posts/portfolio-pdf-sample/portfolio.pdf");
-    expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/portfolio-pdf-sample/portfolio.pdf");
+    expect(post?.embeddedPdf).toBe("/posts/my-portfolio-pdf/portfolio-v1.pdf");
+    expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/my-portfolio-pdf/portfolio-v1.pdf");
   });
 
   it("parses frontmatter with CRLF line endings", () => {
