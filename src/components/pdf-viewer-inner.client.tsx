@@ -5,14 +5,18 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 type PdfViewerInnerProps = {
+  allowDownload: boolean;
   file: string;
   title: string;
 };
 
-export function PdfViewerInner({ file, title }: PdfViewerInnerProps) {
+export function PdfViewerInner({ allowDownload, file, title }: PdfViewerInnerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageCount, setPageCount] = useState(0);
@@ -65,14 +69,16 @@ export function PdfViewerInner({ file, title }: PdfViewerInnerProps) {
           >
             새 탭에서 열기
           </a>
-          <a
-            href={file}
-            download
-            data-testid="pdf-download-link"
-            className="inline-flex items-center gap-2 rounded-lg bg-gh-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
-            다운로드
-          </a>
+          {allowDownload ? (
+            <a
+              href={file}
+              download
+              data-testid="pdf-download-link"
+              className="inline-flex items-center gap-2 rounded-lg bg-gh-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              다운로드
+            </a>
+          ) : null}
         </div>
       </div>
 
