@@ -33,6 +33,7 @@ export type Post = {
   originalUrl?: string;
   coverImage?: string;
   embeddedPdf?: string;
+  allowPdfDownload: boolean;
   draft: boolean;
   extension: "md" | "mdx";
   body: string;
@@ -208,6 +209,7 @@ function buildParsedFrontmatter(rawFrontmatter: Record<string, unknown>, slugFro
   const originalUrl = optionalString(rawFrontmatter.originalUrl);
   const coverImage = normalizePostAssetReference(optionalString(rawFrontmatter.coverImage), slug);
   const embeddedPdf = normalizePostAssetReference(optionalString(rawFrontmatter.embeddedPdf), slug);
+  const allowPdfDownload = optionalBoolean(rawFrontmatter.allowPdfDownload, "allowPdfDownload", slugFromFileName) ?? true;
 
   parseDateOnlyToUtcTimestamp(publishedAt, "publishedAt", slugFromFileName);
 
@@ -231,6 +233,7 @@ function buildParsedFrontmatter(rawFrontmatter: Record<string, unknown>, slugFro
     originalUrl,
     coverImage,
     embeddedPdf,
+    allowPdfDownload,
     draft,
   };
 }
@@ -385,6 +388,18 @@ function requireString(value: unknown, field: string, slug: string): string {
 function optionalString(value: unknown): string | undefined {
   if (typeof value !== "string" || !value.trim()) {
     return undefined;
+  }
+
+  return value;
+}
+
+function optionalBoolean(value: unknown, field: string, slug: string): boolean | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "boolean") {
+    throw new Error(`Invalid ${field} in post: ${slug}. Use true or false.`);
   }
 
   return value;

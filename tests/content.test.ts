@@ -63,6 +63,7 @@ describe("content loader", () => {
     expect(post).not.toBeNull();
     expect(post?.category).toBe("portfolio");
     expect(post?.embeddedPdf).toBe("/posts/my-portfolio-pdf/portfolio-v1.pdf");
+    expect(post?.allowPdfDownload).toBe(false);
     expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/my-portfolio-pdf/portfolio-v1.pdf");
   });
 
@@ -87,6 +88,7 @@ describe("content loader", () => {
 
     expect(frontmatter.slug).toBe("crlf-post");
     expect(frontmatter.publishedAt).toBe("2026-04-09");
+    expect(frontmatter.allowPdfDownload).toBe(true);
     expect(body).toBe("본문입니다.");
   });
 

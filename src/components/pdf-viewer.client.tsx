@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 type PdfViewerProps = {
+  allowDownload: boolean;
   file: string;
   title: string;
 };

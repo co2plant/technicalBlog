@@ -32,14 +32,12 @@ test("app shell and critical routes render", async ({ page }) => {
     await expect(page.getByTestId("post-detail-heading")).toHaveText("[Git] Commit Message Convention");
   });
 
-  await test.step("portfolio post renders PDF viewer and download contract", async () => {
+  await test.step("portfolio post renders PDF viewer with direct download disabled", async () => {
     await page.goto(smokeRoutes.portfolioPost);
     await expect(page.getByTestId("post-detail-heading")).toHaveText("[Portfolio] 조영재의 포트폴리오");
     await expect(page.getByTestId("pdf-viewer-section")).toBeVisible();
-    await expect(page.getByTestId("pdf-download-link")).toHaveAttribute(
-      "href",
-      "/posts/my-portfolio-pdf/portfolio-v1.pdf",
-    );
+    await expect(page.getByText("새 탭에서 열기")).toBeVisible();
+    await expect(page.getByTestId("pdf-download-link")).toHaveCount(0);
   });
 
   await test.step("portfolio index renders portfolio entry point", async () => {

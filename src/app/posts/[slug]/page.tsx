@@ -104,7 +104,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
 
       {post.embeddedPdf ? (
         <>
-          <PdfViewer file={post.embeddedPdf} title={post.title} />
+          <PdfViewer allowDownload={post.allowPdfDownload} file={post.embeddedPdf} title={post.title} />
         </>
       ) : null}
 
