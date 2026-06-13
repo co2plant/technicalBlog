@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PdfViewer } from "@/components/pdf-viewer.client";
 import { getPostBySlug, getPublishedPosts } from "@/lib/content";
+import { DEFAULT_OPEN_GRAPH_IMAGE, SITE_NAME } from "@/lib/site-metadata";
 
 function formatCategory(category: string): string {
   return category.replaceAll("-", " ");
@@ -29,14 +30,14 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   }
 
-  const coverImages = post.coverImage
+  const openGraphImages = post.coverImage
     ? [
         {
           url: post.coverImage,
           alt: post.title,
         },
       ]
-    : undefined;
+    : [DEFAULT_OPEN_GRAPH_IMAGE];
 
   return {
     title: post.title,
@@ -49,20 +50,20 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       description: post.description,
       type: "article",
       url: `/posts/${post.slug}`,
-      siteName: "co2plant 기술 블로그",
+      siteName: SITE_NAME,
       locale: "ko_KR",
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt,
       authors: [post.author],
       section: post.category,
       tags: post.tags,
-      images: coverImages,
+      images: openGraphImages,
     },
     twitter: {
-      card: coverImages ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: post.title,
       description: post.description,
-      images: coverImages,
+      images: openGraphImages,
     },
   };
 }
