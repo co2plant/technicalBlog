@@ -2,9 +2,23 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "co2plant 기술 블로그",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "co2plant 기술 블로그",
+    template: "%s | co2plant 기술 블로그",
+  },
   description: "Next.js App Router 기반 기술 블로그 스캐폴드",
+  openGraph: {
+    title: "co2plant 기술 블로그",
+    description: "개발하면서 배운 개념과 오픈소스 기여 경험을 기록하는 기술 블로그입니다.",
+    locale: "ko_KR",
+    siteName: "co2plant 기술 블로그",
+    type: "website",
+    url: "/",
+  },
 };
 
 type RootLayoutProps = Readonly<{

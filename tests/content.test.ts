@@ -16,6 +16,7 @@ describe("content loader", () => {
     expect(post?.category).toBe("git");
     expect(post?.originalUrl).toBe("https://velog.io/@co2plant/Git-Commit-Message-Convention");
     expect(post?.html).toContain("Git Commit Message Convention");
+    expect(post?.coverImage).toBe("/posts/git-commit-message-convention/cover.png");
   });
 
   it("returns published posts in descending date order", async () => {
@@ -156,6 +157,7 @@ describe("content loader", () => {
       'excerpt: "excerpt"',
       'publishedAt: "2026-04-09"',
       'author: "co2plant"',
+      'coverImage: "/posts/portfolio sample/cover image #1.png"',
       'embeddedPdf: "/posts/portfolio sample/slides final #1.pdf"',
       "tags:",
       "  - portfolio",
@@ -167,6 +169,7 @@ describe("content loader", () => {
 
     const { frontmatter } = parseFrontmatter(source, "portfolio sample");
 
+    expect(frontmatter.coverImage).toBe("/posts/portfolio%20sample/cover%20image%20%231.png");
     expect(frontmatter.embeddedPdf).toBe("/posts/portfolio%20sample/slides%20final%20%231.pdf");
   });
 });

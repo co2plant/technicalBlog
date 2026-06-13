@@ -31,6 +31,7 @@ export type Post = {
   author: string;
   tags: string[];
   originalUrl?: string;
+  coverImage?: string;
   embeddedPdf?: string;
   allowPdfDownload: boolean;
   draft: boolean;
@@ -206,6 +207,7 @@ function buildParsedFrontmatter(rawFrontmatter: Record<string, unknown>, slugFro
   const draft = rawFrontmatter.draft === true;
   const updatedAt = optionalString(rawFrontmatter.updatedAt);
   const originalUrl = optionalString(rawFrontmatter.originalUrl);
+  const coverImage = normalizePostAssetReference(optionalString(rawFrontmatter.coverImage), slug);
   const embeddedPdf = normalizePostAssetReference(optionalString(rawFrontmatter.embeddedPdf), slug);
   const allowPdfDownload = optionalBoolean(rawFrontmatter.allowPdfDownload, "allowPdfDownload", slugFromFileName) ?? true;
 
@@ -229,6 +231,7 @@ function buildParsedFrontmatter(rawFrontmatter: Record<string, unknown>, slugFro
     author,
     tags,
     originalUrl,
+    coverImage,
     embeddedPdf,
     allowPdfDownload,
     draft,

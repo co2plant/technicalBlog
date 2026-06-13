@@ -29,9 +29,41 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   }
 
+  const coverImages = post.coverImage
+    ? [
+        {
+          url: post.coverImage,
+          alt: post.title,
+        },
+      ]
+    : undefined;
+
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/posts/${post.slug}`,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      type: "article",
+      url: `/posts/${post.slug}`,
+      siteName: "co2plant 기술 블로그",
+      locale: "ko_KR",
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      authors: [post.author],
+      section: post.category,
+      tags: post.tags,
+      images: coverImages,
+    },
+    twitter: {
+      card: coverImages ? "summary_large_image" : "summary",
+      title: post.title,
+      description: post.description,
+      images: coverImages,
+    },
   };
 }
 
