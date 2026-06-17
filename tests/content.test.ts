@@ -62,9 +62,9 @@ describe("content loader", () => {
 
     expect(post).not.toBeNull();
     expect(post?.category).toBe("portfolio");
-    expect(post?.embeddedPdf).toBe("/posts/my-portfolio-pdf/portfolio-v1.pdf");
+    expect(post?.embeddedPdf).toBe("/posts/my-portfolio-pdf/portfolio-v2.pdf");
     expect(post?.allowPdfDownload).toBe(false);
-    expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/my-portfolio-pdf/portfolio-v1.pdf");
+    expect(post?.attachments.map((attachment) => attachment.url)).toContain("/posts/my-portfolio-pdf/portfolio-v2.pdf");
   });
 
   it("parses frontmatter with CRLF line endings", () => {
