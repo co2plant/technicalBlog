@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import { getPublishedPortfolioPosts } from "@/lib/content";
 import { PostCollection } from "@/components/post-collection";
+
+export const metadata: Metadata = {
+  title: "포트폴리오",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
+};
 
 export default async function PortfolioPage() {
   const portfolioPosts = await getPublishedPortfolioPosts();

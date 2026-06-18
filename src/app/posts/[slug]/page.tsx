@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   }
 
+  const shouldHideFromSearch = post.category === "portfolio";
   const openGraphImages = post.coverImage
     ? [
         {
@@ -42,6 +43,18 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   return {
     title: post.title,
     description: post.description,
+    robots: shouldHideFromSearch
+      ? {
+          index: false,
+          follow: false,
+          nocache: true,
+          googleBot: {
+            index: false,
+            follow: false,
+            noimageindex: true,
+          },
+        }
+      : undefined,
     alternates: {
       canonical: `/posts/${post.slug}`,
     },

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/interviews/"],
+        disallow: ["/interviews/", "/portfolio", "/posts/my-portfolio-pdf"],
       },
     ],
   };
