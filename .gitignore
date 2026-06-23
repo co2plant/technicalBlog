@@ -1,5 +1,6 @@
 # Workspace artifacts
 .sisyphus/
+.private/
 
 # Dependencies
 node_modules/
