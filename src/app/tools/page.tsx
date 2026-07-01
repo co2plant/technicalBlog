@@ -8,6 +8,12 @@ export const metadata: Metadata = {
 
 const TOOLS = [
   {
+    href: "/tools/password-generator",
+    title: "비밀번호 생성기",
+    description: "글자 수와 문자 조건을 정해서 랜덤 비밀번호를 생성합니다.",
+    labels: ["Password", "Random", "Security"],
+  },
+  {
     href: "/tools/tech-stack",
     title: "기술스택 이미지 생성기",
     description: "Skill Icons 아이콘 묶음과 Shields.io 버전 배지를 포트폴리오용 Markdown으로 생성합니다.",

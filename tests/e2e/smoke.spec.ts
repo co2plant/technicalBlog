@@ -7,6 +7,7 @@ const smokeRoutes = {
   portfolioPost: "/posts/my-portfolio-pdf",
   portfolio: "/portfolio",
   tools: "/tools",
+  passwordGenerator: "/tools/password-generator",
   techStack: "/tools/tech-stack",
   goldenRatio: "/tools/golden-ratio",
   missing: "/does-not-exist",
@@ -49,8 +50,32 @@ test("app shell and critical routes render", async ({ page }) => {
   await test.step("tools index renders golden ratio tool entry point", async () => {
     await page.goto(smokeRoutes.tools);
     await expect(page.getByTestId("tools-page-heading")).toBeVisible();
+    await expect(page.locator('a[href="/tools/password-generator"]').first()).toBeVisible();
     await expect(page.locator('a[href="/tools/tech-stack"]').first()).toBeVisible();
     await expect(page.locator('a[href="/tools/golden-ratio"]').first()).toBeVisible();
+  });
+
+  await test.step("password generator renders and creates a password", async () => {
+    await page.goto(smokeRoutes.passwordGenerator);
+    await expect(page.getByTestId("password-generator-page-heading")).toBeVisible();
+    await expect(page.getByTestId("password-generator")).toBeVisible();
+    await page.getByTestId("password-length-input").fill("16");
+    await page.getByTestId("password-symbols-input").fill("@");
+    await page.getByTestId("password-generate-button").click();
+
+    const password = await page.getByTestId("password-output").innerText();
+    expect(password).toHaveLength(16);
+    expect(password).toContain("@");
+    await expect(page.getByTestId("password-copy-alert")).toBeVisible();
+    await expect(page.getByTestId("password-strength")).toContainText("bits");
+
+    await page.getByTestId("password-symbols-input").fill("한");
+    await page.getByTestId("password-symbols-reset-button").click();
+    await expect(page.getByTestId("password-symbols-input")).toHaveValue("!@._#$");
+
+    await page.getByTestId("password-symbols-input").fill("한");
+    await expect(page.getByTestId("password-generate-button")).toBeDisabled();
+    await expect(page.getByTestId("password-validation-message")).toContainText("ASCII 기호");
   });
 
   await test.step("tech stack generator renders", async () => {
