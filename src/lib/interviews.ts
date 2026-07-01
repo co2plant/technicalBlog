@@ -1,8 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-const INTERVIEW_SHARE_PAGES_ENV = "INTERVIEW_SHARE_PAGES";
-const INTERVIEW_SHARE_PAGES_BASE64_ENV = "INTERVIEW_SHARE_PAGES_BASE64";
+const INTERVIEW_SHARE_PAGES_ENVS = ["interview_share_pages", "INTERVIEW_SHARE_PAGES"] as const;
+const INTERVIEW_SHARE_PAGES_BASE64_ENVS = ["interview_share_pages_base64", "INTERVIEW_SHARE_PAGES_BASE64"] as const;
 const PRIVATE_INTERVIEWS_DIR = path.join(process.cwd(), ".private", "interviews");
 const SHARE_ID_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
 
@@ -77,16 +77,24 @@ export function isValidShareId(shareId: string): boolean {
 
 async function readInterviewPagesFromEnvironment(): Promise<InterviewSharePage[]> {
   const pages: InterviewSharePage[] = [];
-  const rawJson = process.env[INTERVIEW_SHARE_PAGES_ENV]?.trim();
-  const rawBase64Json = process.env[INTERVIEW_SHARE_PAGES_BASE64_ENV]?.trim();
 
-  if (rawJson) {
-    pages.push(...parseInterviewSharePagesFromJson(rawJson, INTERVIEW_SHARE_PAGES_ENV));
+  for (const environmentName of INTERVIEW_SHARE_PAGES_ENVS) {
+    const rawJson = process.env[environmentName]?.trim();
+
+    if (rawJson) {
+      pages.push(...parseInterviewSharePagesFromJson(rawJson, environmentName));
+    }
   }
 
-  if (rawBase64Json) {
+  for (const environmentName of INTERVIEW_SHARE_PAGES_BASE64_ENVS) {
+    const rawBase64Json = process.env[environmentName]?.trim();
+
+    if (!rawBase64Json) {
+      continue;
+    }
+
     const decodedJson = Buffer.from(rawBase64Json, "base64").toString("utf8");
-    pages.push(...parseInterviewSharePagesFromJson(decodedJson, INTERVIEW_SHARE_PAGES_BASE64_ENV));
+    pages.push(...parseInterviewSharePagesFromJson(decodedJson, environmentName));
   }
 
   return pages;
