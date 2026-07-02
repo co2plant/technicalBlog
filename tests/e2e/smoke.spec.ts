@@ -25,7 +25,7 @@ test("app shell and critical routes render", async ({ page }) => {
     await page.goto(smokeRoutes.posts);
     await expect(page.getByTestId("posts-page-heading")).toBeVisible();
     await expect(page.locator('a[href="/posts/git-commit-message-convention"]').first()).toBeVisible();
-    await expect(page.locator('a[href="/posts/my-portfolio-pdf"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/posts/my-portfolio-pdf"]')).toHaveCount(0);
   });
 
   await test.step("standard post detail renders content", async () => {

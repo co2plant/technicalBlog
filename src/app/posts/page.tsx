@@ -2,7 +2,7 @@ import { getPublishedPosts } from "@/lib/content";
 import { PostCollection } from "@/components/post-collection";
 
 export default async function PostsPage() {
-  const posts = await getPublishedPosts();
+  const posts = (await getPublishedPosts()).filter((post) => post.category !== "portfolio");
 
   return (
     <PostCollection
