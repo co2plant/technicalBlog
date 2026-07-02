@@ -1,8 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-const INTERVIEW_SHARE_PAGES_ENVS = ["interview_share_pages", "INTERVIEW_SHARE_PAGES"] as const;
-const INTERVIEW_SHARE_PAGES_BASE64_ENVS = ["interview_share_pages_base64", "INTERVIEW_SHARE_PAGES_BASE64"] as const;
+const INTERVIEW_SHARE_PAGES_ENVS = ["interview_share_pages", "interview-share-pages", "INTERVIEW_SHARE_PAGES"] as const;
+const INTERVIEW_SHARE_PAGES_BASE64_ENVS = [
+  "interview_share_pages_base64",
+  "interview-share-pages-base64",
+  "INTERVIEW_SHARE_PAGES_BASE64",
+] as const;
 const PRIVATE_INTERVIEWS_DIR = path.join(process.cwd(), ".private", "interviews");
 const SHARE_ID_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
 

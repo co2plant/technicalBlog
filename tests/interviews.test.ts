@@ -63,9 +63,11 @@ describe("interview share loader", () => {
 
   it("loads lowercase Vercel-compatible environment variables", async () => {
     const previousLowercase = process.env.interview_share_pages;
+    const previousDashed = process.env["interview-share-pages"];
     const previousUppercase = process.env.INTERVIEW_SHARE_PAGES;
 
     delete process.env.INTERVIEW_SHARE_PAGES;
+    delete process.env["interview-share-pages"];
     process.env.interview_share_pages = JSON.stringify({
       id: "iv_lowercase_token_20260701",
       title: "소문자 환경변수",
@@ -93,6 +95,56 @@ describe("interview share loader", () => {
         delete process.env.INTERVIEW_SHARE_PAGES;
       } else {
         process.env.INTERVIEW_SHARE_PAGES = previousUppercase;
+      }
+
+      if (previousDashed === undefined) {
+        delete process.env["interview-share-pages"];
+      } else {
+        process.env["interview-share-pages"] = previousDashed;
+      }
+    }
+  });
+
+  it("loads dashed Vercel-compatible environment variables", async () => {
+    const previousLowercase = process.env.interview_share_pages;
+    const previousDashed = process.env["interview-share-pages"];
+    const previousUppercase = process.env.INTERVIEW_SHARE_PAGES;
+
+    delete process.env.interview_share_pages;
+    delete process.env.INTERVIEW_SHARE_PAGES;
+    process.env["interview-share-pages"] = JSON.stringify({
+      id: "iv_dashed_token_20260701",
+      title: "하이픈 환경변수",
+      interviews: [
+        {
+          company: "예시 회사",
+          interviewDate: "2026-07-01",
+          questions: ["질문"],
+        },
+      ],
+    });
+
+    try {
+      const page = await getInterviewSharePage("iv_dashed_token_20260701");
+
+      expect(page?.title).toBe("하이픈 환경변수");
+    } finally {
+      if (previousLowercase === undefined) {
+        delete process.env.interview_share_pages;
+      } else {
+        process.env.interview_share_pages = previousLowercase;
+      }
+
+      if (previousUppercase === undefined) {
+        delete process.env.INTERVIEW_SHARE_PAGES;
+      } else {
+        process.env.INTERVIEW_SHARE_PAGES = previousUppercase;
+      }
+
+      if (previousDashed === undefined) {
+        delete process.env["interview-share-pages"];
+      } else {
+        process.env["interview-share-pages"] = previousDashed;
       }
     }
   });
