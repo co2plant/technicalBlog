@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { SiteHeader } from "@/components/site-header";
 import { DEFAULT_OPEN_GRAPH_IMAGE, getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-metadata";
 import "./globals.css";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             </div>
           </footer>
         </div>
+        <Analytics />
       </body>
     </html>
   );

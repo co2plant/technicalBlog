@@ -4,6 +4,7 @@
   "private": true,
   "description": "Next.js App Router technical blog powered by file-based Markdown content.",
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "marked": "^16.0.0",
     "next": "16.2.2",
     "react": "19.2.4",
