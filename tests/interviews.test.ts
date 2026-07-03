@@ -1,7 +1,22 @@
-import { describe, expect, it } from "vitest";
-import { getInterviewSharePage, isValidShareId, parseInterviewSharePagesFromJson } from "../src/lib/interviews";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+  getInterviewSharePage,
+  isValidShareId,
+  parseInterviewSharePagesFromJson,
+  parseInterviewSharePagesFromValue,
+} from "../src/lib/interviews";
 
 describe("interview share loader", () => {
+  const originalEdgeConfig = process.env.EDGE_CONFIG;
+
+  afterEach(() => {
+    if (originalEdgeConfig === undefined) {
+      delete process.env.EDGE_CONFIG;
+    } else {
+      process.env.EDGE_CONFIG = originalEdgeConfig;
+    }
+  });
+
   it("parses private interview share data", () => {
     const pages = parseInterviewSharePagesFromJson(
       JSON.stringify([
@@ -61,11 +76,29 @@ describe("interview share loader", () => {
     ).toThrowError("interviewDate must be a real calendar date.");
   });
 
+  it("parses Edge Config object values", () => {
+    const pages = parseInterviewSharePagesFromValue({
+      id: "iv_edge_config_20260703",
+      title: "Edge Config 면접 질문",
+      interviews: [
+        {
+          company: "예시 회사",
+          interviewDate: "2026-07-03",
+          questions: ["질문"],
+        },
+      ],
+    });
+
+    expect(pages[0].id).toBe("iv_edge_config_20260703");
+    expect(pages[0].title).toBe("Edge Config 면접 질문");
+  });
+
   it("loads lowercase Vercel-compatible environment variables", async () => {
     const previousLowercase = process.env.interview_share_pages;
     const previousDashed = process.env["interview-share-pages"];
     const previousUppercase = process.env.INTERVIEW_SHARE_PAGES;
 
+    delete process.env.EDGE_CONFIG;
     delete process.env.INTERVIEW_SHARE_PAGES;
     delete process.env["interview-share-pages"];
     process.env.interview_share_pages = JSON.stringify({
@@ -110,6 +143,7 @@ describe("interview share loader", () => {
     const previousDashed = process.env["interview-share-pages"];
     const previousUppercase = process.env.INTERVIEW_SHARE_PAGES;
 
+    delete process.env.EDGE_CONFIG;
     delete process.env.interview_share_pages;
     delete process.env.INTERVIEW_SHARE_PAGES;
     process.env["interview-share-pages"] = JSON.stringify({
