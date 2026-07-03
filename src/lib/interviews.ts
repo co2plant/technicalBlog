@@ -1,6 +1,5 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { get as getEdgeConfigValue, type EdgeConfigValue } from "@vercel/edge-config";
 
 const INTERVIEW_SHARE_PAGES_ENVS = ["interview_share_pages", "interview-share-pages", "INTERVIEW_SHARE_PAGES"] as const;
 const INTERVIEW_SHARE_PAGES_BASE64_ENVS = [
@@ -8,7 +7,6 @@ const INTERVIEW_SHARE_PAGES_BASE64_ENVS = [
   "interview-share-pages-base64",
   "INTERVIEW_SHARE_PAGES_BASE64",
 ] as const;
-const INTERVIEW_SHARE_PAGES_EDGE_CONFIG_KEYS = ["interview_share_pages", "interview-share-pages"] as const;
 const PRIVATE_INTERVIEWS_DIR = path.join(process.cwd(), ".private", "interviews");
 const SHARE_ID_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
 
@@ -47,10 +45,9 @@ export async function getInterviewSharePage(shareId: string): Promise<InterviewS
 }
 
 export async function getInterviewSharePages(): Promise<InterviewSharePage[]> {
-  const [environmentPages, privateFilePages, edgeConfigPages] = await Promise.all([
+  const [environmentPages, privateFilePages] = await Promise.all([
     readInterviewPagesFromEnvironment(),
     readInterviewPagesFromPrivateFiles(),
-    readInterviewPagesFromEdgeConfig(),
   ]);
   const pagesById = new Map<string, InterviewSharePage>();
 
@@ -59,10 +56,6 @@ export async function getInterviewSharePages(): Promise<InterviewSharePage[]> {
   }
 
   for (const page of privateFilePages) {
-    pagesById.set(page.id, page);
-  }
-
-  for (const page of edgeConfigPages) {
     pagesById.set(page.id, page);
   }
 
@@ -82,35 +75,8 @@ export function parseInterviewSharePagesFromJson(source: string, sourceName = "<
   return rawPages.map((rawPage, index) => parseInterviewSharePage(rawPage, `${sourceName}[${index}]`));
 }
 
-export function parseInterviewSharePagesFromValue(value: EdgeConfigValue, sourceName = "<inline>"): InterviewSharePage[] {
-  if (typeof value === "string") {
-    return parseInterviewSharePagesFromJson(value, sourceName);
-  }
-
-  const rawPages = normalizeRawPages(value, sourceName);
-  return rawPages.map((rawPage, index) => parseInterviewSharePage(rawPage, `${sourceName}[${index}]`));
-}
-
 export function isValidShareId(shareId: string): boolean {
   return SHARE_ID_PATTERN.test(shareId);
-}
-
-async function readInterviewPagesFromEdgeConfig(): Promise<InterviewSharePage[]> {
-  if (!process.env.EDGE_CONFIG?.trim()) {
-    return [];
-  }
-
-  const pages: InterviewSharePage[] = [];
-
-  for (const key of INTERVIEW_SHARE_PAGES_EDGE_CONFIG_KEYS) {
-    const value = await getEdgeConfigValue<EdgeConfigValue>(key);
-
-    if (value !== undefined) {
-      pages.push(...parseInterviewSharePagesFromValue(value, `Edge Config:${key}`));
-    }
-  }
-
-  return pages;
 }
 
 async function readInterviewPagesFromEnvironment(): Promise<InterviewSharePage[]> {
