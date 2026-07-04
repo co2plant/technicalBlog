@@ -4,9 +4,12 @@
   "private": true,
   "description": "Next.js App Router technical blog powered by file-based Markdown content.",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "@vercel/analytics": "^2.0.1",
     "marked": "^16.0.0",
     "next": "16.2.2",
+    "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-pdf": "^10.4.1"
@@ -20,16 +23,20 @@
     "eslint": "^9.38.0",
     "eslint-config-next": "16.2.2",
     "postcss": "^8.5.6",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src tests --max-warnings=0",
     "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
