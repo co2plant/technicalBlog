@@ -1,7 +1,24 @@
-import { describe, expect, it } from "vitest";
-import { getInterviewSharePage, isValidShareId, parseInterviewSharePagesFromJson } from "../src/lib/interviews";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+  type DatabaseInterviewSharePage,
+  getInterviewSharePage,
+  hasInterviewDatabaseConfig,
+  isValidShareId,
+  mapInterviewSharePageFromDatabase,
+  parseInterviewSharePagesFromJson,
+} from "../src/lib/interviews";
 
 describe("interview share loader", () => {
+  const originalDatabaseUrl = process.env.POSTGRES_PRISMA_URL;
+
+  afterEach(() => {
+    if (originalDatabaseUrl === undefined) {
+      delete process.env.POSTGRES_PRISMA_URL;
+    } else {
+      process.env.POSTGRES_PRISMA_URL = originalDatabaseUrl;
+    }
+  });
+
   it("parses private interview share data", () => {
     const pages = parseInterviewSharePagesFromJson(
       JSON.stringify([
@@ -61,11 +78,172 @@ describe("interview share loader", () => {
     ).toThrowError("interviewDate must be a real calendar date.");
   });
 
+  it("allows undated interview records for expected question prep", () => {
+    const pages = parseInterviewSharePagesFromJson(
+      JSON.stringify({
+        id: "iv_expected_questions_20260705",
+        title: "예상 면접 질문",
+        interviews: [
+          {
+            company: "예시 회사",
+            stage: "면접 예상 질문",
+            interviewDate: "",
+            questions: ["예상 질문"],
+          },
+        ],
+      }),
+    );
+
+    expect(pages[0].interviews[0].interviewDate).toBeUndefined();
+  });
+
+  it("maps Supabase Postgres interview rows to the share page shape", () => {
+    const now = new Date("2026-07-04T00:00:00.000Z");
+    const databasePage = {
+      id: "b861b0fa-e3e8-4480-b7eb-acd053e8840b",
+      shareId: "iv_database_token_20260704",
+      title: "DB 면접 질문",
+      description: null,
+      audienceLabel: "공유 대상",
+      updatedAt: new Date("2026-07-04T00:00:00.000Z"),
+      isActive: true,
+      createdAt: now,
+      modifiedAt: now,
+      interviews: [
+        {
+          id: "ef42d4b8-3b0d-4586-aed0-153f0120ce84",
+          sharePageId: "b861b0fa-e3e8-4480-b7eb-acd053e8840b",
+          company: "예시 회사",
+          position: null,
+          stage: "기술 면접",
+          interviewDate: new Date("2026-07-03T00:00:00.000Z"),
+          sortOrder: 0,
+          notes: ["DB에서 읽은 메모"],
+          createdAt: now,
+          modifiedAt: now,
+          questions: [
+            {
+              id: "a091c19b-a68b-4c85-a4e9-83214f7a4ccf",
+              interviewRecordId: "ef42d4b8-3b0d-4586-aed0-153f0120ce84",
+              question: "두 번째 질문",
+              topic: null,
+              intent: null,
+              followUps: [],
+              sortOrder: 2,
+              createdAt: now,
+              modifiedAt: now,
+            },
+            {
+              id: "d24f6916-fde0-4a07-b86f-83de65734162",
+              interviewRecordId: "ef42d4b8-3b0d-4586-aed0-153f0120ce84",
+              question: "첫 번째 질문",
+              topic: "Database",
+              intent: "기본기 확인",
+              followUps: ["꼬리 질문"],
+              sortOrder: 1,
+              createdAt: now,
+              modifiedAt: now,
+            },
+          ],
+        },
+      ],
+    } satisfies DatabaseInterviewSharePage;
+
+    const page = mapInterviewSharePageFromDatabase(databasePage);
+
+    expect(page).toEqual({
+      id: "iv_database_token_20260704",
+      title: "DB 면접 질문",
+      description: undefined,
+      audienceLabel: "공유 대상",
+      updatedAt: "2026-07-04",
+      interviews: [
+        {
+          company: "예시 회사",
+          position: undefined,
+          stage: "기술 면접",
+          interviewDate: "2026-07-03",
+          notes: ["DB에서 읽은 메모"],
+          questions: [
+            {
+              question: "첫 번째 질문",
+              topic: "Database",
+              intent: "기본기 확인",
+              followUps: ["꼬리 질문"],
+            },
+            {
+              question: "두 번째 질문",
+              topic: undefined,
+              intent: undefined,
+              followUps: [],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("maps undated Supabase Postgres interview rows", () => {
+    const now = new Date("2026-07-04T00:00:00.000Z");
+    const databasePage = {
+      id: "b861b0fa-e3e8-4480-b7eb-acd053e8840b",
+      shareId: "iv_undated_token_20260705",
+      title: "예상 면접 질문",
+      description: null,
+      audienceLabel: null,
+      updatedAt: null,
+      isActive: true,
+      createdAt: now,
+      modifiedAt: now,
+      interviews: [
+        {
+          id: "ef42d4b8-3b0d-4586-aed0-153f0120ce84",
+          sharePageId: "b861b0fa-e3e8-4480-b7eb-acd053e8840b",
+          company: "예시 회사",
+          position: "Backend",
+          stage: "면접 예상 질문",
+          interviewDate: null,
+          sortOrder: 0,
+          notes: [],
+          createdAt: now,
+          modifiedAt: now,
+          questions: [
+            {
+              id: "d24f6916-fde0-4a07-b86f-83de65734162",
+              interviewRecordId: "ef42d4b8-3b0d-4586-aed0-153f0120ce84",
+              question: "예상 질문",
+              topic: null,
+              intent: null,
+              followUps: [],
+              sortOrder: 0,
+              createdAt: now,
+              modifiedAt: now,
+            },
+          ],
+        },
+      ],
+    } satisfies DatabaseInterviewSharePage;
+
+    const page = mapInterviewSharePageFromDatabase(databasePage);
+
+    expect(page.interviews[0].interviewDate).toBeUndefined();
+  });
+
+  it("enables database reads only when the Prisma Postgres URL exists", () => {
+    delete process.env.POSTGRES_PRISMA_URL;
+    expect(hasInterviewDatabaseConfig()).toBe(false);
+
+    process.env.POSTGRES_PRISMA_URL = "postgresql://user:password@example.com:6543/postgres";
+    expect(hasInterviewDatabaseConfig()).toBe(true);
+  });
+
   it("loads lowercase Vercel-compatible environment variables", async () => {
     const previousLowercase = process.env.interview_share_pages;
     const previousDashed = process.env["interview-share-pages"];
     const previousUppercase = process.env.INTERVIEW_SHARE_PAGES;
+    const previousDatabaseUrl = process.env.POSTGRES_PRISMA_URL;
 
+    delete process.env.POSTGRES_PRISMA_URL;
     delete process.env.INTERVIEW_SHARE_PAGES;
     delete process.env["interview-share-pages"];
     process.env.interview_share_pages = JSON.stringify({
@@ -102,6 +280,12 @@ describe("interview share loader", () => {
       } else {
         process.env["interview-share-pages"] = previousDashed;
       }
+
+      if (previousDatabaseUrl === undefined) {
+        delete process.env.POSTGRES_PRISMA_URL;
+      } else {
+        process.env.POSTGRES_PRISMA_URL = previousDatabaseUrl;
+      }
     }
   });
 
@@ -109,7 +293,9 @@ describe("interview share loader", () => {
     const previousLowercase = process.env.interview_share_pages;
     const previousDashed = process.env["interview-share-pages"];
     const previousUppercase = process.env.INTERVIEW_SHARE_PAGES;
+    const previousDatabaseUrl = process.env.POSTGRES_PRISMA_URL;
 
+    delete process.env.POSTGRES_PRISMA_URL;
     delete process.env.interview_share_pages;
     delete process.env.INTERVIEW_SHARE_PAGES;
     process.env["interview-share-pages"] = JSON.stringify({
@@ -145,6 +331,12 @@ describe("interview share loader", () => {
         delete process.env["interview-share-pages"];
       } else {
         process.env["interview-share-pages"] = previousDashed;
+      }
+
+      if (previousDatabaseUrl === undefined) {
+        delete process.env.POSTGRES_PRISMA_URL;
+      } else {
+        process.env.POSTGRES_PRISMA_URL = previousDatabaseUrl;
       }
     }
   });

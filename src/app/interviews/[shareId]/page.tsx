@@ -69,7 +69,7 @@ export default async function InterviewSharePage({ params }: InterviewPageProps)
 
       <div className="mt-10 space-y-8">
         {page.interviews.map((interview) => (
-          <InterviewSection key={`${interview.company}-${interview.interviewDate}-${interview.stage ?? "stage"}`} interview={interview} />
+          <InterviewSection key={`${interview.company}-${interview.interviewDate ?? "undated"}-${interview.stage ?? "stage"}`} interview={interview} />
         ))}
       </div>
     </article>
@@ -92,7 +92,7 @@ function InterviewSection({ interview }: { interview: InterviewRecord }) {
     <section className="rounded-xl border border-gh-border/70 bg-gh-surface/50 p-5 backdrop-blur-sm md:p-6">
       <header className="flex flex-col gap-3 border-b border-gh-border/50 pb-5 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-indigo-400">{interview.interviewDate}</p>
+          <p className="text-sm font-semibold text-indigo-400">{interview.interviewDate ?? "일정 미정"}</p>
           <h2 className="mt-1 text-2xl font-bold text-gh-text">{interview.company}</h2>
           {metaItems.length > 0 ? <p className="mt-2 text-sm text-gh-muted">{metaItems.join(" · ")}</p> : null}
         </div>

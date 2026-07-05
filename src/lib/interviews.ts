@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import type { Prisma } from "@prisma/client";
 
 const INTERVIEW_SHARE_PAGES_ENVS = ["interview_share_pages", "interview-share-pages", "INTERVIEW_SHARE_PAGES"] as const;
 const INTERVIEW_SHARE_PAGES_BASE64_ENVS = [
@@ -9,6 +10,22 @@ const INTERVIEW_SHARE_PAGES_BASE64_ENVS = [
 ] as const;
 const PRIVATE_INTERVIEWS_DIR = path.join(process.cwd(), ".private", "interviews");
 const SHARE_ID_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
+const DATABASE_URL_ENV = "POSTGRES_PRISMA_URL";
+
+const INTERVIEW_SHARE_PAGE_INCLUDE = {
+  interviews: {
+    orderBy: [{ interviewDate: "desc" }, { sortOrder: "asc" }],
+    include: {
+      questions: {
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  },
+} satisfies Prisma.InterviewSharePageInclude;
+
+export type DatabaseInterviewSharePage = Prisma.InterviewSharePageGetPayload<{
+  include: typeof INTERVIEW_SHARE_PAGE_INCLUDE;
+}>;
 
 export type InterviewQuestion = {
   question: string;
@@ -21,7 +38,7 @@ export type InterviewRecord = {
   company: string;
   position?: string;
   stage?: string;
-  interviewDate: string;
+  interviewDate?: string;
   questions: InterviewQuestion[];
   notes: string[];
 };
@@ -40,11 +57,40 @@ export async function getInterviewSharePage(shareId: string): Promise<InterviewS
     return null;
   }
 
-  const pages = await getInterviewSharePages();
+  const databasePage = await readInterviewPageFromDatabase(shareId);
+
+  if (databasePage) {
+    return databasePage;
+  }
+
+  const pages = await getFallbackInterviewSharePages();
   return pages.find((page) => page.id === shareId) ?? null;
 }
 
 export async function getInterviewSharePages(): Promise<InterviewSharePage[]> {
+  const [databasePages, environmentPages, privateFilePages] = await Promise.all([
+    readInterviewPagesFromDatabase(),
+    readInterviewPagesFromEnvironment(),
+    readInterviewPagesFromPrivateFiles(),
+  ]);
+  const pagesById = new Map<string, InterviewSharePage>();
+
+  for (const page of environmentPages) {
+    pagesById.set(page.id, page);
+  }
+
+  for (const page of privateFilePages) {
+    pagesById.set(page.id, page);
+  }
+
+  for (const page of databasePages) {
+    pagesById.set(page.id, page);
+  }
+
+  return [...pagesById.values()];
+}
+
+async function getFallbackInterviewSharePages(): Promise<InterviewSharePage[]> {
   const [environmentPages, privateFilePages] = await Promise.all([
     readInterviewPagesFromEnvironment(),
     readInterviewPagesFromPrivateFiles(),
@@ -77,6 +123,71 @@ export function parseInterviewSharePagesFromJson(source: string, sourceName = "<
 
 export function isValidShareId(shareId: string): boolean {
   return SHARE_ID_PATTERN.test(shareId);
+}
+
+export function hasInterviewDatabaseConfig(): boolean {
+  return Boolean(process.env[DATABASE_URL_ENV]?.trim());
+}
+
+export function mapInterviewSharePageFromDatabase(databasePage: DatabaseInterviewSharePage): InterviewSharePage {
+  return {
+    id: databasePage.shareId,
+    title: databasePage.title,
+    description: databasePage.description ?? undefined,
+    audienceLabel: databasePage.audienceLabel ?? undefined,
+    updatedAt: optionalDateOnlyToString(databasePage.updatedAt, "interview_share_pages.updated_at"),
+    interviews: [...databasePage.interviews]
+      .sort((left, right) => compareDatabaseInterviews(left, right))
+      .map((interview) => ({
+        company: interview.company,
+        position: interview.position ?? undefined,
+        stage: interview.stage ?? undefined,
+        interviewDate: optionalDateOnlyToString(interview.interviewDate, "interview_records.interview_date"),
+        notes: [...interview.notes],
+        questions: [...interview.questions]
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .map((question) => ({
+            question: question.question,
+            topic: question.topic ?? undefined,
+            intent: question.intent ?? undefined,
+            followUps: [...question.followUps],
+          })),
+      })),
+  };
+}
+
+async function readInterviewPageFromDatabase(shareId: string): Promise<InterviewSharePage | null> {
+  if (!hasInterviewDatabaseConfig()) {
+    return null;
+  }
+
+  const { prisma } = await import("./prisma");
+  const databasePage = await prisma.interviewSharePage.findFirst({
+    where: {
+      shareId,
+      isActive: true,
+    },
+    include: INTERVIEW_SHARE_PAGE_INCLUDE,
+  });
+
+  return databasePage ? mapInterviewSharePageFromDatabase(databasePage) : null;
+}
+
+async function readInterviewPagesFromDatabase(): Promise<InterviewSharePage[]> {
+  if (!hasInterviewDatabaseConfig()) {
+    return [];
+  }
+
+  const { prisma } = await import("./prisma");
+  const databasePages = await prisma.interviewSharePage.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+    include: INTERVIEW_SHARE_PAGE_INCLUDE,
+  });
+
+  return databasePages.map(mapInterviewSharePageFromDatabase);
 }
 
 async function readInterviewPagesFromEnvironment(): Promise<InterviewSharePage[]> {
@@ -181,7 +292,7 @@ function parseInterviewRecord(rawInterview: unknown, pathLabel: string): Intervi
   const company = requireString(interview.company, `${pathLabel}.company`);
   const position = optionalString(interview.position);
   const stage = optionalString(interview.stage);
-  const interviewDate = requireDateString(interview.interviewDate, `${pathLabel}.interviewDate`);
+  const interviewDate = optionalDateString(interview.interviewDate, `${pathLabel}.interviewDate`);
   const questions = requireArray(interview.questions, `${pathLabel}.questions`).map((rawQuestion, index) =>
     parseInterviewQuestion(rawQuestion, `${pathLabel}.questions[${index}]`),
   );
@@ -220,7 +331,49 @@ function parseInterviewQuestion(rawQuestion: unknown, pathLabel: string): Interv
 }
 
 function compareInterviewsByDateDescending(left: InterviewRecord, right: InterviewRecord): number {
-  return Date.parse(`${right.interviewDate}T00:00:00.000Z`) - Date.parse(`${left.interviewDate}T00:00:00.000Z`);
+  const leftTimestamp = dateStringToTimestamp(left.interviewDate);
+  const rightTimestamp = dateStringToTimestamp(right.interviewDate);
+
+  if (leftTimestamp === undefined && rightTimestamp === undefined) {
+    return 0;
+  }
+
+  if (leftTimestamp === undefined) {
+    return 1;
+  }
+
+  if (rightTimestamp === undefined) {
+    return -1;
+  }
+
+  return rightTimestamp - leftTimestamp;
+}
+
+function compareDatabaseInterviews(
+  left: DatabaseInterviewSharePage["interviews"][number],
+  right: DatabaseInterviewSharePage["interviews"][number],
+): number {
+  const dateComparison =
+    (dateStringToTimestamp(optionalDateOnlyToString(right.interviewDate, "interview_records.interview_date")) ?? 0) -
+    (dateStringToTimestamp(optionalDateOnlyToString(left.interviewDate, "interview_records.interview_date")) ?? 0);
+
+  return dateComparison || left.sortOrder - right.sortOrder;
+}
+
+function optionalDateOnlyToString(value: Date | string | null, pathLabel: string): string | undefined {
+  if (value === null) {
+    return undefined;
+  }
+
+  return dateOnlyToString(value, pathLabel);
+}
+
+function dateOnlyToString(value: Date | string, pathLabel: string): string {
+  if (typeof value === "string") {
+    return requireDateString(value, pathLabel);
+  }
+
+  return requireDateString(value.toISOString().slice(0, 10), pathLabel);
 }
 
 function requireRecord(value: unknown, pathLabel: string): Record<string, unknown> {
@@ -290,11 +443,15 @@ function requireDateString(value: unknown, pathLabel: string): string {
 }
 
 function optionalDateString(value: unknown, pathLabel: string): string | undefined {
-  if (value === undefined || value === null) {
+  if (value === undefined || value === null || value === "") {
     return undefined;
   }
 
   return requireDateString(value, pathLabel);
+}
+
+function dateStringToTimestamp(dateString: string | undefined): number | undefined {
+  return dateString ? Date.parse(`${dateString}T00:00:00.000Z`) : undefined;
 }
 
 function requireNonEmptyString(value: unknown, pathLabel: string): string {

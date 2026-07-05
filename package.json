@@ -37,6 +37,7 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate:deploy": "prisma migrate deploy",
+    "db:import-interviews": "node scripts/import-interview-share-pages.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
