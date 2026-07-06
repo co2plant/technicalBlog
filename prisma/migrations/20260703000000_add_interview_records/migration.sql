@@ -1,0 +1,2 @@
+-- No-op migration.
+-- This directory existed before the Supabase storage schema migration was added.

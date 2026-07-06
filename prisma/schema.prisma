@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model InterviewSharePage {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shareId       String            @unique @map("share_id")
+  title         String            @default("면접 질문 정리")
+  description   String?
+  audienceLabel String?           @map("audience_label")
+  updatedAt     DateTime?         @map("updated_at") @db.Date
+  isActive      Boolean           @default(true) @map("is_active")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  modifiedAt    DateTime          @default(now()) @updatedAt @map("modified_at") @db.Timestamptz(6)
+  interviews    InterviewRecord[]
+
+  @@map("interview_share_pages")
+}
+
+model InterviewRecord {
+  id            String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sharePageId   String               @map("share_page_id") @db.Uuid
+  company       String
+  position      String?
+  stage         String?
+  interviewDate DateTime?            @map("interview_date") @db.Date
+  sortOrder     Int                  @default(0) @map("sort_order")
+  notes         String[]             @default([])
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  modifiedAt    DateTime             @default(now()) @updatedAt @map("modified_at") @db.Timestamptz(6)
+  sharePage     InterviewSharePage   @relation(fields: [sharePageId], references: [id], onDelete: Cascade)
+  questions     InterviewQuestion[]
+
+  @@index([sharePageId, interviewDate(sort: Desc), sortOrder], map: "interview_records_share_page_date_idx")
+  @@map("interview_records")
+}
+
+model InterviewQuestion {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewRecordId String          @map("interview_record_id") @db.Uuid
+  question          String
+  topic             String?
+  intent            String?
+  followUps         String[]        @default([]) @map("follow_ups")
+  sortOrder         Int             @default(0) @map("sort_order")
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  modifiedAt        DateTime        @default(now()) @updatedAt @map("modified_at") @db.Timestamptz(6)
+  interviewRecord   InterviewRecord @relation(fields: [interviewRecordId], references: [id], onDelete: Cascade)
+
+  @@index([interviewRecordId, sortOrder], map: "interview_questions_record_order_idx")
+  @@map("interview_questions")
+}
+
+model MediaAsset {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bucket      String
+  objectPath  String   @map("object_path")
+  publicUrl   String?  @map("public_url")
+  altText     String?  @map("alt_text")
+  caption     String?
+  mimeType    String?  @map("mime_type")
+  byteSize    BigInt?  @map("byte_size")
+  width       Int?
+  height      Int?
+  usageScope  String   @default("blog") @map("usage_scope")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  modifiedAt  DateTime @default(now()) @updatedAt @map("modified_at") @db.Timestamptz(6)
+
+  @@unique([bucket, objectPath], map: "media_assets_bucket_object_path_key")
+  @@map("media_assets")
+}
