@@ -69,7 +69,98 @@ model MediaAsset {
   usageScope  String   @default("blog") @map("usage_scope")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   modifiedAt  DateTime @default(now()) @updatedAt @map("modified_at") @db.Timestamptz(6)
+  blogPostAssets BlogPostAsset[]
 
   @@unique([bucket, objectPath], map: "media_assets_bucket_object_path_key")
   @@map("media_assets")
+}
+
+model BlogCategory {
+  id        Int        @id @default(autoincrement())
+  slug      String     @unique
+  name      String
+  sortOrder Int        @default(0) @map("sort_order")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  posts     BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogTag {
+  id        Int           @id @default(autoincrement())
+  slug      String        @unique
+  name      String
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  posts     BlogPostTag[]
+
+  @@map("blog_tags")
+}
+
+model BlogPost {
+  id               Int                @id @default(autoincrement())
+  publishedNumber  Int?               @unique @map("published_number")
+  legacySlug       String?            @unique @map("legacy_slug")
+  title            String
+  description      String             @default("")
+  excerpt          String             @default("")
+  bodyMarkdown     String             @map("body_markdown")
+  extension        String             @default("md")
+  status           String             @default("draft")
+  author           String
+  categoryId       Int                @map("category_id")
+  publishedAt      DateTime?          @map("published_at") @db.Date
+  updatedAt        DateTime?          @map("updated_at") @db.Date
+  originalUrl      String?            @map("original_url")
+  coverImageUrl    String?            @map("cover_image_url")
+  embeddedPdfUrl   String?            @map("embedded_pdf_url")
+  allowPdfDownload Boolean            @default(true) @map("allow_pdf_download")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  modifiedAt       DateTime           @default(now()) @updatedAt @map("modified_at") @db.Timestamptz(6)
+  deletedAt        DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  category         BlogCategory       @relation(fields: [categoryId], references: [id])
+  tags             BlogPostTag[]
+  revisions        BlogPostRevision[]
+  assets           BlogPostAsset[]
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, status])
+  @@map("blog_posts")
+}
+
+model BlogPostTag {
+  postId Int      @map("post_id")
+  tagId  Int      @map("tag_id")
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    BlogTag  @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+  @@index([tagId])
+  @@map("blog_post_tags")
+}
+
+model BlogPostRevision {
+  id           Int      @id @default(autoincrement())
+  postId       Int      @map("post_id")
+  title        String
+  bodyMarkdown String   @map("body_markdown")
+  snapshot     Json
+  reason       String   @default("manual")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  post         BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt(sort: Desc)])
+  @@map("blog_post_revisions")
+}
+
+model BlogPostAsset {
+  id        Int        @id @default(autoincrement())
+  postId    Int        @map("post_id")
+  assetId   String     @map("asset_id") @db.Uuid
+  role      String     @default("attachment")
+  sortOrder Int        @default(0) @map("sort_order")
+  post      BlogPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  asset     MediaAsset @relation(fields: [assetId], references: [id])
+
+  @@unique([postId, assetId, role])
+  @@map("blog_post_assets")
 }

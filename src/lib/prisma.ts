@@ -5,10 +5,11 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-const connectionString = process.env.POSTGRES_PRISMA_URL;
+const connectionString =
+  process.env.NODE_ENV === "test" ? nonEmptyEnv("DATABASE_URL_TEST") : nonEmptyEnv("POSTGRES_PRISMA_URL");
 
 if (!connectionString) {
-  throw new Error("POSTGRES_PRISMA_URL is required to create the Prisma database client.");
+  throw new Error(`${process.env.NODE_ENV === "test" ? "DATABASE_URL_TEST" : "POSTGRES_PRISMA_URL"} is required to create the Prisma database client.`);
 }
 
 const adapter = new PrismaPg({ connectionString: withPgSslCompatibility(connectionString) });
@@ -32,4 +33,14 @@ function withPgSslCompatibility(databaseUrl: string): string {
   }
 
   return url.toString();
+}
+
+function nonEmptyEnv(key: string): string | undefined {
+  const value = process.env[key]?.trim();
+
+  if (!value || value === "\"\"" || value === "''") {
+    return undefined;
+  }
+
+  return value;
 }

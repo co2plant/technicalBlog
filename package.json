@@ -38,6 +38,12 @@
     "db:generate": "prisma generate",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:import-interviews": "node scripts/import-interview-share-pages.mjs",
+    "db:import-posts": "node scripts/import-blog-posts.mjs",
+    "db:verify-post-parity": "node scripts/verify-post-parity.mjs",
+    "verify:storage-pdf": "node scripts/verify-storage-pdf.mjs",
+    "test:db:up": "docker compose -f docker-compose.test.yml up -d",
+    "test:db:migrate": "node scripts/migrate-test-database.mjs",
+    "test:db:down": "docker compose -f docker-compose.test.yml down -v",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },

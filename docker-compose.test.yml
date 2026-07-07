@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "54329:5432"
+    environment:
+      POSTGRES_USER: technicalblog
+      POSTGRES_PASSWORD: technicalblog
+      POSTGRES_DB: technicalblog_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U technicalblog -d technicalblog_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
