@@ -4,7 +4,8 @@ import { defineConfig } from "prisma/config";
 
 loadLocalEnvFiles([".env.local", ".env"]);
 
-const migrationDatabaseUrl = nonEmptyEnv("POSTGRES_URL_NON_POOLING") ?? nonEmptyEnv("POSTGRES_PRISMA_URL");
+const migrationDatabaseUrl =
+  nonEmptyEnv("DATABASE_URL_TEST") ?? nonEmptyEnv("POSTGRES_URL_NON_POOLING") ?? nonEmptyEnv("POSTGRES_PRISMA_URL");
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

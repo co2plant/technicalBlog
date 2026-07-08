@@ -1,6 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { Marked } from "marked";
+import {
+  getAllBlogPostsFromDatabase,
+  getBlogPostByPostKeyFromDatabase,
+  getPublishedBlogPostsFromDatabase,
+  type PostLookupResult,
+} from "./posts-db";
+import { renderPostMarkdown } from "./post-rendering";
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 const POST_ASSETS_DIR = path.join(process.cwd(), "public", "posts");
@@ -62,41 +68,13 @@ const UNSUPPORTED_MDX_PATTERNS = [
   },
 ] as const;
 
-const markdown = new Marked({
-  async: false,
-  gfm: true,
-  breaks: true,
-  renderer: {
-    html() {
-      return "";
-    },
-    link({ href, title, tokens }) {
-      const text = this.parser.parseInline(tokens);
-
-      if (!href || !isSafeLink(href)) {
-        return text;
-      }
-
-      const safeHref = escapeAttribute(href);
-      const safeTitle = title ? ` title="${escapeAttribute(title)}"` : "";
-
-      return `<a href="${safeHref}"${safeTitle} rel="noopener noreferrer">${text}</a>`;
-    },
-    image({ href, title, text }) {
-      if (!href || !isSafeAsset(href)) {
-        return escapeHtml(text);
-      }
-
-      const safeHref = escapeAttribute(href);
-      const safeAlt = escapeHtml(text);
-      const safeTitle = title ? ` title="${escapeAttribute(title)}"` : "";
-
-      return `<img src="${safeHref}" alt="${safeAlt}" loading="lazy"${safeTitle} />`;
-    },
-  },
-});
-
 export async function getAllPosts(): Promise<Post[]> {
+  const databasePosts = await getAllBlogPostsFromDatabase();
+
+  if (databasePosts.length > 0) {
+    return databasePosts.sort(comparePostsByPublishedAtDescending);
+  }
+
   const postFiles = await collectPostFiles(POSTS_DIR);
   const posts = await Promise.all(postFiles.map((postFile) => readPostFile(postFile)));
 
@@ -104,6 +82,12 @@ export async function getAllPosts(): Promise<Post[]> {
 }
 
 export async function getPublishedPosts(): Promise<Post[]> {
+  const databasePosts = await getPublishedBlogPostsFromDatabase();
+
+  if (databasePosts.length > 0) {
+    return databasePosts;
+  }
+
   return (await getAllPosts()).filter((post) => !post.draft);
 }
 
@@ -112,8 +96,25 @@ export async function getPublishedPortfolioPosts(): Promise<Post[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const databaseResult = await getBlogPostByPostKeyFromDatabase(slug);
+
+  if (databaseResult) {
+    return databaseResult.post;
+  }
+
   const posts = await getAllPosts();
   return posts.find((post) => post.slug === slug) ?? null;
+}
+
+export async function getPostByPostKey(postKey: string): Promise<PostLookupResult | null> {
+  const databaseResult = await getBlogPostByPostKeyFromDatabase(postKey);
+
+  if (databaseResult) {
+    return databaseResult;
+  }
+
+  const post = await getPostBySlug(postKey);
+  return post ? { post } : null;
 }
 
 async function readPostFile({ category, fullPath, fileName }: PostFile): Promise<Post> {
@@ -436,19 +437,11 @@ async function readAttachments(slug: string): Promise<PostAttachment[]> {
 }
 
 function renderMarkdown(source: string): string {
-  return markdown.parse(source, { async: false });
+  return renderPostMarkdown(source);
 }
 
 function isMissingDirectory(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && "code" in error && error.code === "ENOENT";
-}
-
-function isSafeLink(href: string): boolean {
-  return /^(https?:|mailto:|\/|#)/i.test(href);
-}
-
-function isSafeAsset(href: string): boolean {
-  return /^(https?:|\/)/i.test(href);
 }
 
 function encodePathSegment(value: string): string {
@@ -461,21 +454,4 @@ function safeDecodeURIComponent(value: string): string {
   } catch {
     return value;
   }
-}
-
-function escapeAttribute(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }

@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 const smokeRoutes = {
   home: "/",
   posts: "/posts",
-  gitPost: "/posts/git-commit-message-convention",
-  portfolioPost: "/posts/my-portfolio-pdf",
+  gitPost: "/posts/1",
+  portfolioPost: "/posts/11",
   portfolio: "/portfolio",
   tools: "/tools",
   passwordGenerator: "/tools/password-generator",
@@ -24,8 +24,8 @@ test("app shell and critical routes render", async ({ page }) => {
   await test.step("published posts listing renders expected cards", async () => {
     await page.goto(smokeRoutes.posts);
     await expect(page.getByTestId("posts-page-heading")).toBeVisible();
-    await expect(page.locator('a[href="/posts/git-commit-message-convention"]').first()).toBeVisible();
-    await expect(page.locator('a[href="/posts/my-portfolio-pdf"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/posts/1"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/posts/11"]')).toHaveCount(0);
   });
 
   await test.step("standard post detail renders content", async () => {
@@ -44,7 +44,7 @@ test("app shell and critical routes render", async ({ page }) => {
   await test.step("portfolio index renders portfolio entry point", async () => {
     await page.goto(smokeRoutes.portfolio);
     await expect(page.getByTestId("portfolio-page-heading")).toBeVisible();
-    await expect(page.locator('a[href="/posts/my-portfolio-pdf"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/posts/11"]').first()).toBeVisible();
   });
 
   await test.step("tools index renders golden ratio tool entry point", async () => {
