@@ -77,14 +77,14 @@ export async function uploadAssetAction(postId: number, formData: FormData) {
     throw new Error("assetFile is required.");
   }
 
-  const publicUrl = await uploadPostAsset(postId, {
+  const asset = await uploadPostAsset(postId, {
     file,
     role: parseAssetRole(formData),
     altText: optionalString(formData, "altText"),
     caption: optionalString(formData, "caption"),
   });
 
-  redirect(`/admin/posts/${postId}?uploaded=${encodeURIComponent(publicUrl)}`);
+  redirect(`/admin/posts/${postId}?uploaded=${encodeURIComponent(asset.publicUrl)}`);
 }
 
 function parsePostFormData(formData: FormData) {
@@ -97,9 +97,9 @@ function parsePostFormData(formData: FormData) {
     author: requiredString(formData, "author"),
     categorySlug: requiredSlug(formData, "categorySlug"),
     tags: parseTags(String(formData.get("tags") ?? "")),
-    originalUrl: optionalString(formData, "originalUrl"),
-    coverImageUrl: optionalString(formData, "coverImageUrl"),
-    embeddedPdfUrl: optionalString(formData, "embeddedPdfUrl"),
+    originalUrl: optionalNullableString(formData, "originalUrl"),
+    coverImageUrl: optionalNullableString(formData, "coverImageUrl"),
+    embeddedPdfUrl: optionalNullableString(formData, "embeddedPdfUrl"),
     allowPdfDownload: formData.get("allowPdfDownload") === "on",
   };
 }
@@ -166,6 +166,16 @@ function isValidSlug(value: string): boolean {
 function optionalString(formData: FormData, key: string): string | undefined {
   const value = String(formData.get(key) ?? "").trim();
   return value || undefined;
+}
+
+function optionalNullableString(formData: FormData, key: string): string | null | undefined {
+  const rawValue = formData.get(key);
+
+  if (rawValue === null) {
+    return undefined;
+  }
+
+  return String(rawValue).trim() || null;
 }
 
 function parseAssetRole(formData: FormData): "cover" | "inline" | "attachment" | "embedded_pdf" {
