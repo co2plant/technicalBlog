@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 const ADMIN_COOKIE_NAME = "technical_blog_admin";
 const ADMIN_SESSION_VALUE = "authenticated";
+const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
 
 export function hasAdminSecret(): boolean {
   return Boolean(getAdminSecret());
@@ -32,13 +33,20 @@ export async function createAdminSessionCookie(): Promise<void> {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/admin",
-    maxAge: 60 * 60 * 12,
+    maxAge: ADMIN_SESSION_TTL_SECONDS,
   });
 }
 
 export async function clearAdminSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(ADMIN_COOKIE_NAME);
+
+  cookieStore.set(ADMIN_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/admin",
+    maxAge: 0,
+  });
 }
 
 export function verifyAdminPassword(password: string): boolean {
@@ -52,17 +60,26 @@ export function verifyAdminPassword(password: string): boolean {
 }
 
 function signAdminSessionCookie(): string {
-  return `${ADMIN_SESSION_VALUE}.${sign(ADMIN_SESSION_VALUE)}`;
+  const expiresAt = Math.floor(Date.now() / 1000) + ADMIN_SESSION_TTL_SECONDS;
+  const payload = `${ADMIN_SESSION_VALUE}.${expiresAt}`;
+  return `${payload}.${sign(payload)}`;
 }
 
 function verifyAdminSessionCookie(cookieValue: string): boolean {
-  const [value, signature] = cookieValue.split(".");
+  const [value, rawExpiresAt, signature, ...extraParts] = cookieValue.split(".");
+  const expiresAt = Number(rawExpiresAt);
 
-  if (value !== ADMIN_SESSION_VALUE || !signature) {
+  if (
+    value !== ADMIN_SESSION_VALUE ||
+    !signature ||
+    extraParts.length > 0 ||
+    !Number.isSafeInteger(expiresAt) ||
+    expiresAt <= Math.floor(Date.now() / 1000)
+  ) {
     return false;
   }
 
-  return safeEqual(signature, sign(value));
+  return safeEqual(signature, sign(`${value}.${rawExpiresAt}`));
 }
 
 function sign(value: string): string {
