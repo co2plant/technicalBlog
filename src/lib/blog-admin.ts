@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { AdminNotFoundError, AdminRequestError, AdminUpstreamError } from "@/lib/admin-api-response";
 import { prisma } from "@/lib/prisma";
 import { assertSupportedPostSyntax } from "@/lib/content";
 import { mapBlogPostFromDatabase } from "@/lib/posts-db";
@@ -23,7 +24,7 @@ const ADMIN_POST_INCLUDE = {
   },
 } satisfies Prisma.BlogPostInclude;
 
-type AdminPostInput = {
+export type AdminPostInput = {
   title: string;
   description: string;
   excerpt: string;
@@ -32,9 +33,9 @@ type AdminPostInput = {
   author: string;
   categorySlug: string;
   tags: AdminTagInput[];
-  originalUrl?: string;
-  coverImageUrl?: string;
-  embeddedPdfUrl?: string;
+  originalUrl?: string | null;
+  coverImageUrl?: string | null;
+  embeddedPdfUrl?: string | null;
   allowPdfDownload: boolean;
 };
 
@@ -50,9 +51,19 @@ type UploadAssetInput = {
   caption?: string;
 };
 
+export type UploadedPostAsset = {
+  publicUrl: string;
+  role: UploadAssetInput["role"];
+  mimeType: string;
+  objectPath: string;
+  bucket: string;
+};
+
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const IMAGE_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 const PDF_MIME_TYPE = "application/pdf";
+const SITE_TIME_ZONE = "Asia/Seoul";
+const PUBLISH_TRANSACTION_ATTEMPTS = 3;
 
 export type AdminBlogPost = Prisma.BlogPostGetPayload<{
   include: typeof ADMIN_POST_INCLUDE;
@@ -84,6 +95,20 @@ export async function getAdminCategories() {
   });
 }
 
+export async function createBlogCategory(input: {
+  name: string;
+  slug: string;
+  sortOrder?: number;
+}) {
+  return prisma.blogCategory.create({
+    data: {
+      name: input.name,
+      slug: input.slug,
+      sortOrder: input.sortOrder ?? 0,
+    },
+  });
+}
+
 export async function createDraftPost(): Promise<number> {
   const category = await getDefaultCategory();
   const post = await prisma.blogPost.create({
@@ -108,50 +133,76 @@ export async function saveDraftPost(id: number, input: AdminPostInput): Promise<
   await writePost(id, input, "manual", "draft");
 }
 
+/**
+ * Persist editor content without changing the post's publication state.
+ *
+ * JSON autosave and preview pre-save use this path so a published or archived
+ * post remains published or archived. Callers decide whether an explicit
+ * manual save should also create a revision; background saves do not.
+ */
+export async function savePostContentPreservingStatus(
+  id: number,
+  input: AdminPostInput,
+  options: { createRevision: boolean },
+): Promise<void> {
+  await writePost(id, input, "manual", undefined, options.createRevision);
+}
+
 export async function publishPost(id: number, input: AdminPostInput): Promise<number> {
-  return prisma.$transaction(
-    async (tx) => {
-      await tx.$queryRaw`select pg_advisory_xact_lock(hashtext('technical_blog_publish_number'))`;
-      const existing = await tx.blogPost.findFirst({
-        where: {
-          id,
-          deletedAt: null,
-        },
-      });
+  for (let attempt = 1; attempt <= PUBLISH_TRANSACTION_ATTEMPTS; attempt += 1) {
+    try {
+      return await prisma.$transaction(
+        async (tx) => {
+          await tx.$queryRaw`select pg_advisory_xact_lock(hashtext('technical_blog_publish_number'))`;
+          const existing = await tx.blogPost.findFirst({
+            where: {
+              id,
+              deletedAt: null,
+            },
+          });
 
-      if (!existing) {
-        throw new Error("Post not found.");
+          if (!existing) {
+            throw new AdminNotFoundError("Post not found.");
+          }
+
+          const category = await upsertCategory(tx, input.categorySlug);
+          const publishedNumber = existing.publishedNumber ?? (await nextPublishedNumber(tx));
+          const publishedAt = existing.publishedAt ?? new Date(`${todayDateOnly()}T00:00:00.000Z`);
+
+          assertAdminPostSyntax(input.bodyMarkdown, input.extension, String(id));
+
+          await tx.blogPost.update({
+            where: {
+              id,
+            },
+            data: {
+              ...postWriteData(input, category.id),
+              status: "published",
+              publishedNumber,
+              publishedAt,
+              deletedAt: null,
+            },
+          });
+
+          await removeClearedAssetLinks(tx, id, input);
+          await replaceTags(tx, id, input.tags);
+          await createRevision(tx, id, input, "publish");
+
+          revalidatePostSurfaces(publishedNumber);
+          return publishedNumber;
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
+    } catch (error) {
+      if (attempt === PUBLISH_TRANSACTION_ATTEMPTS || !isRetryablePublishTransactionError(error)) {
+        throw error;
       }
+    }
+  }
 
-      const category = await upsertCategory(tx, input.categorySlug);
-      const publishedNumber = existing.publishedNumber ?? (await nextPublishedNumber(tx));
-      const publishedAt = existing.publishedAt ?? new Date(`${todayDateOnly()}T00:00:00.000Z`);
-
-      assertSupportedPostSyntax(input.bodyMarkdown, input.extension, String(id));
-
-      await tx.blogPost.update({
-        where: {
-          id,
-        },
-        data: {
-          ...postWriteData(input, category.id),
-          status: "published",
-          publishedNumber,
-          publishedAt,
-          deletedAt: null,
-        },
-      });
-
-      await replaceTags(tx, id, input.tags);
-      await createRevision(tx, id, input, "publish");
-
-      revalidatePostSurfaces(publishedNumber);
-      return publishedNumber;
-    },
-    {
-      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-    },
-  );
+  throw new Error("Publishing failed after retrying the transaction.");
 }
 
 export async function archivePost(id: number): Promise<void> {
@@ -180,7 +231,7 @@ export async function softDeletePost(id: number): Promise<void> {
   revalidatePostSurfaces(post.publishedNumber ?? undefined);
 }
 
-export async function uploadPostAsset(postId: number, input: UploadAssetInput): Promise<string> {
+export async function uploadPostAsset(postId: number, input: UploadAssetInput): Promise<UploadedPostAsset> {
   const post = await prisma.blogPost.findFirst({
     where: {
       id: postId,
@@ -189,7 +240,7 @@ export async function uploadPostAsset(postId: number, input: UploadAssetInput): 
   });
 
   if (!post) {
-    throw new Error("Post not found.");
+    throw new AdminNotFoundError("Post not found.");
   }
 
   const upload = await validateUpload(input);
@@ -270,15 +321,27 @@ export async function uploadPostAsset(postId: number, input: UploadAssetInput): 
   });
 
   revalidatePostSurfaces(post.publishedNumber ?? undefined);
-  return publicUrl;
+  return {
+    publicUrl,
+    role: input.role,
+    mimeType: upload.mimeType,
+    objectPath,
+    bucket: upload.bucket,
+  };
 }
 
 export function mapAdminPostToPreview(post: AdminBlogPost) {
   return mapBlogPostFromDatabase(post);
 }
 
-function writePost(id: number, input: AdminPostInput, reason: "manual" | "publish", status: "draft" | "published") {
-  assertSupportedPostSyntax(input.bodyMarkdown, input.extension, String(id));
+function writePost(
+  id: number,
+  input: AdminPostInput,
+  reason: "manual" | "publish",
+  status?: "draft" | "published",
+  shouldCreateRevision = true,
+) {
+  assertAdminPostSyntax(input.bodyMarkdown, input.extension, String(id));
 
   return prisma.$transaction(async (tx) => {
     const existing = await tx.blogPost.findFirst({
@@ -289,7 +352,7 @@ function writePost(id: number, input: AdminPostInput, reason: "manual" | "publis
     });
 
     if (!existing) {
-      throw new Error("Post not found.");
+      throw new AdminNotFoundError("Post not found.");
     }
 
     const category = await upsertCategory(tx, input.categorySlug);
@@ -299,13 +362,18 @@ function writePost(id: number, input: AdminPostInput, reason: "manual" | "publis
       },
       data: {
         ...postWriteData(input, category.id),
-        status,
+        ...(status ? { status } : {}),
         deletedAt: null,
       },
     });
 
+    await removeClearedAssetLinks(tx, id, input);
     await replaceTags(tx, id, input.tags);
-    await createRevision(tx, id, input, reason);
+
+    if (shouldCreateRevision) {
+      await createRevision(tx, id, input, reason);
+    }
+
     revalidatePostSurfaces(existing.publishedNumber ?? undefined);
   });
 }
@@ -325,6 +393,35 @@ function postWriteData(input: AdminPostInput, categoryId: number) {
     embeddedPdfUrl: input.embeddedPdfUrl,
     allowPdfDownload: input.allowPdfDownload,
   };
+}
+
+async function removeClearedAssetLinks(
+  tx: Prisma.TransactionClient,
+  postId: number,
+  input: AdminPostInput,
+): Promise<void> {
+  const roles: Array<"cover" | "embedded_pdf"> = [];
+
+  if (input.coverImageUrl === null) {
+    roles.push("cover");
+  }
+
+  if (input.embeddedPdfUrl === null) {
+    roles.push("embedded_pdf");
+  }
+
+  if (roles.length === 0) {
+    return;
+  }
+
+  await tx.blogPostAsset.deleteMany({
+    where: {
+      postId,
+      role: {
+        in: roles,
+      },
+    },
+  });
 }
 
 async function replaceTags(tx: Prisma.TransactionClient, postId: number, tagInputs: AdminTagInput[]): Promise<void> {
@@ -456,7 +553,7 @@ function toTagSlug(tagName: string): string {
     .replace(/^-+|-+$/g, "");
 
   if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
-    throw new Error(`Tag "${tagName}" needs an ASCII slug.`);
+    throw new AdminRequestError(`Tag "${tagName}" needs an ASCII slug.`);
   }
 
   return slug;
@@ -469,8 +566,38 @@ function categoryName(slug: string): string {
     .join(" ");
 }
 
-function todayDateOnly(): string {
-  return new Date().toISOString().slice(0, 10);
+function todayDateOnly(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: SITE_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const values = new Map(parts.map((part) => [part.type, part.value]));
+  const year = values.get("year");
+  const month = values.get("month");
+  const day = values.get("day");
+
+  if (!year || !month || !day) {
+    throw new Error(`Unable to derive the current date in ${SITE_TIME_ZONE}.`);
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+function isRetryablePublishTransactionError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    (error.code === "P2034" || error.code === "P2002")
+  );
+}
+
+function assertAdminPostSyntax(bodyMarkdown: string, extension: "md" | "mdx", postId: string): void {
+  try {
+    assertSupportedPostSyntax(bodyMarkdown, extension, postId);
+  } catch (error) {
+    throw new AdminRequestError(error instanceof Error ? error.message : "Unsupported post syntax.");
+  }
 }
 
 async function validateUpload(input: UploadAssetInput): Promise<{
@@ -479,18 +606,18 @@ async function validateUpload(input: UploadAssetInput): Promise<{
   extension: string;
 }> {
   if (!input.file || input.file.size === 0) {
-    throw new Error("Upload file is required.");
+    throw new AdminRequestError("Upload file is required.");
   }
 
   if (input.file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("Upload file must be 20MB or smaller.");
+    throw new AdminRequestError("Upload file must be 20MB or smaller.");
   }
 
   const mimeType = input.file.type;
 
   if (IMAGE_MIME_TYPES.has(mimeType)) {
     if (input.role === "embedded_pdf" || input.role === "attachment") {
-      throw new Error(`${input.role} uploads must be PDF files.`);
+      throw new AdminRequestError(`${input.role} uploads must be PDF files.`);
     }
 
     return {
@@ -502,7 +629,7 @@ async function validateUpload(input: UploadAssetInput): Promise<{
 
   if (mimeType === PDF_MIME_TYPE) {
     if (input.role === "cover" || input.role === "inline") {
-      throw new Error(`${input.role} uploads must be image files.`);
+      throw new AdminRequestError(`${input.role} uploads must be image files.`);
     }
 
     return {
@@ -512,7 +639,9 @@ async function validateUpload(input: UploadAssetInput): Promise<{
     };
   }
 
-  throw new Error("Only png, jpg, jpeg, webp, gif, and pdf uploads are allowed. SVG is intentionally blocked.");
+  throw new AdminRequestError(
+    "Only png, jpg, jpeg, webp, gif, and pdf uploads are allowed. SVG is intentionally blocked.",
+  );
 }
 
 function extensionForMimeType(mimeType: string): string {
@@ -586,8 +715,12 @@ async function uploadToSupabaseStorage({
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Supabase Storage upload failed (${response.status}): ${message}`);
+    const responseMessage = await response.text();
+    console.error("Supabase Storage upload failed.", {
+      status: response.status,
+      responseMessage,
+    });
+    throw new AdminUpstreamError(`Storage upload failed with status ${response.status}.`);
   }
 }
 
