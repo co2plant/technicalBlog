@@ -3,6 +3,7 @@
 import "@toast-ui/editor/dist/toastui-editor.css";
 import Link from "next/link";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   adminEditorSaveStateReducer,
   createAdminEditorSaveState,
@@ -18,11 +19,14 @@ type PostStatus = "draft" | "published" | "archived" | string;
 type AssetRole = "cover" | "inline" | "attachment" | "embedded_pdf";
 
 type ToastEditorInstance = {
+  changePreviewStyle(style: "tab" | "vertical"): void;
   destroy(): void;
   exec(name: string, payload?: Record<string, unknown>): void;
   getMarkdown(): string;
   insertText(text: string): void;
   on(type: string, handler: () => void): void;
+  setHeight(height: string): void;
+  setMinHeight(minHeight: string): void;
 };
 
 export type AdminEditorCategory = {
@@ -88,6 +92,10 @@ type AdminPostEditorProps = {
 
 const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 const PDF_ACCEPT = "application/pdf";
+const FULL_WIDTH_PREFERENCE_KEY = "admin-editor-full-width";
+const MOBILE_EDITOR_BREAKPOINT = 768;
+const EDITOR_VERTICAL_PREVIEW_MIN_WIDTH = 960;
+const DESKTOP_SETTINGS_BREAKPOINT = 1280;
 
 export function AdminPostEditor({ initialPost, initialCategories, messages }: AdminPostEditorProps) {
   const editorHostRef = useRef<HTMLDivElement | null>(null);
@@ -96,6 +104,9 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
   const coverImageInputRef = useRef<HTMLInputElement | null>(null);
   const pdfAttachmentInputRef = useRef<HTMLInputElement | null>(null);
   const pdfEmbedInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileSettingsTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const settingsPanelRef = useRef<HTMLDivElement | null>(null);
+  const settingsCloseRef = useRef<HTMLButtonElement | null>(null);
   const componentMountedRef = useRef(true);
   const editorMountedRef = useRef(false);
   const editorGenerationRef = useRef(0);
@@ -132,6 +143,9 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
   const [error, setError] = useState("");
   const [pendingActions, setPendingActions] = useState<Record<string, number>>({});
   const [editorReady, setEditorReady] = useState(false);
+  const [isFullWidth, setIsFullWidth] = useState(true);
+  const [desktopSettingsVisible, setDesktopSettingsVisible] = useState(true);
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
   const operationTailRef = useRef<Promise<void>>(Promise.resolve());
   const contentSavePromiseRef = useRef<Promise<boolean> | null>(null);
   const contentSaveRequestedRef = useRef(false);
@@ -210,6 +224,95 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
     },
     [markDirty, replaceDraft],
   );
+
+  useEffect(() => {
+    try {
+      const storedPreference = window.localStorage.getItem(FULL_WIDTH_PREFERENCE_KEY);
+
+      if (storedPreference === "true" || storedPreference === "false") {
+        setIsFullWidth(storedPreference === "true");
+      }
+    } catch {
+      // Storage can be unavailable in private or restricted browsing contexts.
+    }
+  }, []);
+
+  useEffect(() => {
+    function closeMobileSettingsAtDesktopWidth() {
+      if (window.innerWidth >= DESKTOP_SETTINGS_BREAKPOINT) {
+        setMobileSettingsOpen(false);
+      }
+    }
+
+    window.addEventListener("resize", closeMobileSettingsAtDesktopWidth);
+    return () => window.removeEventListener("resize", closeMobileSettingsAtDesktopWidth);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileSettingsOpen) {
+      return;
+    }
+
+    const previouslyFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    (settingsCloseRef.current ?? settingsPanelRef.current)?.focus();
+
+    function handleSettingsKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileSettingsOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab" || !settingsPanelRef.current) {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        settingsPanelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements.at(-1);
+
+      if (!firstElement || !lastElement) {
+        event.preventDefault();
+        settingsPanelRef.current.focus();
+        return;
+      }
+
+      const activeElement = document.activeElement;
+
+      if (!settingsPanelRef.current.contains(activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      } else if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleSettingsKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleSettingsKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+
+      const desktopSettingsTrigger = document.querySelector<HTMLButtonElement>('button[aria-label="설정 패널"]');
+      const focusTarget = window.innerWidth >= DESKTOP_SETTINGS_BREAKPOINT
+        ? desktopSettingsTrigger
+        : previouslyFocusedElement;
+
+      if (focusTarget?.isConnected) {
+        focusTarget.focus();
+      }
+    };
+  }, [mobileSettingsOpen]);
 
   const saveDraft = useCallback(
     async ({ silent = false }: { silent?: boolean } = {}) => {
@@ -326,13 +429,14 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
         return;
       }
 
+      const editorLayout = responsiveEditorLayout(editorHostRef.current.clientWidth);
       const editor = new Editor({
         el: editorHostRef.current,
-        height: "680px",
-        minHeight: "520px",
+        height: editorLayout.height,
+        minHeight: editorLayout.minHeight,
         initialValue: initialPost.bodyMarkdown,
         initialEditType: "wysiwyg",
-        previewStyle: "vertical",
+        previewStyle: editorLayout.previewStyle,
         language: "ko-KR",
         usageStatistics: false,
         toolbarItems: [
@@ -389,6 +493,33 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
     // The editor is intentionally mounted once with the first server payload.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!editorReady) {
+      return;
+    }
+
+    function syncEditorLayoutToViewport() {
+      const editor = editorRef.current;
+
+      if (!editor) {
+        return;
+      }
+
+      const editorWidth = editorHostRef.current?.clientWidth ?? window.innerWidth;
+      const layout = responsiveEditorLayout(editorWidth);
+      editor.setHeight(layout.height);
+      editor.setMinHeight(layout.minHeight);
+      editor.changePreviewStyle(layout.previewStyle);
+    }
+
+    syncEditorLayoutToViewport();
+    window.addEventListener("resize", syncEditorLayoutToViewport);
+
+    return () => {
+      window.removeEventListener("resize", syncEditorLayoutToViewport);
+    };
+  }, [desktopSettingsVisible, editorReady, isFullWidth]);
 
   useEffect(() => {
     if (saveState.status !== "dirty") {
@@ -858,8 +989,28 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
     }
   }
 
+  function toggleFullWidth() {
+    setIsFullWidth((current) => {
+      const next = !current;
+
+      try {
+        window.localStorage.setItem(FULL_WIDTH_PREFERENCE_KEY, String(next));
+      } catch {
+        // The layout still updates even when the preference cannot be persisted.
+      }
+
+      return next;
+    });
+  }
+
   return (
-    <div className="relative left-1/2 w-[calc(100vw-2rem)] max-w-[1540px] -translate-x-1/2 pb-8">
+    <div
+      data-layout={isFullWidth ? "full" : "constrained"}
+      data-testid="admin-editor-shell"
+      className={`relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 pb-8 ${
+        isFullWidth ? "max-w-none" : "max-w-[1200px]"
+      }`}
+    >
       <input
         ref={inlineImageInputRef}
         type="file"
@@ -889,7 +1040,7 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
         onChange={(event) => void handleAssetInput(event.currentTarget.files, "embedded_pdf")}
       />
 
-      <header className="sticky top-14 z-20 -mx-4 border-b border-gh-border/70 bg-gh-bg/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
+      <header className="relative z-20 -mx-4 border-b border-gh-border/70 bg-gh-bg/95 px-4 py-3 backdrop-blur md:sticky md:top-14 md:-mx-6 md:px-6">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-gh-muted">
@@ -921,6 +1072,41 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
             <span aria-live="polite" className="min-w-24 text-sm text-gh-muted">
               {saveStateLabel(saveState, lastSavedAt)}
             </span>
+            <button
+              type="button"
+              ref={mobileSettingsTriggerRef}
+              aria-controls="admin-post-settings"
+              aria-expanded={mobileSettingsOpen}
+              aria-haspopup="dialog"
+              aria-label="설정 열기"
+              onClick={() => setMobileSettingsOpen(true)}
+              className="inline-flex min-h-10 items-center rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 xl:hidden"
+            >
+              설정
+            </button>
+            <button
+              type="button"
+              aria-pressed={isFullWidth}
+              aria-label="전체 너비"
+              onClick={toggleFullWidth}
+              className={`hidden min-h-10 items-center rounded-md border px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 xl:inline-flex ${
+                isFullWidth
+                  ? "border-gh-text bg-gh-text text-gh-bg"
+                  : "border-gh-border text-gh-text hover:bg-gh-surface"
+              }`}
+            >
+              전체 너비
+            </button>
+            <button
+              type="button"
+              aria-controls="admin-post-settings"
+              aria-expanded={desktopSettingsVisible}
+              aria-label="설정 패널"
+              onClick={() => setDesktopSettingsVisible((current) => !current)}
+              className="hidden min-h-10 items-center rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 xl:inline-flex"
+            >
+              설정
+            </button>
             <button
               type="button"
               onClick={() => void openPreview()}
@@ -959,8 +1145,14 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
         ) : null}
       </header>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="min-w-0">
+      <div
+        className={`mt-6 grid gap-6 ${
+          desktopSettingsVisible
+            ? "xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]"
+            : "xl:grid-cols-1"
+        }`}
+      >
+        <section className="min-w-0" data-testid="admin-editor-writing-pane">
           <textarea
             aria-label="글 설명"
             value={draft.description}
@@ -970,263 +1162,302 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
           />
           <div className="admin-toast-editor rounded-lg border border-gh-border bg-white">
             {!editorReady ? <div className="p-6 text-sm text-slate-500">에디터를 불러오는 중입니다.</div> : null}
-            <div ref={editorHostRef} />
+            <div ref={editorHostRef} data-testid="admin-toast-editor-host" />
           </div>
         </section>
 
-        <aside className="space-y-4">
-          <Panel title="작성 설정">
-            <FieldLabel label="카테고리">
-              <div className="flex gap-2">
-                <select
-                  value={draft.categorySlug}
-                  onChange={(event) => updateDraft("categorySlug", event.target.value)}
-                  className="min-w-0 flex-1 rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-gh-text outline-none focus:border-indigo-400"
-                >
-                  {categories.map((category) => (
-                    <option key={category.slug} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+        <MobileSettingsPortal active={mobileSettingsOpen}>
+          <aside
+            id="admin-post-settings"
+            role={mobileSettingsOpen ? "dialog" : undefined}
+            aria-modal={mobileSettingsOpen ? true : undefined}
+            aria-labelledby={mobileSettingsOpen ? "admin-post-settings-title" : undefined}
+            aria-label={mobileSettingsOpen ? undefined : "글 설정"}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) {
+                setMobileSettingsOpen(false);
+              }
+            }}
+            className={`max-xl:fixed max-xl:inset-0 max-xl:z-[70] max-xl:justify-end max-xl:bg-black/60 xl:sticky xl:top-40 xl:max-h-[calc(100dvh-11rem)] xl:self-start xl:overflow-y-auto xl:overscroll-contain ${
+              mobileSettingsOpen ? "max-xl:flex" : "max-xl:hidden"
+            } ${desktopSettingsVisible ? "xl:block" : "xl:hidden"}`}
+          >
+            <div
+              ref={settingsPanelRef}
+              tabIndex={-1}
+              className="h-full w-[min(92vw,24rem)] overflow-y-auto overscroll-contain border-l border-gh-border bg-gh-bg p-4 shadow-2xl outline-none xl:h-auto xl:w-auto xl:overflow-visible xl:border-0 xl:bg-transparent xl:p-0 xl:shadow-none"
+            >
+              <div className="sticky top-0 z-10 mb-4 flex items-center justify-between border-b border-gh-border bg-gh-bg pb-3 xl:hidden">
+                <h2 id="admin-post-settings-title" className="font-bold text-gh-text">
+                  글 설정
+                </h2>
                 <button
+                  ref={settingsCloseRef}
                   type="button"
-                  onClick={() => setCategoryFormOpen((current) => !current)}
-                  className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-surface"
-                  aria-label="카테고리 추가"
+                  aria-label="설정 닫기"
+                  onClick={() => setMobileSettingsOpen(false)}
+                  className="inline-flex min-h-10 items-center rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
                 >
-                  +
+                  닫기
                 </button>
               </div>
-            </FieldLabel>
 
-            {categoryFormOpen ? (
-              <div className="mt-3 space-y-2 rounded-md border border-gh-border bg-gh-bg p-3">
-                <input
-                  aria-label="카테고리 이름"
-                  value={categoryName}
-                  onChange={(event) => {
-                    const nextName = event.target.value;
-                    setCategoryName(nextName);
+              <div className="space-y-4">
+                <Panel title="작성 설정">
+                  <FieldLabel label="카테고리">
+                    <div className="flex gap-2">
+                      <select
+                        value={draft.categorySlug}
+                        onChange={(event) => updateDraft("categorySlug", event.target.value)}
+                        className="min-w-0 flex-1 rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-gh-text outline-none focus:border-indigo-400"
+                      >
+                        {categories.map((category) => (
+                          <option key={category.slug} value={category.slug}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setCategoryFormOpen((current) => !current)}
+                        className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-surface"
+                        aria-label="카테고리 추가"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </FieldLabel>
 
-                    if (!categorySlugManuallyEditedRef.current) {
-                      setCategorySlug(slugify(nextName));
-                    }
-                  }}
-                  className="w-full rounded-md border border-gh-border bg-gh-surface px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-                  placeholder="카테고리 이름"
-                />
-                <input
-                  aria-label="카테고리 slug"
-                  value={categorySlug}
-                  onChange={(event) => {
-                    const nextSlug = event.target.value;
-                    setCategorySlug(nextSlug);
-                    categorySlugManuallyEditedRef.current = Boolean(
-                      nextSlug && nextSlug !== slugify(categoryName),
-                    );
-                  }}
-                  className="w-full rounded-md border border-gh-border bg-gh-surface px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-                  placeholder="category-slug"
-                />
-                <button
-                  type="button"
-                  onClick={() => void createCategory()}
-                  disabled={hasPendingAction}
-                  className="w-full rounded-md bg-gh-text px-3 py-2 text-sm font-semibold text-gh-bg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  카테고리 추가
-                </button>
+                  {categoryFormOpen ? (
+                    <div className="mt-3 space-y-2 rounded-md border border-gh-border bg-gh-bg p-3">
+                      <input
+                        aria-label="카테고리 이름"
+                        value={categoryName}
+                        onChange={(event) => {
+                          const nextName = event.target.value;
+                          setCategoryName(nextName);
+
+                          if (!categorySlugManuallyEditedRef.current) {
+                            setCategorySlug(slugify(nextName));
+                          }
+                        }}
+                        className="w-full rounded-md border border-gh-border bg-gh-surface px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                        placeholder="카테고리 이름"
+                      />
+                      <input
+                        aria-label="카테고리 slug"
+                        value={categorySlug}
+                        onChange={(event) => {
+                          const nextSlug = event.target.value;
+                          setCategorySlug(nextSlug);
+                          categorySlugManuallyEditedRef.current = Boolean(
+                            nextSlug && nextSlug !== slugify(categoryName),
+                          );
+                        }}
+                        className="w-full rounded-md border border-gh-border bg-gh-surface px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                        placeholder="category-slug"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void createCategory()}
+                        disabled={hasPendingAction}
+                        className="w-full rounded-md bg-gh-text px-3 py-2 text-sm font-semibold text-gh-bg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        카테고리 추가
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <FieldLabel label="요약">
+                    <textarea
+                      value={draft.excerpt}
+                      onChange={(event) => updateDraft("excerpt", event.target.value)}
+                      className="min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm leading-relaxed text-gh-text outline-none focus:border-indigo-400"
+                      placeholder="목록 카드에 보일 요약"
+                    />
+                  </FieldLabel>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <FieldLabel label="작성자">
+                      <input
+                        value={draft.author}
+                        onChange={(event) => updateDraft("author", event.target.value)}
+                        className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                      />
+                    </FieldLabel>
+                    <FieldLabel label="형식">
+                      <select
+                        value={draft.extension}
+                        onChange={(event) => updateDraft("extension", event.target.value as EditorMode)}
+                        className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                      >
+                        <option value="mdx">mdx</option>
+                        <option value="md">md</option>
+                      </select>
+                    </FieldLabel>
+                  </div>
+                </Panel>
+
+                <Panel title="태그">
+                  <div className="flex flex-wrap gap-2">
+                    {draft.tags.map((tag, index) => (
+                      <button
+                        key={`${tag.name}-${tag.slug ?? index}`}
+                        type="button"
+                        onClick={() => removeTag(index)}
+                        className="rounded-full border border-gh-border bg-gh-bg px-3 py-1 text-sm text-gh-text hover:border-red-400 hover:text-red-300"
+                        title="클릭하면 삭제됩니다"
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-3 grid gap-2">
+                    <input
+                      aria-label="태그 이름"
+                      value={tagName}
+                      onChange={(event) => setTagName(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === ",") {
+                          event.preventDefault();
+                          addTag();
+                        }
+                      }}
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                      placeholder="태그 이름"
+                    />
+                    <input
+                      aria-label="태그 slug"
+                      value={tagSlug}
+                      onChange={(event) => setTagSlug(event.target.value)}
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                      placeholder="한글 태그용 slug"
+                    />
+                    <button
+                      type="button"
+                      onClick={addTag}
+                      className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg"
+                    >
+                      태그 추가
+                    </button>
+                  </div>
+                </Panel>
+
+                <Panel title="이미지와 PDF">
+                  <div className="grid gap-2">
+                    <button
+                      type="button"
+                      onClick={() => inlineImageInputRef.current?.click()}
+                      disabled={hasPendingAction}
+                      className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      본문 이미지 삽입
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => coverImageInputRef.current?.click()}
+                      disabled={hasPendingAction}
+                      className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      커버 이미지 설정
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pdfAttachmentInputRef.current?.click()}
+                      disabled={hasPendingAction}
+                      className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      PDF 링크 삽입
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => pdfEmbedInputRef.current?.click()}
+                      disabled={hasPendingAction}
+                      className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      PDF 임베드 설정
+                    </button>
+                  </div>
+
+                  {draft.coverImageUrl ? (
+                    <div
+                      className="mt-3 h-36 overflow-hidden rounded-md border border-gh-border bg-cover bg-center"
+                      style={{ backgroundImage: `url("${draft.coverImageUrl.replaceAll('"', "%22")}")` }}
+                    />
+                  ) : null}
+
+                  <label className="mt-3 flex items-center gap-2 text-sm text-gh-text">
+                    <input
+                      type="checkbox"
+                      checked={draft.allowPdfDownload}
+                      onChange={(event) => updateDraft("allowPdfDownload", event.target.checked)}
+                    />
+                    PDF 다운로드 허용
+                  </label>
+                </Panel>
+
+                <Panel title="자산 목록">
+                  <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                    {assets.length === 0 ? <p className="text-sm text-gh-muted">업로드된 자산이 없습니다.</p> : null}
+                    {assets.map((asset) => (
+                      <button
+                        key={asset.id}
+                        type="button"
+                        onClick={() => insertAsset(asset)}
+                        className="w-full rounded-md border border-gh-border bg-gh-bg p-3 text-left hover:border-indigo-400"
+                      >
+                        <span className="block text-xs font-semibold uppercase text-gh-muted">{asset.role}</span>
+                        <span className="mt-1 block break-all font-mono text-xs text-gh-text">{asset.publicUrl}</span>
+                      </button>
+                    ))}
+                  </div>
+                </Panel>
+
+                <Panel title="고급 설정">
+                  <FieldLabel label="원문 URL">
+                    <input
+                      value={draft.originalUrl}
+                      onChange={(event) => updateDraft("originalUrl", event.target.value)}
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                    />
+                  </FieldLabel>
+                  <FieldLabel label="커버 이미지 URL">
+                    <input
+                      value={draft.coverImageUrl}
+                      onChange={(event) => updateDraft("coverImageUrl", event.target.value)}
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                    />
+                  </FieldLabel>
+                  <FieldLabel label="임베드 PDF URL">
+                    <input
+                      value={draft.embeddedPdfUrl}
+                      onChange={(event) => updateDraft("embeddedPdfUrl", event.target.value)}
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                    />
+                  </FieldLabel>
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => void archiveCurrentPost()}
+                      disabled={hasPendingAction}
+                      className="flex-1 rounded-md border border-amber-500/40 px-3 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      발행취소
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void deleteCurrentPost()}
+                      disabled={hasPendingAction}
+                      className="flex-1 rounded-md border border-red-500/40 px-3 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </Panel>
               </div>
-            ) : null}
-
-            <FieldLabel label="요약">
-              <textarea
-                value={draft.excerpt}
-                onChange={(event) => updateDraft("excerpt", event.target.value)}
-                className="min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm leading-relaxed text-gh-text outline-none focus:border-indigo-400"
-                placeholder="목록 카드에 보일 요약"
-              />
-            </FieldLabel>
-
-            <div className="grid grid-cols-2 gap-2">
-              <FieldLabel label="작성자">
-                <input
-                  value={draft.author}
-                  onChange={(event) => updateDraft("author", event.target.value)}
-                  className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-                />
-              </FieldLabel>
-              <FieldLabel label="형식">
-                <select
-                  value={draft.extension}
-                  onChange={(event) => updateDraft("extension", event.target.value as EditorMode)}
-                  className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-                >
-                  <option value="mdx">mdx</option>
-                  <option value="md">md</option>
-                </select>
-              </FieldLabel>
             </div>
-          </Panel>
-
-          <Panel title="태그">
-            <div className="flex flex-wrap gap-2">
-              {draft.tags.map((tag, index) => (
-                <button
-                  key={`${tag.name}-${tag.slug ?? index}`}
-                  type="button"
-                  onClick={() => removeTag(index)}
-                  className="rounded-full border border-gh-border bg-gh-bg px-3 py-1 text-sm text-gh-text hover:border-red-400 hover:text-red-300"
-                  title="클릭하면 삭제됩니다"
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 grid gap-2">
-              <input
-                aria-label="태그 이름"
-                value={tagName}
-                onChange={(event) => setTagName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === ",") {
-                    event.preventDefault();
-                    addTag();
-                  }
-                }}
-                className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-                placeholder="태그 이름"
-              />
-              <input
-                aria-label="태그 slug"
-                value={tagSlug}
-                onChange={(event) => setTagSlug(event.target.value)}
-                className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-                placeholder="한글 태그용 slug"
-              />
-              <button
-                type="button"
-                onClick={addTag}
-                className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg"
-              >
-                태그 추가
-              </button>
-            </div>
-          </Panel>
-
-          <Panel title="이미지와 PDF">
-            <div className="grid gap-2">
-              <button
-                type="button"
-                onClick={() => inlineImageInputRef.current?.click()}
-                disabled={hasPendingAction}
-                className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                본문 이미지 삽입
-              </button>
-              <button
-                type="button"
-                onClick={() => coverImageInputRef.current?.click()}
-                disabled={hasPendingAction}
-                className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                커버 이미지 설정
-              </button>
-              <button
-                type="button"
-                onClick={() => pdfAttachmentInputRef.current?.click()}
-                disabled={hasPendingAction}
-                className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                PDF 링크 삽입
-              </button>
-              <button
-                type="button"
-                onClick={() => pdfEmbedInputRef.current?.click()}
-                disabled={hasPendingAction}
-                className="rounded-md border border-gh-border px-3 py-2 text-sm font-semibold text-gh-text hover:bg-gh-bg disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                PDF 임베드 설정
-              </button>
-            </div>
-
-            {draft.coverImageUrl ? (
-              <div
-                className="mt-3 h-36 overflow-hidden rounded-md border border-gh-border bg-cover bg-center"
-                style={{ backgroundImage: `url("${draft.coverImageUrl.replaceAll('"', "%22")}")` }}
-              />
-            ) : null}
-
-            <label className="mt-3 flex items-center gap-2 text-sm text-gh-text">
-              <input
-                type="checkbox"
-                checked={draft.allowPdfDownload}
-                onChange={(event) => updateDraft("allowPdfDownload", event.target.checked)}
-              />
-              PDF 다운로드 허용
-            </label>
-          </Panel>
-
-          <Panel title="자산 목록">
-            <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
-              {assets.length === 0 ? <p className="text-sm text-gh-muted">업로드된 자산이 없습니다.</p> : null}
-              {assets.map((asset) => (
-                <button
-                  key={asset.id}
-                  type="button"
-                  onClick={() => insertAsset(asset)}
-                  className="w-full rounded-md border border-gh-border bg-gh-bg p-3 text-left hover:border-indigo-400"
-                >
-                  <span className="block text-xs font-semibold uppercase text-gh-muted">{asset.role}</span>
-                  <span className="mt-1 block break-all font-mono text-xs text-gh-text">{asset.publicUrl}</span>
-                </button>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel title="고급 설정">
-            <FieldLabel label="원문 URL">
-              <input
-                value={draft.originalUrl}
-                onChange={(event) => updateDraft("originalUrl", event.target.value)}
-                className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-              />
-            </FieldLabel>
-            <FieldLabel label="커버 이미지 URL">
-              <input
-                value={draft.coverImageUrl}
-                onChange={(event) => updateDraft("coverImageUrl", event.target.value)}
-                className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-              />
-            </FieldLabel>
-            <FieldLabel label="임베드 PDF URL">
-              <input
-                value={draft.embeddedPdfUrl}
-                onChange={(event) => updateDraft("embeddedPdfUrl", event.target.value)}
-                className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
-              />
-            </FieldLabel>
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => void archiveCurrentPost()}
-                disabled={hasPendingAction}
-                className="flex-1 rounded-md border border-amber-500/40 px-3 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                발행취소
-              </button>
-              <button
-                type="button"
-                onClick={() => void deleteCurrentPost()}
-                disabled={hasPendingAction}
-                className="flex-1 rounded-md border border-red-500/40 px-3 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                삭제
-              </button>
-            </div>
-          </Panel>
-        </aside>
+          </aside>
+        </MobileSettingsPortal>
       </div>
     </div>
   );
@@ -1241,6 +1472,35 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
 
     insertLinkAsset(asset.publicUrl, label);
   }
+}
+
+function responsiveEditorLayout(editorWidth: number): {
+  height: string;
+  minHeight: string;
+  previewStyle: "tab" | "vertical";
+} {
+  const isCompactViewport = window.innerWidth < MOBILE_EDITOR_BREAKPOINT;
+  const reservedHeight = isCompactViewport ? 180 : 200;
+  const maximumHeight = isCompactViewport ? 760 : 960;
+  const height = Math.round(
+    Math.min(maximumHeight, Math.max(440, window.innerHeight - reservedHeight)),
+  );
+  const preferredMinHeight = isCompactViewport ? 320 : 520;
+  const minHeight = Math.min(preferredMinHeight, height - 75);
+
+  return {
+    height: `${height}px`,
+    minHeight: `${minHeight}px`,
+    previewStyle: editorWidth < EDITOR_VERTICAL_PREVIEW_MIN_WIDTH ? "tab" : "vertical",
+  };
+}
+
+function MobileSettingsPortal({ active, children }: { active: boolean; children: React.ReactNode }) {
+  if (active && typeof document !== "undefined") {
+    return createPortal(children, document.body);
+  }
+
+  return children;
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
