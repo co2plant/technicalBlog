@@ -9,20 +9,35 @@ type AddImageBlobHook = (blob: Blob | File, callback: (url: string, text?: strin
 
 const editorMock = vi.hoisted(() => ({
   addImageBlobHook: undefined as AddImageBlobHook | undefined,
+  constructCount: 0,
+  destroyCount: 0,
+  layoutCalls: [] as Array<{ method: string; value: string }>,
 }));
 
 vi.mock("@toast-ui/editor", () => ({
   default: class MockEditor {
     constructor(options: { hooks?: { addImageBlobHook?: AddImageBlobHook } }) {
       editorMock.addImageBlobHook = options.hooks?.addImageBlobHook;
+      editorMock.constructCount += 1;
     }
-    destroy() {}
+    changePreviewStyle(style: string) {
+      editorMock.layoutCalls.push({ method: "preview", value: style });
+    }
+    destroy() {
+      editorMock.destroyCount += 1;
+    }
     exec() {}
     getMarkdown() {
       return "";
     }
     insertText() {}
     on() {}
+    setHeight(height: string) {
+      editorMock.layoutCalls.push({ method: "height", value: height });
+    }
+    setMinHeight(minHeight: string) {
+      editorMock.layoutCalls.push({ method: "min-height", value: minHeight });
+    }
   },
 }));
 
@@ -42,6 +57,18 @@ describe("AdminPostEditor autosave wiring", () => {
     reactActEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
     vi.useFakeTimers();
     editorMock.addImageBlobHook = undefined;
+    editorMock.constructCount = 0;
+    editorMock.destroyCount = 0;
+    editorMock.layoutCalls = [];
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1024 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 768 });
+
+    try {
+      window.localStorage.clear();
+    } catch {
+      // jsdom can expose localStorage through an opaque origin.
+    }
+
     fetchMock.mockReset();
     fetchMock.mockResolvedValue(
       new Response(
@@ -211,6 +238,118 @@ describe("AdminPostEditor autosave wiring", () => {
     }
 
     expect(container.querySelectorAll('button[title="클릭하면 삭제됩니다"]')).toHaveLength(1);
+  });
+
+  it("changes layout preferences without dirtying or remounting the editor", async () => {
+    const shell = container.querySelector<HTMLElement>('[data-testid="admin-editor-shell"]');
+    const fullWidthButton = container.querySelector<HTMLButtonElement>('button[aria-label="전체 너비"]');
+    const desktopSettingsButton = container.querySelector<HTMLButtonElement>('button[aria-label="설정 패널"]');
+    const mobileSettingsButton = container.querySelector<HTMLButtonElement>('button[aria-label="설정 열기"]');
+
+    if (!shell || !fullWidthButton || !desktopSettingsButton || !mobileSettingsButton) {
+      throw new Error("Responsive editor controls were not rendered.");
+    }
+
+    expect(shell.dataset.layout).toBe("full");
+    expect(fullWidthButton.getAttribute("aria-pressed")).toBe("true");
+    expect(desktopSettingsButton.getAttribute("aria-expanded")).toBe("true");
+    expect(mobileSettingsButton.getAttribute("aria-expanded")).toBe("false");
+    expect(editorMock.constructCount).toBe(1);
+    expect(editorMock.layoutCalls.slice(0, 3)).toEqual([
+      { method: "height", value: "568px" },
+      { method: "min-height", value: "493px" },
+      { method: "preview", value: "tab" },
+    ]);
+
+    await act(async () => {
+      fullWidthButton.click();
+      desktopSettingsButton.click();
+    });
+
+    expect(shell.dataset.layout).toBe("constrained");
+    expect(fullWidthButton.getAttribute("aria-pressed")).toBe("false");
+    expect(desktopSettingsButton.getAttribute("aria-expanded")).toBe("false");
+
+    mobileSettingsButton.focus();
+    await act(async () => {
+      mobileSettingsButton.click();
+    });
+
+    const settingsDialog = document.querySelector<HTMLElement>('[role="dialog"]');
+    const closeSettingsButton = document.querySelector<HTMLButtonElement>('button[aria-label="설정 닫기"]');
+
+    expect(settingsDialog?.getAttribute("aria-modal")).toBe("true");
+    expect(mobileSettingsButton.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement).toBe(closeSettingsButton);
+
+    const focusableSettingsControls = settingsDialog?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    const lastSettingsControl = focusableSettingsControls?.item((focusableSettingsControls?.length ?? 1) - 1);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", shiftKey: true, bubbles: true }));
+    });
+
+    expect(document.activeElement).toBe(lastSettingsControl);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    });
+
+    expect(document.activeElement).toBe(closeSettingsButton);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(mobileSettingsButton.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(mobileSettingsButton);
+
+    const editorHost = container.querySelector<HTMLElement>('[data-testid="admin-toast-editor-host"]');
+
+    if (!editorHost) {
+      throw new Error("Toast UI editor host was not rendered.");
+    }
+
+    Object.defineProperty(editorHost, "clientWidth", { configurable: true, value: 390 });
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+    editorMock.layoutCalls = [];
+
+    await act(async () => {
+      window.dispatchEvent(new Event("resize"));
+    });
+
+    expect(editorMock.layoutCalls).toEqual([
+      { method: "height", value: "664px" },
+      { method: "min-height", value: "320px" },
+      { method: "preview", value: "tab" },
+    ]);
+
+    Object.defineProperty(editorHost, "clientWidth", { configurable: true, value: 1000 });
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1440 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 900 });
+    editorMock.layoutCalls = [];
+
+    await act(async () => {
+      window.dispatchEvent(new Event("resize"));
+    });
+
+    expect(editorMock.layoutCalls).toEqual([
+      { method: "height", value: "700px" },
+      { method: "min-height", value: "520px" },
+      { method: "preview", value: "vertical" },
+    ]);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(editorMock.constructCount).toBe(1);
+    expect(editorMock.destroyCount).toBe(0);
   });
 
   it("keeps actions disabled until every overlapping operation finishes", async () => {

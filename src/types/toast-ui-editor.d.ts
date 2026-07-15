@@ -40,11 +40,14 @@ declare module "@toast-ui/editor" {
 
   export default class Editor {
     constructor(options: EditorOptions);
+    changePreviewStyle(style: PreviewStyle): void;
     destroy(): void;
     exec(name: string, payload?: Record<string, unknown>): void;
     getMarkdown(): string;
     insertText(text: string): void;
     on(type: string, handler: () => void): void;
+    setHeight(height: string): void;
+    setMinHeight(minHeight: string): void;
   }
 }
 

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 type DraftSavePayload = {
   title?: string;
@@ -13,6 +13,7 @@ test.describe("admin post editor", () => {
   test.skip(!process.env.ADMIN_ACCESS_SECRET, "ADMIN_ACCESS_SECRET is required for admin editor e2e.");
 
   test("renders the writing UI and sends the latest editor payload on draft save", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     const bodyToken = `admin-editor-body-${Date.now()}`;
     const tagToken = `admin-editor-tag-${Date.now()}`;
     const categorySlug = `e2e-category-${Date.now()}`;
@@ -182,6 +183,87 @@ test.describe("admin post editor", () => {
     expect(publishedPayload.categorySlug).toBe(categorySlug);
   });
 
+  test("supports full-width focus mode and a mobile settings drawer", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openFirstAdminPost(page);
+
+    const shell = page.getByTestId("admin-editor-shell");
+    const writingPane = page.getByTestId("admin-editor-writing-pane");
+    const fullWidthButton = page.getByRole("button", { name: "전체 너비" });
+    const desktopSettingsButton = page.getByRole("button", { name: "설정 패널" });
+
+    await expect(page.locator(".toastui-editor-defaultUI")).toBeVisible();
+    await expect(fullWidthButton).toHaveAttribute("aria-pressed", "true");
+    const fullWidth = (await shell.boundingBox())?.width ?? 0;
+
+    await fullWidthButton.click();
+    await expect(fullWidthButton).toHaveAttribute("aria-pressed", "false");
+    await expect(shell).toHaveAttribute("data-layout", "constrained");
+    await expect
+      .poll(async () => (await shell.boundingBox())?.width ?? 0)
+      .toBeLessThan(fullWidth - 100);
+
+    await page.reload();
+    await expect(page.locator(".toastui-editor-defaultUI")).toBeVisible();
+    await expect(fullWidthButton).toHaveAttribute("aria-pressed", "false");
+    await expect(shell).toHaveAttribute("data-layout", "constrained");
+
+    await fullWidthButton.click();
+    await expect(fullWidthButton).toHaveAttribute("aria-pressed", "true");
+    await expect
+      .poll(async () => (await shell.boundingBox())?.width ?? 0)
+      .toBeGreaterThan(fullWidth - 5);
+    await expect(desktopSettingsButton).toHaveAttribute("aria-expanded", "true");
+    const writingWidthWithSettings = (await writingPane.boundingBox())?.width ?? 0;
+
+    await desktopSettingsButton.click();
+    await expect(desktopSettingsButton).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#admin-post-settings")).toBeHidden();
+    await expect
+      .poll(async () => (await writingPane.boundingBox())?.width ?? 0)
+      .toBeGreaterThan(writingWidthWithSettings + 200);
+
+    await desktopSettingsButton.click();
+    await expect(desktopSettingsButton).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("#admin-post-settings")).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileSettingsButton = page.getByRole("button", { name: "설정 열기" });
+    await expect(mobileSettingsButton).toBeVisible();
+    await expect(mobileSettingsButton).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#admin-post-settings")).toBeHidden();
+    await expect(page.getByTestId("admin-toast-editor-host")).toHaveCSS("height", "664px");
+    await expect(page.locator(".toastui-editor-toolbar-icons.more")).toBeVisible();
+
+    const bodyOverflowBeforeOpen = await page.evaluate(() => document.body.style.overflow);
+    await mobileSettingsButton.click();
+    const settingsDialog = page.getByRole("dialog", { name: "글 설정" });
+    await expect(settingsDialog).toBeVisible();
+    await expect(page.getByRole("button", { name: "설정 닫기" })).toBeFocused();
+    await expect(settingsDialog.getByRole("button", { name: "본문 이미지 삽입" })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("hidden");
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+      .toBe(true);
+
+    const dialogBox = await settingsDialog.boundingBox();
+    expect(dialogBox).not.toBeNull();
+    expect(dialogBox?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect(dialogBox?.y ?? -1).toBeGreaterThanOrEqual(0);
+    expect((dialogBox?.x ?? 0) + (dialogBox?.width ?? 0)).toBeLessThanOrEqual(391);
+    expect((dialogBox?.y ?? 0) + (dialogBox?.height ?? 0)).toBeLessThanOrEqual(845);
+
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#admin-post-settings")).toBeHidden();
+    await expect(mobileSettingsButton).toHaveAttribute("aria-expanded", "false");
+    await expect(mobileSettingsButton).toBeFocused();
+    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe(bodyOverflowBeforeOpen);
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
+      .toBe(true);
+  });
+
   test("keeps in-flight edits dirty and saves the latest title once after the first request", async ({ page }) => {
     const token = Date.now();
     const titleA = `[E2E] in-flight-save-a-${token}`;
@@ -336,4 +418,22 @@ function requireDraftPayload(payload: DraftSavePayload | null): DraftSavePayload
   }
 
   return payload;
+}
+
+async function openFirstAdminPost(page: Page): Promise<void> {
+  await page.goto("/admin/login");
+  await page.getByLabel("비밀번호").fill(process.env.ADMIN_ACCESS_SECRET ?? "");
+  await Promise.all([page.waitForURL("**/admin"), page.getByRole("button", { name: "로그인" }).click()]);
+
+  const firstPostHref = await page.locator("a").evaluateAll((links) =>
+    links
+      .map((link) => link.getAttribute("href"))
+      .find((href): href is string => Boolean(href?.startsWith("/admin/posts/"))),
+  );
+
+  if (!firstPostHref) {
+    throw new Error("No admin post link was found.");
+  }
+
+  await page.goto(firstPostHref);
 }
