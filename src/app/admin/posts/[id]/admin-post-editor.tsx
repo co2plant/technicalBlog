@@ -1040,7 +1040,7 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
         onChange={(event) => void handleAssetInput(event.currentTarget.files, "embedded_pdf")}
       />
 
-      <header className="relative z-20 -mx-4 border-b border-gh-border/70 bg-gh-bg/95 px-4 py-3 backdrop-blur md:sticky md:top-14 md:-mx-6 md:px-6">
+      <header className="relative z-30 -mx-4 border-b border-gh-border/70 bg-gh-bg px-4 py-3 md:sticky md:top-14 md:-mx-6 md:px-6">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-gh-muted">
