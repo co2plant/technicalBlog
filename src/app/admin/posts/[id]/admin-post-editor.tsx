@@ -4,6 +4,7 @@ import "@toast-ui/editor/dist/toastui-editor.css";
 import Link from "next/link";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { AdminSessionTimer } from "@/app/admin/admin-session-timer";
 import {
   adminEditorSaveStateReducer,
   createAdminEditorSaveState,
@@ -82,6 +83,7 @@ type UploadedAssetResponse = {
 type AdminPostEditorProps = {
   initialPost: AdminEditorPost;
   initialCategories: AdminEditorCategory[];
+  sessionExpiresAt: number | null;
   messages: {
     saved?: boolean;
     published?: string;
@@ -97,7 +99,7 @@ const MOBILE_EDITOR_BREAKPOINT = 768;
 const EDITOR_VERTICAL_PREVIEW_MIN_WIDTH = 960;
 const DESKTOP_SETTINGS_BREAKPOINT = 1280;
 
-export function AdminPostEditor({ initialPost, initialCategories, messages }: AdminPostEditorProps) {
+export function AdminPostEditor({ initialPost, initialCategories, sessionExpiresAt, messages }: AdminPostEditorProps) {
   const editorHostRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<ToastEditorInstance | null>(null);
   const inlineImageInputRef = useRef<HTMLInputElement | null>(null);
@@ -1084,6 +1086,11 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
                 <Link href={publicPostUrl} className="text-gh-accent hover:underline">
                   공개 글
                 </Link>
+              ) : null}
+              {sessionExpiresAt ? (
+                <span className="ml-auto">
+                  <AdminSessionTimer expiresAt={sessionExpiresAt} />
+                </span>
               ) : null}
             </div>
             <input

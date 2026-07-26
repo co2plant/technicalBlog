@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminPostEditor, type AdminEditorAsset, type AdminEditorPost } from "./admin-post-editor";
-import { requireAdminSession } from "@/lib/admin-auth";
+import { getAdminSessionExpiry, requireAdminSession } from "@/lib/admin-auth";
 import { getAdminBlogPost, getAdminCategories } from "@/lib/blog-admin";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +30,12 @@ export default async function AdminPostEditPage({
     notFound();
   }
 
-  const [post, categories, query] = await Promise.all([getAdminBlogPost(id), getAdminCategories(), searchParams]);
+  const [post, categories, query, sessionExpiresAt] = await Promise.all([
+    getAdminBlogPost(id),
+    getAdminCategories(),
+    searchParams,
+    getAdminSessionExpiry(),
+  ]);
 
   if (!post) {
     notFound();
@@ -39,6 +44,7 @@ export default async function AdminPostEditPage({
   return (
     <AdminPostEditor
       initialPost={toEditorPost(post)}
+      sessionExpiresAt={sessionExpiresAt}
       initialCategories={categories.map((category) => ({
         id: category.id,
         name: category.name,

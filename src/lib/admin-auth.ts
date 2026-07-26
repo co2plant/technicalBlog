@@ -25,6 +25,18 @@ export async function requireAdminSession(): Promise<void> {
   }
 }
 
+export async function getAdminSessionExpiry(): Promise<number | null> {
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+
+  if (!cookieValue || !verifyAdminSessionCookie(cookieValue)) {
+    return null;
+  }
+
+  const expiresAt = Number(cookieValue.split(".")[1]);
+  return Number.isSafeInteger(expiresAt) ? expiresAt : null;
+}
+
 export async function createAdminSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
 

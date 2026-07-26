@@ -119,6 +119,7 @@ describe("AdminPostEditor autosave wiring", () => {
               sortOrder: 10,
             },
           ]}
+          sessionExpiresAt={null}
           messages={{}}
         />,
       );

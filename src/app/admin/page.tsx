@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminSessionTimer } from "@/app/admin/admin-session-timer";
 import { createPostAction, logoutAction } from "@/app/admin/actions";
-import { requireAdminSession } from "@/lib/admin-auth";
+import { getAdminSessionExpiry, requireAdminSession } from "@/lib/admin-auth";
 import { getAdminBlogPosts } from "@/lib/blog-admin";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function AdminPage() {
   await requireAdminSession();
-  const posts = await getAdminBlogPosts();
+  const [posts, sessionExpiresAt] = await Promise.all([getAdminBlogPosts(), getAdminSessionExpiry()]);
 
   return (
     <main className="mx-auto w-full max-w-6xl py-8">
@@ -24,6 +25,11 @@ export default async function AdminPage() {
         <div>
           <h1 className="text-3xl font-bold text-gh-text">Blog Admin</h1>
           <p className="mt-2 text-sm text-gh-muted">DB 기반 블로그 글 작성, 임시저장, 발행, 삭제를 관리합니다.</p>
+          {sessionExpiresAt ? (
+            <div className="mt-2">
+              <AdminSessionTimer expiresAt={sessionExpiresAt} />
+            </div>
+          ) : null}
         </div>
         <div className="flex gap-2">
           <form action={createPostAction}>
