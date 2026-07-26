@@ -146,6 +146,8 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
   const [isFullWidth, setIsFullWidth] = useState(true);
   const [desktopSettingsVisible, setDesktopSettingsVisible] = useState(true);
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+  const [imageUploadState, setImageUploadState] = useState<"idle" | "uploading" | "done">("idle");
+  const imageUploadResetTimeoutRef = useRef<number | null>(null);
   const operationTailRef = useRef<Promise<void>>(Promise.resolve());
   const contentSavePromiseRef = useRef<Promise<boolean> | null>(null);
   const contentSaveRequestedRef = useRef(false);
@@ -448,6 +450,14 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
         ],
         hooks: {
           addImageBlobHook: async (blob, callback) => {
+            if (imageUploadResetTimeoutRef.current !== null) {
+              window.clearTimeout(imageUploadResetTimeoutRef.current);
+              imageUploadResetTimeoutRef.current = null;
+            }
+
+            setError("");
+            setImageUploadState("uploading");
+
             try {
               const file = blob instanceof File ? blob : new File([blob], `image-${Date.now()}.png`, { type: blob.type });
               const asset = await uploadAssetWithPending(file, "inline");
@@ -458,8 +468,19 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
 
               callback(asset.publicUrl, file.name || "image");
               scheduleBodySyncFromEditor();
+              setImageUploadState("done");
+              imageUploadResetTimeoutRef.current = window.setTimeout(() => {
+                imageUploadResetTimeoutRef.current = null;
+
+                if (componentMountedRef.current) {
+                  setImageUploadState("idle");
+                }
+              }, 2500);
             } catch (uploadError) {
-              setError(errorMessage(uploadError));
+              if (componentMountedRef.current) {
+                setImageUploadState("idle");
+                setError(errorMessage(uploadError));
+              }
             }
           },
         },
@@ -487,6 +508,12 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
       }
 
       editorSyncTimeouts.clear();
+
+      if (imageUploadResetTimeoutRef.current !== null) {
+        window.clearTimeout(imageUploadResetTimeoutRef.current);
+        imageUploadResetTimeoutRef.current = null;
+      }
+
       editorRef.current?.destroy();
       editorRef.current = null;
     };
@@ -1160,6 +1187,17 @@ export function AdminPostEditor({ initialPost, initialCategories, messages }: Ad
             className="mb-4 min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-surface px-4 py-3 text-base leading-relaxed text-gh-text outline-none focus:border-indigo-400"
             placeholder="검색과 공유에 쓰일 설명을 입력하세요"
           />
+          <div aria-live="polite" className="min-h-6">
+            {imageUploadState === "uploading" ? (
+              <p className="mb-2 flex items-center gap-2 text-sm text-gh-muted">
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-gh-border border-t-indigo-500" />
+                이미지 업로드 중…
+              </p>
+            ) : null}
+            {imageUploadState === "done" ? (
+              <p className="mb-2 text-sm font-medium text-emerald-500">✓ 이미지를 업로드했습니다.</p>
+            ) : null}
+          </div>
           <div className="admin-toast-editor rounded-lg border border-gh-border bg-white">
             {!editorReady ? <div className="p-6 text-sm text-slate-500">에디터를 불러오는 중입니다.</div> : null}
             <div ref={editorHostRef} data-testid="admin-toast-editor-host" />
