@@ -125,6 +125,15 @@
   .post-detail__body pre code {
     @apply p-0 bg-transparent text-inherit border-none;
   }
+  .post-detail__body pre.mermaid {
+    @apply flex justify-center bg-transparent border-none p-0 my-6 overflow-x-auto;
+  }
+  .post-detail__body pre.mermaid svg {
+    @apply max-w-full h-auto;
+  }
+  .post-detail__body pre.mermaid:not([data-processed]) {
+    @apply hidden;
+  }
   .post-detail__body img {
     @apply block w-full max-w-full h-auto border border-gh-border rounded-xl bg-gh-bg my-6;
   }
