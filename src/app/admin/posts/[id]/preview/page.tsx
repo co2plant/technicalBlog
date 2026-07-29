@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MermaidRenderer } from "@/components/mermaid-renderer.client";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { getAdminBlogPost, mapAdminPostToPreview } from "@/lib/blog-admin";
 
@@ -38,6 +39,7 @@ export default async function AdminPostPreviewPage({
         <p className="mt-4 text-lg leading-relaxed text-gh-muted">{post.description}</p>
       </header>
       <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
+      <MermaidRenderer />
     </article>
   );
 }

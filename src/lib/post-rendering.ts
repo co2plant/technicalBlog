@@ -8,6 +8,15 @@ const markdown = new Marked({
     html() {
       return "";
     },
+    code({ text, lang }) {
+      if (lang === "mermaid") {
+        return `<pre class="mermaid">${escapeHtml(text)}</pre>`;
+      }
+
+      const languageClass = lang ? ` class="language-${escapeAttribute(lang)}"` : "";
+
+      return `<pre><code${languageClass}>${escapeHtml(text)}</code></pre>`;
+    },
     link({ href, title, tokens }) {
       const text = this.parser.parseInline(tokens);
 

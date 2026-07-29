@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
+import { MermaidRenderer } from "@/components/mermaid-renderer.client";
 import { PdfViewer } from "@/components/pdf-viewer.client";
 import { getPostByPostKey, getPublishedPosts } from "@/lib/content";
 import { DEFAULT_OPEN_GRAPH_IMAGE, SITE_NAME } from "@/lib/site-metadata";
@@ -156,6 +157,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
       </header>
 
       <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
+      <MermaidRenderer />
 
       {post.embeddedPdf ? (
         <>
