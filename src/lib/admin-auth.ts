@@ -101,10 +101,10 @@ function verifyAdminSessionCookie(cookieValue: string): boolean {
 }
 
 function sign(value: string): string {
-  const secret = getAdminSecret();
+  const secret = getSessionSecret();
 
   if (!secret) {
-    throw new Error("ADMIN_ACCESS_SECRET is required for admin sessions.");
+    throw new Error("ADMIN_SESSION_SECRET or ADMIN_ACCESS_SECRET is required for admin sessions.");
   }
 
   return createHmac("sha256", secret).update(value).digest("base64url");
@@ -122,7 +122,15 @@ function safeEqual(left: string, right: string): boolean {
 }
 
 function getAdminSecret(): string | undefined {
-  const value = process.env.ADMIN_ACCESS_SECRET?.trim();
+  return readSecret(process.env.ADMIN_ACCESS_SECRET);
+}
+
+function getSessionSecret(): string | undefined {
+  return readSecret(process.env.ADMIN_SESSION_SECRET) ?? getAdminSecret();
+}
+
+function readSecret(raw: string | undefined): string | undefined {
+  const value = raw?.trim();
 
   if (!value || value === "\"\"" || value === "''") {
     return undefined;
