@@ -60,4 +60,18 @@ describe("admin auth cookie", () => {
     vi.advanceTimersByTime(2_000);
     await expect(isAdminAuthenticated()).resolves.toBe(false);
   });
+
+  it("signs the session cookie with the dedicated session secret when set", async () => {
+    vi.stubEnv("ADMIN_SESSION_SECRET", "dedicated-session-secret");
+    await createAdminSessionCookie();
+    const cookieValue = mocks.setCookie.mock.calls[0]?.[1] as string;
+    mocks.getCookie.mockReturnValue({ value: cookieValue });
+
+    await expect(isAdminAuthenticated()).resolves.toBe(true);
+
+    // Rotating only the session secret invalidates existing cookies, even
+    // though the login password (ADMIN_ACCESS_SECRET) is unchanged.
+    vi.stubEnv("ADMIN_SESSION_SECRET", "rotated-session-secret");
+    await expect(isAdminAuthenticated()).resolves.toBe(false);
+  });
 });
