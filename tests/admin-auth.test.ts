@@ -54,7 +54,10 @@ describe("admin auth cookie", () => {
 
     await expect(isAdminAuthenticated()).resolves.toBe(true);
 
-    vi.advanceTimersByTime(12 * 60 * 60 * 1000 + 1_000);
+    vi.advanceTimersByTime(2 * 60 * 60 * 1000 - 1_000);
+    await expect(isAdminAuthenticated()).resolves.toBe(true);
+
+    vi.advanceTimersByTime(2_000);
     await expect(isAdminAuthenticated()).resolves.toBe(false);
   });
 });
