@@ -6,7 +6,13 @@ import { redirect } from "next/navigation";
 
 const ADMIN_COOKIE_NAME = "technical_blog_admin";
 const ADMIN_SESSION_VALUE = "authenticated";
-const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
+const DEFAULT_ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 2;
+const ADMIN_SESSION_TTL_SECONDS = readSessionTtlSeconds();
+
+function readSessionTtlSeconds(): number {
+  const raw = Number(process.env.ADMIN_SESSION_TTL_SECONDS);
+  return Number.isSafeInteger(raw) && raw > 0 ? raw : DEFAULT_ADMIN_SESSION_TTL_SECONDS;
+}
 
 export function hasAdminSecret(): boolean {
   return Boolean(getAdminSecret());
