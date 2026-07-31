@@ -10,7 +10,7 @@ const DEFAULT_ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 2;
 const MAX_ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
 const ADMIN_SESSION_TTL_SECONDS = readSessionTtlSeconds();
 
-function readSessionTtlSeconds(): number {
+export function readSessionTtlSeconds(): number {
   const raw = Number(process.env.ADMIN_SESSION_TTL_SECONDS);
 
   const valid = Number.isSafeInteger(raw) && raw > 0 && raw <= MAX_ADMIN_SESSION_TTL_SECONDS;
