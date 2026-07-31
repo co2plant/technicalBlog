@@ -52,3 +52,5 @@ Thumbs.db
 
 # SDD
 docs/sdd/*
+report.md
+security-improvements/

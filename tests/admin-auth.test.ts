@@ -16,6 +16,7 @@ import {
   clearAdminSessionCookie,
   createAdminSessionCookie,
   isAdminAuthenticated,
+  readSessionTtlSeconds,
 } from "../src/lib/admin-auth";
 
 describe("admin auth cookie", () => {
@@ -54,7 +55,56 @@ describe("admin auth cookie", () => {
 
     await expect(isAdminAuthenticated()).resolves.toBe(true);
 
-    vi.advanceTimersByTime(12 * 60 * 60 * 1000 + 1_000);
+    vi.advanceTimersByTime(2 * 60 * 60 * 1000 - 1_000);
+    await expect(isAdminAuthenticated()).resolves.toBe(true);
+
+    vi.advanceTimersByTime(2_000);
     await expect(isAdminAuthenticated()).resolves.toBe(false);
+  });
+
+  it("signs the session cookie with the dedicated session secret when set", async () => {
+    vi.stubEnv("ADMIN_SESSION_SECRET", "dedicated-session-secret");
+    await createAdminSessionCookie();
+    const cookieValue = mocks.setCookie.mock.calls[0]?.[1] as string;
+    mocks.getCookie.mockReturnValue({ value: cookieValue });
+
+    await expect(isAdminAuthenticated()).resolves.toBe(true);
+
+    // Rotating only the session secret invalidates existing cookies, even
+    // though the login password (ADMIN_ACCESS_SECRET) is unchanged.
+    vi.stubEnv("ADMIN_SESSION_SECRET", "rotated-session-secret");
+    await expect(isAdminAuthenticated()).resolves.toBe(false);
+  });
+
+  describe("readSessionTtlSeconds", () => {
+    const DEFAULT_TTL = 60 * 60 * 2;
+    const MAX_TTL = 60 * 60 * 12;
+
+    it("uses the env value when it is a positive integer within the max", () => {
+      vi.stubEnv("ADMIN_SESSION_TTL_SECONDS", "3600");
+      expect(readSessionTtlSeconds()).toBe(3600);
+    });
+
+    it("accepts the max boundary value", () => {
+      vi.stubEnv("ADMIN_SESSION_TTL_SECONDS", String(MAX_TTL));
+      expect(readSessionTtlSeconds()).toBe(MAX_TTL);
+    });
+
+    it("falls back to the default when the value exceeds the max", () => {
+      vi.stubEnv("ADMIN_SESSION_TTL_SECONDS", String(MAX_TTL + 1));
+      expect(readSessionTtlSeconds()).toBe(DEFAULT_TTL);
+    });
+
+    it("falls back to the default for zero, negative, non-integer, or non-numeric values", () => {
+      for (const bad of ["0", "-1", "7200.5", "abc", ""]) {
+        vi.stubEnv("ADMIN_SESSION_TTL_SECONDS", bad);
+        expect(readSessionTtlSeconds()).toBe(DEFAULT_TTL);
+      }
+    });
+
+    it("falls back to the default when the env var is unset", () => {
+      vi.stubEnv("ADMIN_SESSION_TTL_SECONDS", "");
+      expect(readSessionTtlSeconds()).toBe(DEFAULT_TTL);
+    });
   });
 });

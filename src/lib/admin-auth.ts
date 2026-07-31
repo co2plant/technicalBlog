@@ -6,7 +6,17 @@ import { redirect } from "next/navigation";
 
 const ADMIN_COOKIE_NAME = "technical_blog_admin";
 const ADMIN_SESSION_VALUE = "authenticated";
-const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
+const DEFAULT_ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 2;
+const MAX_ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 12;
+const ADMIN_SESSION_TTL_SECONDS = readSessionTtlSeconds();
+
+export function readSessionTtlSeconds(): number {
+  const raw = Number(process.env.ADMIN_SESSION_TTL_SECONDS);
+
+  const valid = Number.isSafeInteger(raw) && raw > 0 && raw <= MAX_ADMIN_SESSION_TTL_SECONDS;
+
+  return valid ? raw : DEFAULT_ADMIN_SESSION_TTL_SECONDS;
+}
 
 export function hasAdminSecret(): boolean {
   return Boolean(getAdminSecret());
@@ -95,10 +105,10 @@ function verifyAdminSessionCookie(cookieValue: string): boolean {
 }
 
 function sign(value: string): string {
-  const secret = getAdminSecret();
+  const secret = getSessionSecret();
 
   if (!secret) {
-    throw new Error("ADMIN_ACCESS_SECRET is required for admin sessions.");
+    throw new Error("ADMIN_SESSION_SECRET or ADMIN_ACCESS_SECRET is required for admin sessions.");
   }
 
   return createHmac("sha256", secret).update(value).digest("base64url");
@@ -116,7 +126,15 @@ function safeEqual(left: string, right: string): boolean {
 }
 
 function getAdminSecret(): string | undefined {
-  const value = process.env.ADMIN_ACCESS_SECRET?.trim();
+  return readSecret(process.env.ADMIN_ACCESS_SECRET);
+}
+
+function getSessionSecret(): string | undefined {
+  return readSecret(process.env.ADMIN_SESSION_SECRET) ?? getAdminSecret();
+}
+
+function readSecret(raw: string | undefined): string | undefined {
+  const value = raw?.trim();
 
   if (!value || value === "\"\"" || value === "''") {
     return undefined;
