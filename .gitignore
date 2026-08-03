@@ -47,8 +47,6 @@ Thumbs.db
 .vscode-test/
 .history/
 .ionide
-.vercel
-.env*
 
 # SDD
 docs/sdd/*

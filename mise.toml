@@ -1,0 +1,3 @@
+[tasks.check]
+description = "커밋 전 검증: lint + typecheck"
+run = "npm run lint && npm run typecheck"
