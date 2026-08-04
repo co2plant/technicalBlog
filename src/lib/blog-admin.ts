@@ -153,7 +153,7 @@ export async function publishPost(id: number, input: AdminPostInput): Promise<nu
     try {
       return await prisma.$transaction(
         async (tx) => {
-          await tx.$queryRaw`select pg_advisory_xact_lock(hashtext('technical_blog_publish_number'))`;
+          await tx.$executeRaw`select pg_advisory_xact_lock(hashtext('technical_blog_publish_number'))`;
           const existing = await tx.blogPost.findFirst({
             where: {
               id,
