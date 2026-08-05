@@ -1,13 +1,17 @@
 "use client";
 
-import { useRef, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useRef, useTransition } from "react";
+import { extendSessionAction } from "./session-actions";
 
 const SEOUL_TIME_ZONE = "Asia/Seoul";
 const REFRESH_INTERVAL_MS = 30_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function AdminSessionTimer({ expiresAt }: { expiresAt: number }) {
-  const expiryMs = expiresAt * 1000;
+  const [expiry, setExpiry] = useState(expiresAt);
+  const [isExtending, startExtend] = useTransition();
+
+  const expiryMs = expiry * 1000;
   const expiryDate = new Date(expiryMs);
   const now = useClientNow();
 
@@ -16,16 +20,37 @@ export function AdminSessionTimer({ expiresAt }: { expiresAt: number }) {
   const remainingMs = now === null ? null : expiryMs - now;
   const expired = remainingMs !== null && remainingMs <= 0;
 
+  function handleExtend() {
+    startExtend(async () => {
+      const next = await extendSessionAction();
+      if (next) {
+        setExpiry(next);
+      }
+    });
+  }
+
   return (
-    <span
-      aria-live="polite"
-      className={`text-xs ${expired ? "font-semibold text-red-400" : "text-gh-muted"}`}
-    >
-      {expired
-        ? "세션 만료됨 · 다시 로그인이 필요합니다"
-        : remainingMs === null
-          ? `세션 만료 ${absolute}`
-          : `세션 만료까지 ${formatRemaining(remainingMs)} (${absolute})`}
+    <span className="inline-flex items-center gap-2">
+      <span
+        aria-live="polite"
+        className={`text-xs ${expired ? "font-semibold text-red-400" : "text-gh-muted"}`}
+      >
+        {expired
+          ? "세션 만료됨 · 다시 로그인이 필요합니다"
+          : remainingMs === null
+            ? `세션 만료 ${absolute}`
+            : `세션 만료까지 ${formatRemaining(remainingMs)} (${absolute})`}
+      </span>
+      {!expired ? (
+        <button
+          type="button"
+          onClick={handleExtend}
+          disabled={isExtending}
+          className="rounded border border-gh-border px-2 py-0.5 text-xs text-gh-muted transition hover:text-gh-text disabled:opacity-50"
+        >
+          {isExtending ? "연장 중…" : "연장"}
+        </button>
+      ) : null}
     </span>
   );
 }
