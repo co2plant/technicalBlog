@@ -1087,11 +1087,6 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
                   공개 글
                 </Link>
               ) : null}
-              {sessionExpiresAt ? (
-                <span className="ml-auto">
-                  <AdminSessionTimer expiresAt={sessionExpiresAt} />
-                </span>
-              ) : null}
             </div>
             <input
               aria-label="글 제목"
@@ -1176,6 +1171,11 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
           <p role="alert" className="mt-3 text-sm text-red-300">
             {error}
           </p>
+        ) : null}
+        {sessionExpiresAt ? (
+          <div className="mt-3 flex justify-end border-t border-gh-border/60 pt-2">
+            <AdminSessionTimer expiresAt={sessionExpiresAt} />
+          </div>
         ) : null}
       </header>
 
