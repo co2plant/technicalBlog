@@ -36,15 +36,39 @@ const markdown = new Marked({
 
       const safeHref = escapeAttribute(href);
       const safeAlt = escapeHtml(text);
-      const safeTitle = title ? ` title="${escapeAttribute(title)}"` : "";
+      const width = parseImageWidth(title);
+      const safeStyle = width ? ` style="width:${width}"` : "";
+      const safeTitle = !width && title ? ` title="${escapeAttribute(title)}"` : "";
 
-      return `<img src="${safeHref}" alt="${safeAlt}" loading="lazy"${safeTitle} />`;
+      return `<img src="${safeHref}" alt="${safeAlt}" loading="lazy"${safeStyle}${safeTitle} />`;
     },
   },
 });
 
 export function renderPostMarkdown(source: string): string {
   return markdown.parse(source, { async: false });
+}
+
+function parseImageWidth(title: string | null | undefined): string | null {
+  if (!title) {
+    return null;
+  }
+
+  const trimmed = title.trim();
+
+  const percentMatch = /^(\d{1,3})%$/.exec(trimmed);
+  if (percentMatch) {
+    const value = Number(percentMatch[1]);
+    return value >= 1 && value <= 100 ? `${value}%` : null;
+  }
+
+  const pixelMatch = /^(\d{1,4})(?:px)?$/.exec(trimmed);
+  if (pixelMatch) {
+    const value = Number(pixelMatch[1]);
+    return value >= 1 && value <= 4096 ? `${value}px` : null;
+  }
+
+  return null;
 }
 
 function isSafeLink(href: string): boolean {
