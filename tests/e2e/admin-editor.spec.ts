@@ -183,6 +183,22 @@ test.describe("admin post editor", () => {
     expect(publishedPayload.categorySlug).toBe(categorySlug);
   });
 
+  test("does not create a draft when /admin/posts/new is requested with GET", async ({ page }) => {
+    await page.goto("/admin/login");
+    await page.getByLabel("비밀번호").fill(process.env.ADMIN_ACCESS_SECRET ?? "");
+    await Promise.all([page.waitForURL("**/admin"), page.getByRole("button", { name: "로그인" }).click()]);
+
+    const postRows = page.locator("tbody tr");
+    const initialCount = await postRows.count();
+
+    const response = await page.goto("/admin/posts/new");
+    expect(response?.status()).toBe(404);
+    await page.reload();
+
+    await page.goto("/admin");
+    await expect(postRows).toHaveCount(initialCount);
+  });
+
   test("supports full-width focus mode and a mobile settings drawer", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 1440, height: 900 });
