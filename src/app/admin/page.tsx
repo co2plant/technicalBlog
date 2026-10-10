@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminSessionTimer } from "@/app/admin/admin-session-timer";
 import { createPostAction, logoutAction } from "@/app/admin/actions";
+import { CreatePostButton } from "@/app/admin/create-post-button";
 import { getAdminSessionExpiry, requireAdminSession } from "@/lib/admin-auth";
 import { getAdminBlogPosts } from "@/lib/blog-admin";
 
@@ -33,9 +34,7 @@ export default async function AdminPage() {
         </div>
         <div className="flex gap-2">
           <form action={createPostAction}>
-            <button className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
-              새 글
-            </button>
+            <CreatePostButton />
           </form>
           <form action={logoutAction}>
             <button className="rounded-md border border-gh-border px-4 py-2 text-sm font-semibold text-gh-text hover:bg-gh-surface">
