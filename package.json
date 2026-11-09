@@ -37,6 +37,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
+    "dev:local": "npm run local:setup && node scripts/run-local-dev.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src tests --max-warnings=0",
@@ -47,11 +48,13 @@
     "db:import-posts": "node scripts/import-blog-posts.mjs",
     "db:verify-post-parity": "node scripts/verify-post-parity.mjs",
     "verify:storage-pdf": "node scripts/verify-storage-pdf.mjs",
-    "test:db:up": "docker compose -f docker-compose.test.yml up -d",
-    "test:db:migrate": "node scripts/migrate-test-database.mjs",
-    "test:db:down": "docker compose -f docker-compose.test.yml down -v",
+    "local:db:up": "docker compose up -d --wait --wait-timeout 60",
+    "local:db:migrate": "node scripts/migrate-local-database.mjs",
+    "local:db:stop": "docker compose stop",
+    "local:db:down": "docker compose down -v",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "local:setup": "node scripts/setup-local.mjs",
+    "test:e2e": "npm run local:setup -- --e2e && playwright test"
   },
   "license": "ISC",
   "repository": {

@@ -1,14 +1,16 @@
+name: technicalblog
+
 services:
   postgres:
     image: postgres:16
     ports:
-      - "54329:5432"
+      - "127.0.0.1:54329:5432"
     environment:
       POSTGRES_USER: technicalblog
       POSTGRES_PASSWORD: technicalblog
-      POSTGRES_DB: technicalblog_test
+      POSTGRES_DB: technicalblog_local
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U technicalblog -d technicalblog_test"]
+      test: ["CMD-SHELL", "pg_isready -U technicalblog -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 10

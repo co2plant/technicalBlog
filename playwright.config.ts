@@ -1,13 +1,17 @@
 import { defineConfig, devices } from "@playwright/test";
+import { getLocalEnv } from "./scripts/local-env.mjs";
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:4173";
-const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND ?? "npm run dev -- --port 4173";
+const baseURL = "http://127.0.0.1:4173";
+const localEnv = getLocalEnv(process.env, "e2e");
+Object.assign(process.env, localEnv);
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
+  timeout: 60_000,
   retries: process.env.CI ? 2 : 0,
-  reporter: "html",
+  reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -19,9 +23,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: webServerCommand,
+    command: "node scripts/run-local-dev.mjs --e2e",
+    env: localEnv,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000,
   },
 });
