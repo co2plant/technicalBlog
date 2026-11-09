@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   const tx = {
-    $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
     blogPost: {
       findFirst: vi.fn(),
       update: vi.fn(),
