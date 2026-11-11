@@ -16,34 +16,26 @@ type PostCollectionProps = {
 const ACCENT_STYLES: Record<
   Accent,
   {
-    headingBar: string;
     cardHover: string;
     titleHover: string;
     dateIcon: string;
     tag: string;
-    accentLine: string;
     primaryBadge: string;
   }
 > = {
   indigo: {
-    headingBar: "bg-gradient-to-b from-blue-500 to-purple-500",
-    cardHover: "hover:shadow-indigo-500/5 hover:border-indigo-500/30",
-    titleHover: "group-hover:text-indigo-500",
-    dateIcon: "text-indigo-400",
-    tag: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400/90",
-    accentLine:
-      "from-blue-500/0 via-indigo-500/0 to-purple-500/0 group-hover:from-blue-500/40 group-hover:via-indigo-500/40 group-hover:to-purple-500/40",
-    primaryBadge: "border-blue-500/30 bg-blue-500/10 text-blue-400",
+    cardHover: "hover:border-gh-accent",
+    titleHover: "group-hover:text-gh-accent-strong",
+    dateIcon: "text-gh-accent-strong",
+    tag: "bg-gh-accent/10 border-gh-accent/20 text-gh-accent-strong",
+    primaryBadge: "border-gh-accent/30 bg-gh-accent/10 text-gh-accent-strong",
   },
   emerald: {
-    headingBar: "bg-gradient-to-b from-emerald-500 to-cyan-500",
-    cardHover: "hover:shadow-emerald-500/5 hover:border-emerald-500/30",
-    titleHover: "group-hover:text-emerald-500",
-    dateIcon: "text-emerald-400",
-    tag: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400/90",
-    accentLine:
-      "from-emerald-500/0 via-cyan-500/0 to-blue-500/0 group-hover:from-emerald-500/40 group-hover:via-cyan-500/40 group-hover:to-blue-500/40",
-    primaryBadge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+    cardHover: "hover:border-gh-accent",
+    titleHover: "group-hover:text-gh-accent-strong",
+    dateIcon: "text-gh-accent-strong",
+    tag: "bg-gh-accent/10 border-gh-accent/20 text-gh-accent-strong",
+    primaryBadge: "border-gh-accent/30 bg-gh-accent/10 text-gh-accent-strong",
   },
 };
 
@@ -66,14 +58,13 @@ export function PostCollection({
     <div className="relative z-10 space-y-8">
       <div className="border-b border-gh-border/60 pb-6">
         <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-gh-text" data-testid={headingTestId}>
-          <span className={`inline-block h-8 w-1.5 rounded-full ${styles.headingBar}`} />
           {title}
         </h1>
-        <p className="ml-4 mt-3 text-lg text-gh-muted">{description}</p>
+        <p className="mt-3 text-lg text-gh-muted">{description}</p>
       </div>
 
       {posts.length === 0 ? (
-        <div className="flex items-center justify-center rounded-2xl border border-dashed border-gh-border/60 bg-gh-surface/30 py-20 backdrop-blur-sm">
+        <div className="flex items-center justify-center rounded-2xl border border-dashed border-gh-border bg-gh-surface py-20">
           <p className="text-lg font-medium text-gh-muted">{emptyMessage}</p>
         </div>
       ) : (
@@ -81,7 +72,7 @@ export function PostCollection({
           {posts.map((post) => (
             <Link key={post.slug} href={`/posts/${post.slug}`} className="group block h-full">
               <article
-                className={`relative flex h-full flex-col overflow-hidden rounded-2xl border border-gh-border/70 bg-gh-surface/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${styles.cardHover}`}
+                className={`relative flex h-full flex-col overflow-hidden rounded-2xl border border-gh-border bg-gh-surface p-6 transition-colors ${styles.cardHover}`}
               >
                 <div className="flex-1 space-y-3">
                   <div className="flex flex-wrap gap-2">
@@ -98,7 +89,7 @@ export function PostCollection({
                       {formatCategory(post.category)}
                     </span>
                     {post.embeddedPdf ? (
-                      <span className="inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-400">
+                      <span className="inline-flex rounded-full border border-gh-accent/30 bg-gh-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gh-accent-strong">
                         PDF
                       </span>
                     ) : null}
@@ -129,8 +120,6 @@ export function PostCollection({
                     </div>
                   ) : null}
                 </div>
-
-                <div className={`absolute left-0 top-0 h-1 w-full bg-gradient-to-r transition-all duration-300 ${styles.accentLine}`} />
               </article>
             </Link>
           ))}

@@ -11,10 +11,9 @@ export default function TechStackPage() {
     <div className="relative z-10 space-y-8">
       <div className="border-b border-gh-border/60 pb-6">
         <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-gh-text" data-testid="tech-stack-page-heading">
-          <span className="inline-block h-8 w-1.5 rounded-full bg-gradient-to-b from-emerald-500 to-cyan-500" />
           기술스택 이미지 생성기
         </h1>
-        <p className="ml-4 mt-3 text-lg text-gh-muted">Skill Icons 아이콘 묶음과 Shields.io 버전 배지를 함께 생성합니다.</p>
+        <p className="mt-3 text-lg text-gh-muted">Skill Icons 아이콘 묶음과 Shields.io 버전 배지를 함께 생성합니다.</p>
       </div>
 
       <TechStackGenerator />
