@@ -27,23 +27,23 @@ const ACCENT_STYLES: Record<
 > = {
   indigo: {
     headingBar: "bg-gradient-to-b from-blue-500 to-purple-500",
-    cardHover: "hover:shadow-indigo-500/5 hover:border-indigo-500/30",
-    titleHover: "group-hover:text-indigo-500",
-    dateIcon: "text-indigo-400",
-    tag: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400/90",
+    cardHover: "hover:shadow-indigo-500/5 hover:border-gh-accent/30",
+    titleHover: "group-hover:text-gh-accent-strong",
+    dateIcon: "text-gh-accent-strong",
+    tag: "bg-gh-accent/10 border-gh-accent/20 text-gh-accent-strong",
     accentLine:
       "from-blue-500/0 via-indigo-500/0 to-purple-500/0 group-hover:from-blue-500/40 group-hover:via-indigo-500/40 group-hover:to-purple-500/40",
-    primaryBadge: "border-blue-500/30 bg-blue-500/10 text-blue-400",
+    primaryBadge: "border-gh-accent/30 bg-gh-accent/10 text-gh-accent-strong",
   },
   emerald: {
     headingBar: "bg-gradient-to-b from-emerald-500 to-cyan-500",
-    cardHover: "hover:shadow-emerald-500/5 hover:border-emerald-500/30",
-    titleHover: "group-hover:text-emerald-500",
-    dateIcon: "text-emerald-400",
-    tag: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400/90",
+    cardHover: "hover:shadow-emerald-500/5 hover:border-gh-accent/30",
+    titleHover: "group-hover:text-gh-accent-strong",
+    dateIcon: "text-gh-accent-strong",
+    tag: "bg-gh-accent/10 border-gh-accent/20 text-gh-accent-strong",
     accentLine:
       "from-emerald-500/0 via-cyan-500/0 to-blue-500/0 group-hover:from-emerald-500/40 group-hover:via-cyan-500/40 group-hover:to-blue-500/40",
-    primaryBadge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+    primaryBadge: "border-gh-accent/30 bg-gh-accent/10 text-gh-accent-strong",
   },
 };
 
@@ -98,7 +98,7 @@ export function PostCollection({
                       {formatCategory(post.category)}
                     </span>
                     {post.embeddedPdf ? (
-                      <span className="inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-blue-400">
+                      <span className="inline-flex rounded-full border border-gh-accent/30 bg-gh-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gh-accent-strong">
                         PDF
                       </span>
                     ) : null}

@@ -90,26 +90,26 @@ function clampLength(value: number): number {
 
 function getStrengthToneClasses(level: PasswordStrength["level"]): string {
   if (level === "strong") {
-    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+    return "border-gh-success/30 bg-gh-success/10 text-gh-text";
   }
 
   if (level === "medium") {
-    return "border-cyan-500/30 bg-cyan-500/10 text-cyan-300";
+    return "border-gh-accent/30 bg-gh-accent/10 text-gh-text";
   }
 
-  return "border-amber-500/30 bg-amber-500/10 text-amber-300";
+  return "border-gh-warning/30 bg-gh-warning/10 text-gh-text";
 }
 
 function getStrengthBarClass(level: PasswordStrength["level"]): string {
   if (level === "strong") {
-    return "w-full bg-emerald-500";
+    return "w-full bg-gh-success";
   }
 
   if (level === "medium") {
-    return "w-2/3 bg-cyan-500";
+    return "w-2/3 bg-gh-accent";
   }
 
-  return "w-1/3 bg-amber-500";
+  return "w-1/3 bg-gh-warning";
 }
 
 export function PasswordGenerator() {
@@ -247,7 +247,7 @@ export function PasswordGenerator() {
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
                 <input
                   aria-label="비밀번호 글자 수"
-                  className="h-2 w-full accent-cyan-500"
+                  className="h-2 w-full accent-gh-accent"
                   max={PASSWORD_MAX_LENGTH}
                   min={PASSWORD_MIN_LENGTH}
                   type="range"
@@ -255,7 +255,7 @@ export function PasswordGenerator() {
                   onChange={(event) => updateLength(event.target.value)}
                 />
                 <input
-                  className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-cyan-500"
+                  className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-gh-accent"
                   data-testid="password-length-input"
                   inputMode="numeric"
                   max={PASSWORD_MAX_LENGTH}
@@ -277,13 +277,13 @@ export function PasswordGenerator() {
                     key={group.key}
                     className={`flex min-h-20 cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
                       checked
-                        ? "border-cyan-500/40 bg-cyan-500/10"
+                        ? "border-gh-accent/40 bg-gh-accent/10"
                         : "border-gh-border bg-gh-bg/70 hover:border-gh-muted/70 hover:bg-gh-hover"
                     }`}
                   >
                     <input
                       checked={checked}
-                      className="h-4 w-4 accent-cyan-500"
+                      className="h-4 w-4 accent-gh-accent"
                       type="checkbox"
                       onChange={() => toggleGroup(group.key)}
                     />
@@ -301,9 +301,9 @@ export function PasswordGenerator() {
                 <span className="flex items-center justify-between gap-3 text-sm font-medium text-gh-muted">
                   <span>사용할 특수문자</span>
                   <span className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-cyan-400">{normalizedSymbolCharacters.length}개</span>
+                    <span className="font-mono text-xs text-gh-accent-strong">{normalizedSymbolCharacters.length}개</span>
                     <button
-                      className="rounded-md border border-gh-border bg-gh-bg px-2 py-1 text-xs font-semibold text-gh-text transition-colors hover:border-cyan-500/40 hover:bg-gh-hover"
+                      className="rounded-md border border-gh-border bg-gh-bg px-2 py-1 text-xs font-semibold text-gh-text transition-colors hover:border-gh-accent/40 hover:bg-gh-hover"
                       data-testid="password-symbols-reset-button"
                       type="button"
                       onClick={resetSymbolCharacters}
@@ -313,7 +313,7 @@ export function PasswordGenerator() {
                   </span>
                 </span>
                 <input
-                  className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-cyan-500"
+                  className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-gh-accent"
                   data-testid="password-symbols-input"
                   placeholder="!@._#$"
                   spellCheck={false}
@@ -322,13 +322,13 @@ export function PasswordGenerator() {
                   onChange={(event) => updateSymbolCharacters(event.target.value)}
                 />
                 <span className="block text-xs text-gh-muted">
-                  기본 예시: <span className="font-mono text-cyan-400">! @ . _ # $</span>. 입력한 문자 안에서만 특수문자를 뽑습니다.
+                  기본 예시: <span className="font-mono text-gh-accent-strong">! @ . _ # $</span>. 입력한 문자 안에서만 특수문자를 뽑습니다.
                 </span>
               </label>
             ) : null}
 
             {validationMessage ? (
-              <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-300" data-testid="password-validation-message">
+              <p className="rounded-lg border border-gh-warning/30 bg-gh-warning/10 px-3 py-2 text-sm text-gh-text" data-testid="password-validation-message">
                 {validationMessage}
               </p>
             ) : null}
@@ -341,7 +341,7 @@ export function PasswordGenerator() {
               <h2 className="text-xl font-semibold text-gh-text">결과</h2>
               <p className="mt-1 text-sm text-gh-muted">생성된 비밀번호는 저장하지 않습니다.</p>
             </div>
-            <span className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 font-mono text-xs text-emerald-300">
+            <span className="rounded-lg border border-gh-success/20 bg-gh-success/10 px-2 py-1 font-mono text-xs text-gh-text">
               {selectedGroupKeys.length} rules
             </span>
           </div>
@@ -380,7 +380,7 @@ export function PasswordGenerator() {
 
           <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
             <button
-              className="h-11 rounded-lg bg-cyan-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-gh-border disabled:text-gh-muted"
+              className="h-11 rounded-lg bg-gh-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-gh-accent-strong disabled:cursor-not-allowed disabled:bg-gh-border disabled:text-gh-muted"
               data-testid="password-generate-button"
               disabled={!canGenerate}
               type="button"
@@ -389,7 +389,7 @@ export function PasswordGenerator() {
               생성
             </button>
             <button
-              className="h-11 rounded-lg border border-gh-border bg-gh-bg px-4 text-sm font-semibold text-gh-text transition-colors hover:border-emerald-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:text-gh-muted"
+              className="h-11 rounded-lg border border-gh-border bg-gh-bg px-4 text-sm font-semibold text-gh-text transition-colors hover:border-gh-accent/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:text-gh-muted"
               disabled={!password}
               type="button"
               onClick={copyPassword}
@@ -402,8 +402,8 @@ export function PasswordGenerator() {
             <p
               className={`mt-4 rounded-lg border px-3 py-2 text-sm ${
                 notice.tone === "success"
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                  : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                  ? "border-gh-success/30 bg-gh-success/10 text-gh-text"
+                  : "border-gh-warning/30 bg-gh-warning/10 text-gh-text"
               }`}
               data-testid="password-copy-alert"
               role="alert"

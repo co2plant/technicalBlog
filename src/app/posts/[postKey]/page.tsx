@@ -115,8 +115,8 @@ export default async function PostDetailPage({ params }: PostPageProps) {
       ) : null}
       <header className="mb-10 text-center md:text-left">
         <div className="inline-flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
-          <span className="text-indigo-500 font-semibold tracking-wider uppercase text-sm">{formatCategory(post.category)}</span>
+          <span className="w-2 h-2 rounded-full bg-gh-accent shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+          <span className="text-gh-accent-strong font-semibold tracking-wider uppercase text-sm">{formatCategory(post.category)}</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gh-text mb-6 leading-[1.15]" data-testid="post-detail-heading">
           {post.title}
@@ -154,7 +154,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
         
         {post.originalUrl && (
           <div className="mt-4">
-            <Link href={post.originalUrl} className="inline-flex items-center gap-1 text-sm text-blue-500 hover:text-blue-400 font-medium transition-colors">
+            <Link href={post.originalUrl} className="inline-flex items-center gap-1 text-sm text-gh-accent-strong hover:underline font-medium transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
@@ -180,12 +180,12 @@ export default async function PostDetailPage({ params }: PostPageProps) {
             {secondaryAttachments.map((attachment) => (
               <li key={attachment.url}>
                 <Link href={attachment.url} className="flex items-center gap-3 p-4 bg-gh-surface/50 border border-gh-border/50 rounded-xl hover:bg-gh-surface hover:border-gh-border transition-all group">
-                  <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg group-hover:scale-110 transition-transform">
+                  <div className="p-2 bg-gh-accent/10 text-gh-accent-strong rounded-lg group-hover:scale-110 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                     </svg>
                   </div>
-                  <span className="font-medium text-gh-text group-hover:text-indigo-400 transition-colors">
+                  <span className="font-medium text-gh-text group-hover:text-gh-accent-strong transition-colors">
                     {attachment.name} <span className="text-gh-muted text-sm ml-1">({attachment.kind.toUpperCase()})</span>
                   </span>
                 </Link>

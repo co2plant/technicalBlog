@@ -829,7 +829,7 @@ function CopyButton({ copyKey, copiedKey, disabled = false, label, value, onCopy
   return (
     <button
       type="button"
-      className="min-h-11 rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left text-sm font-semibold text-gh-text transition-colors hover:border-cyan-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-50"
+      className="min-h-11 rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left text-sm font-semibold text-gh-text transition-colors hover:border-gh-accent/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-50"
       disabled={disabled}
       onClick={() => onCopy(copyKey, value)}
     >
@@ -850,7 +850,7 @@ function DownloadButton({ disabled = false, downloadKey, downloadedKey, label, o
   return (
     <button
       type="button"
-      className="min-h-11 rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left text-sm font-semibold text-gh-text transition-colors hover:border-emerald-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-50"
+      className="min-h-11 rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left text-sm font-semibold text-gh-text transition-colors hover:border-gh-accent/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-50"
       disabled={disabled}
       onClick={() => onDownload(downloadKey)}
     >
@@ -893,7 +893,7 @@ function TechCatalog({
         <label className="space-y-2">
           <span className="text-sm font-medium text-gh-muted">검색어</span>
           <input
-            className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 text-gh-text outline-none transition-colors focus:border-cyan-500"
+            className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 text-gh-text outline-none transition-colors focus:border-gh-accent"
             data-testid="tech-search-input"
             placeholder="React, Spring, Docker"
             value={query}
@@ -911,7 +911,7 @@ function TechCatalog({
                 aria-pressed={activeCategory === category}
                 className={`h-9 rounded-lg border px-3 text-sm font-semibold transition-colors ${
                   activeCategory === category
-                    ? "border-cyan-500/40 bg-cyan-500 text-white"
+                    ? "border-gh-accent/40 bg-gh-accent text-white"
                     : "border-gh-border bg-gh-bg text-gh-muted hover:bg-gh-hover hover:text-gh-text"
                 }`}
                 onClick={() => onCategoryChange(category)}
@@ -948,7 +948,7 @@ function TechCatalog({
                   <button
                     key={`${item.category}-${item.skillIconId}-${item.name}`}
                     type="button"
-                    className="min-h-24 rounded-lg border border-gh-border/70 bg-gh-bg/70 p-3 text-left transition-colors hover:border-cyan-500/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-55"
+                    className="min-h-24 rounded-lg border border-gh-border/70 bg-gh-bg/70 p-3 text-left transition-colors hover:border-gh-accent/40 hover:bg-gh-hover disabled:cursor-not-allowed disabled:opacity-55"
                     data-testid={`tech-catalog-add-${item.skillIconId}`}
                     disabled={isSelected}
                     onClick={() => onAdd(item)}
@@ -964,7 +964,7 @@ function TechCatalog({
                         {TECH_CATEGORY_LABELS[item.category]}
                       </span>
                     </span>
-                    <span className="mt-3 inline-block text-sm font-semibold text-gh-accent">
+                    <span className="mt-3 inline-block text-sm font-semibold text-gh-accent-strong">
                       {isSelected ? "추가됨" : "추가"}
                     </span>
                   </button>
@@ -990,7 +990,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
       <label className="space-y-1.5">
         <span className="text-xs font-semibold uppercase text-gh-muted">기술명</span>
         <input
-          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 text-sm text-gh-text outline-none transition-colors focus:border-cyan-500"
+          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 text-sm text-gh-text outline-none transition-colors focus:border-gh-accent"
           value={item.name}
           onChange={(event) => onChange(item.id, "name", event.target.value)}
         />
@@ -999,7 +999,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
       <label className="space-y-1.5">
         <span className="text-xs font-semibold uppercase text-gh-muted">아이콘 ID</span>
         <input
-          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-cyan-500"
+          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-gh-accent"
           value={item.skillIconId}
           onChange={(event) => onChange(item.id, "skillIconId", event.target.value)}
         />
@@ -1008,7 +1008,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
       <label className="space-y-1.5">
         <span className="text-xs font-semibold uppercase text-gh-muted">로고 slug</span>
         <input
-          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-cyan-500"
+          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-gh-accent"
           value={item.shieldLogo}
           onChange={(event) => onChange(item.id, "shieldLogo", event.target.value)}
         />
@@ -1017,7 +1017,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
       <label className="space-y-1.5">
         <span className="text-xs font-semibold uppercase text-gh-muted">버전</span>
         <input
-          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-amber-500"
+          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-gh-accent"
           value={item.version}
           onChange={(event) => onChange(item.id, "version", event.target.value)}
         />
@@ -1026,7 +1026,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
       <label className="space-y-1.5">
         <span className="text-xs font-semibold uppercase text-gh-muted">색상</span>
         <input
-          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-amber-500"
+          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-gh-accent"
           value={item.color}
           onChange={(event) => onChange(item.id, "color", event.target.value)}
         />
@@ -1035,7 +1035,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
       <label className="space-y-1.5">
         <span className="text-xs font-semibold uppercase text-gh-muted">로고색</span>
         <input
-          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-amber-500"
+          className="h-10 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-sm text-gh-text outline-none transition-colors focus:border-gh-accent"
           value={item.logoColor}
           onChange={(event) => onChange(item.id, "logoColor", event.target.value)}
         />
@@ -1043,7 +1043,7 @@ function TechRow({ item, canDelete, onChange, onDelete }: TechRowProps) {
 
       <button
         type="button"
-        className="h-10 rounded-lg border border-gh-border px-3 text-sm font-semibold text-gh-muted transition-colors hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
+        className="h-10 rounded-lg border border-gh-border px-3 text-sm font-semibold text-gh-muted transition-colors hover:border-gh-danger/40 hover:bg-gh-danger/10 hover:text-gh-danger disabled:cursor-not-allowed disabled:opacity-40"
         disabled={!canDelete}
         onClick={() => onDelete(item.id)}
       >
@@ -1234,7 +1234,7 @@ export function TechStackGenerator() {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                className="h-10 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 text-sm font-semibold text-cyan-500 transition-colors hover:bg-cyan-500/15"
+                className="h-10 rounded-lg border border-gh-accent/30 bg-gh-accent/10 px-3 text-sm font-semibold text-gh-accent-strong transition-colors hover:bg-gh-accent/15"
                 onClick={addItem}
               >
                 행 추가
@@ -1274,7 +1274,7 @@ export function TechStackGenerator() {
                     key={option}
                     type="button"
                     className={`rounded-md px-3 text-sm font-semibold transition-colors ${
-                      theme === option ? "bg-cyan-500 text-white" : "text-gh-muted hover:bg-gh-hover hover:text-gh-text"
+                      theme === option ? "bg-gh-accent text-white" : "text-gh-muted hover:bg-gh-hover hover:text-gh-text"
                     }`}
                     onClick={() => setTheme(option)}
                   >
@@ -1287,7 +1287,7 @@ export function TechStackGenerator() {
             <label className="block space-y-2">
               <span className="text-sm font-medium text-gh-muted">줄당 아이콘 수</span>
               <input
-                className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-cyan-500"
+                className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-gh-accent"
                 max="50"
                 min="1"
                 type="number"
@@ -1406,7 +1406,7 @@ export function TechStackGenerator() {
             <label className="block space-y-2">
               <span className="text-sm font-semibold text-gh-muted">Skill Icons Markdown</span>
               <textarea
-                className="min-h-24 w-full resize-y rounded-lg border border-gh-border bg-gh-bg p-3 font-mono text-xs leading-relaxed text-gh-text outline-none transition-colors focus:border-cyan-500"
+                className="min-h-24 w-full resize-y rounded-lg border border-gh-border bg-gh-bg p-3 font-mono text-xs leading-relaxed text-gh-text outline-none transition-colors focus:border-gh-accent"
                 readOnly
                 value={skillIconsMarkdown}
               />
@@ -1415,7 +1415,7 @@ export function TechStackGenerator() {
             <label className="block space-y-2">
               <span className="text-sm font-semibold text-gh-muted">Version Badges Markdown</span>
               <textarea
-                className="min-h-40 w-full resize-y rounded-lg border border-gh-border bg-gh-bg p-3 font-mono text-xs leading-relaxed text-gh-text outline-none transition-colors focus:border-amber-500"
+                className="min-h-40 w-full resize-y rounded-lg border border-gh-border bg-gh-bg p-3 font-mono text-xs leading-relaxed text-gh-text outline-none transition-colors focus:border-gh-accent"
                 readOnly
                 value={badgesMarkdown}
               />
@@ -1424,7 +1424,7 @@ export function TechStackGenerator() {
             <label className="block space-y-2">
               <span className="text-sm font-semibold text-gh-muted">전체 Markdown</span>
               <textarea
-                className="min-h-44 w-full resize-y rounded-lg border border-gh-border bg-gh-bg p-3 font-mono text-xs leading-relaxed text-gh-text outline-none transition-colors focus:border-emerald-500"
+                className="min-h-44 w-full resize-y rounded-lg border border-gh-border bg-gh-bg p-3 font-mono text-xs leading-relaxed text-gh-text outline-none transition-colors focus:border-gh-accent"
                 readOnly
                 value={fullMarkdown}
               />

@@ -46,7 +46,7 @@ export default async function InterviewSharePage({ params }: InterviewPageProps)
   return (
     <article className="mx-auto w-full max-w-4xl py-8">
       <header className="border-b border-gh-border/60 pb-8">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-300">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gh-warning/30 bg-gh-warning/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gh-text">
           Private Share
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-gh-text md:text-5xl">{page.title}</h1>
@@ -92,11 +92,11 @@ function InterviewSection({ interview }: { interview: InterviewRecord }) {
     <section className="rounded-xl border border-gh-border/70 bg-gh-surface/50 p-5 backdrop-blur-sm md:p-6">
       <header className="flex flex-col gap-3 border-b border-gh-border/50 pb-5 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-indigo-400">{interview.interviewDate ?? "일정 미정"}</p>
+          <p className="text-sm font-semibold text-gh-accent-strong">{interview.interviewDate ?? "일정 미정"}</p>
           <h2 className="mt-1 text-2xl font-bold text-gh-text">{interview.company}</h2>
           {metaItems.length > 0 ? <p className="mt-2 text-sm text-gh-muted">{metaItems.join(" · ")}</p> : null}
         </div>
-        <span className="inline-flex w-fit rounded-full border border-indigo-500/25 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-300">
+        <span className="inline-flex w-fit rounded-full border border-gh-accent/25 bg-gh-accent/10 px-3 py-1 text-xs font-semibold text-gh-accent-strong">
           질문 {interview.questions.length}개
         </span>
       </header>
@@ -125,7 +125,7 @@ function QuestionItem({ index, question }: { index: number; question: InterviewQ
   return (
     <li className="rounded-lg border border-gh-border/50 bg-gh-bg/35 p-4">
       <div className="flex gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-500/15 text-sm font-bold text-indigo-300">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gh-accent/15 text-sm font-bold text-gh-accent-strong">
           {index}
         </span>
         <div className="min-w-0 flex-1">

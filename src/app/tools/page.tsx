@@ -41,21 +41,21 @@ export default function ToolsPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {TOOLS.map((tool) => (
           <Link key={tool.href} href={tool.href} className="group block h-full" data-testid={`tool-card-${tool.href.split("/").pop()}`}>
-            <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-gh-border/70 bg-gh-surface/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/5">
+            <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-gh-border/70 bg-gh-surface/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-gh-accent/30 hover:shadow-xl hover:shadow-cyan-500/5">
               <div className="flex-1 space-y-4">
                 <div className="flex flex-wrap gap-2">
                   {tool.labels.map((label) => (
-                    <span key={label} className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase text-cyan-400/90">
+                    <span key={label} className="rounded-lg border border-gh-accent/20 bg-gh-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase text-gh-accent-strong">
                       {label}
                     </span>
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-xl font-semibold text-gh-text transition-colors group-hover:text-cyan-500">{tool.title}</h2>
+                  <h2 className="text-xl font-semibold text-gh-text transition-colors group-hover:text-gh-accent-strong">{tool.title}</h2>
                   <p className="text-sm leading-relaxed text-gh-muted">{tool.description}</p>
                 </div>
               </div>
-              <div className="mt-6 border-t border-gh-border/50 pt-4 text-sm font-semibold text-gh-accent">
+              <div className="mt-6 border-t border-gh-border/50 pt-4 text-sm font-semibold text-gh-accent-strong">
                 열기
               </div>
               <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-cyan-500/0 via-amber-500/0 to-emerald-500/0 transition-all duration-300 group-hover:from-cyan-500/40 group-hover:via-amber-500/40 group-hover:to-emerald-500/40" />

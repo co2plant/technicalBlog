@@ -1,13 +1,37 @@
 @import "tailwindcss";
 
 @theme {
+  /* Pretendard Variable is loaded from jsDelivr in layout.tsx. */
+  --font-sans: "Pretendard GOV", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+
+  /* KRDS type scale (https://getdesign.kr/services/krds/DESIGN.md). */
+  --text-heading-l: 2rem; /* 32px */
+  --text-heading-l--line-height: 1.3;
+  --text-heading-l--letter-spacing: -0.01em;
+  --text-heading-m: 1.5rem; /* 24px */
+  --text-heading-m--line-height: 1.3;
+  --text-heading-s: 1.1875rem; /* 19px */
+  --text-heading-s--line-height: 1.3;
+  --text-body-l: 1.1875rem; /* 19px */
+  --text-body-l--line-height: 1.55;
+  --text-body-m: 1.0625rem; /* 17px */
+  --text-body-m--line-height: 1.55;
+  --text-body-s: 0.9375rem; /* 15px */
+  --text-body-s--line-height: 1.55;
+  --text-body-xs: 0.8125rem; /* 13px */
+  --text-body-xs--line-height: 1.55;
+
   --color-gh-bg: var(--gh-bg);
   --color-gh-surface: var(--gh-surface);
   --color-gh-border: var(--gh-border);
   --color-gh-text: var(--gh-text);
   --color-gh-muted: var(--gh-muted);
   --color-gh-accent: var(--gh-accent);
+  --color-gh-accent-strong: var(--gh-accent-strong);
   --color-gh-hover: var(--gh-hover);
+  --color-gh-success: var(--gh-success);
+  --color-gh-warning: var(--gh-warning);
+  --color-gh-danger: var(--gh-danger);
 }
 
 @layer components {
@@ -31,7 +55,7 @@
   .admin-toast-editor .ProseMirror,
   .admin-toast-editor .toastui-editor-md-container .toastui-editor-md-marked-text,
   .admin-toast-editor .toastui-editor-md-container .toastui-editor-md-code {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.8;
   }
 
@@ -55,16 +79,23 @@
 }
 
 @layer base {
+  /* Light values follow KRDS. */
   :root {
     --gh-bg: #ffffff;
-    --gh-surface: #f6f8fa;
-    --gh-border: #d0d7de;
-    --gh-text: #1f2328;
-    --gh-muted: #656d76;
-    --gh-accent: #0969da;
-    --gh-hover: #eaeef2;
+    --gh-surface: #f4f5f6; /* gray-10 */
+    --gh-border: #cdd1d5; /* gray-30 */
+    --gh-text: #131416; /* gray-100 */
+    --gh-muted: #464c53; /* gray-80 */
+    --gh-accent: #256ef4; /* primary-50: buttons, focus, selected */
+    --gh-accent-strong: #0b50d0; /* primary-60: link text, hover */
+    --gh-hover: #e6e8ea; /* gray-20 */
+    --gh-success: #1f7a47;
+    --gh-warning: #c26900;
+    --gh-danger: #d6322f;
   }
 
+  /* Dark mode is out of scope for the KRDS redesign: the original values stay as they were,
+     and tokens added since are taken from the same GitHub dark palette. */
   @media (prefers-color-scheme: dark) {
     :root {
       --gh-bg: #0d1117;
@@ -73,14 +104,19 @@
       --gh-text: #c9d1d9;
       --gh-muted: #8b949e;
       --gh-accent: #58a6ff;
+      --gh-accent-strong: #79c0ff;
       --gh-hover: #1f242c;
+      --gh-success: #3fb950;
+      --gh-warning: #d29922;
+      --gh-danger: #f85149;
     }
   }
 
   body {
     background-color: var(--gh-bg);
     color: var(--gh-text);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-size: var(--text-body-m);
+    line-height: var(--text-body-m--line-height);
   }
 
   /* markdown prose styling replacement for vanilla .post-detail__body */

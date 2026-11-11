@@ -70,10 +70,10 @@ function CopyButton({ copyKey, copiedKey, label, value, onCopy }: CopyButtonProp
   return (
     <button
       type="button"
-      className="rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left font-mono text-xs text-gh-text transition-colors hover:border-cyan-500/40 hover:bg-gh-hover"
+      className="rounded-lg border border-gh-border bg-gh-bg px-3 py-2 text-left font-mono text-xs text-gh-text transition-colors hover:border-gh-accent/40 hover:bg-gh-hover"
       onClick={() => onCopy(copyKey, value)}
     >
-      <span className="block text-[11px] font-semibold uppercase text-cyan-400">
+      <span className="block text-[11px] font-semibold uppercase text-gh-accent-strong">
         {copiedKey === copyKey ? "복사됨" : label}
       </span>
       <span className="mt-1 block break-all">{value}</span>
@@ -190,7 +190,7 @@ export function GoldenRatioCalculator() {
             <label className="space-y-2">
               <span className="text-sm font-medium text-gh-muted">기준값</span>
               <input
-                className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-cyan-500"
+                className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-gh-accent"
                 inputMode="decimal"
                 min="0"
                 type="number"
@@ -207,7 +207,7 @@ export function GoldenRatioCalculator() {
                     key={option}
                     type="button"
                     className={`rounded-md px-3 text-sm font-semibold transition-colors ${
-                      unit === option ? "bg-cyan-500 text-white" : "text-gh-muted hover:bg-gh-hover hover:text-gh-text"
+                      unit === option ? "bg-gh-accent text-white" : "text-gh-muted hover:bg-gh-hover hover:text-gh-text"
                     }`}
                     onClick={() => setUnit(option)}
                   >
@@ -237,7 +237,7 @@ export function GoldenRatioCalculator() {
             <label className="space-y-2">
               <span className="text-sm font-medium text-gh-muted">기준 길이</span>
               <input
-                className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-amber-500"
+                className="h-11 w-full rounded-lg border border-gh-border bg-gh-bg px-3 font-mono text-gh-text outline-none transition-colors focus:border-gh-accent"
                 inputMode="decimal"
                 min="0"
                 type="number"
@@ -254,7 +254,7 @@ export function GoldenRatioCalculator() {
                     key={option}
                     type="button"
                     className={`rounded-md px-3 text-sm font-semibold transition-colors ${
-                      frameBasis === option ? "bg-amber-500 text-white" : "text-gh-muted hover:bg-gh-hover hover:text-gh-text"
+                      frameBasis === option ? "bg-gh-accent text-white" : "text-gh-muted hover:bg-gh-hover hover:text-gh-text"
                     }`}
                     onClick={() => setFrameBasis(option)}
                   >
@@ -269,9 +269,9 @@ export function GoldenRatioCalculator() {
             <div className="rounded-lg border border-gh-border/60 bg-gh-bg/60 p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="font-semibold text-gh-text">가로형</h3>
-                <span className="font-mono text-xs text-amber-400">1.618:1</span>
+                <span className="font-mono text-xs text-gh-accent-strong">1.618:1</span>
               </div>
-              <div className="aspect-[1.618/1] rounded-md border border-amber-500/30 bg-amber-500/10" />
+              <div className="aspect-[1.618/1] rounded-md border border-gh-accent/30 bg-gh-accent/10" />
               <p className="mt-3 font-mono text-sm text-gh-text">
                 {frame === null
                   ? "-"
@@ -282,9 +282,9 @@ export function GoldenRatioCalculator() {
             <div className="rounded-lg border border-gh-border/60 bg-gh-bg/60 p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="font-semibold text-gh-text">세로형</h3>
-                <span className="font-mono text-xs text-cyan-400">1:1.618</span>
+                <span className="font-mono text-xs text-gh-accent-strong">1:1.618</span>
               </div>
-              <div className="mx-auto aspect-[1/1.618] h-36 rounded-md border border-cyan-500/30 bg-cyan-500/10" />
+              <div className="mx-auto aspect-[1/1.618] h-36 rounded-md border border-gh-accent/30 bg-gh-accent/10" />
               <p className="mt-3 font-mono text-sm text-gh-text">
                 {frame === null
                   ? "-"

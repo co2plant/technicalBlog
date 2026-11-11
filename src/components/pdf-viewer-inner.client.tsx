@@ -166,7 +166,7 @@ export function PdfViewerInner({ allowDownload, file, title }: PdfViewerInnerPro
             file={file}
             loading={<div className="absolute inset-0 grid place-items-center p-10 text-center text-gh-muted">PDF를 불러오는 중입니다...</div>}
             error={
-              <div className="absolute inset-0 grid place-items-center p-10 text-center text-red-500">
+              <div className="absolute inset-0 grid place-items-center p-10 text-center text-gh-danger">
                 PDF를 불러오지 못했습니다. 새 탭으로 열어 확인해주세요.
               </div>
             }

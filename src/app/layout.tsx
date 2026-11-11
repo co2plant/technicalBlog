@@ -33,6 +33,10 @@ export const metadata: Metadata = {
   },
 };
 
+// Dynamic subset: the browser downloads only the glyph ranges a page uses.
+const PRETENDARD_STYLESHEET =
+  "https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css";
+
 type RootLayoutProps = Readonly<{
   children: React.ReactNode;
 }>;
@@ -40,7 +44,11 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-gh-bg text-gh-text font-sans antialiased selection:bg-indigo-500/30 flex flex-col relative overflow-x-hidden">
+      <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="stylesheet" href={PRETENDARD_STYLESHEET} crossOrigin="anonymous" />
+      </head>
+      <body className="min-h-screen bg-gh-bg text-gh-text font-sans antialiased selection:bg-gh-accent/20 flex flex-col relative overflow-x-hidden">
         {/* 은은한 네온 조명 효과 */}
         <div className="pointer-events-none fixed left-0 top-0 z-[-1] h-full w-full opacity-40">
           <div className="absolute left-[20%] top-[10%] h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 blur-[100px]" />
