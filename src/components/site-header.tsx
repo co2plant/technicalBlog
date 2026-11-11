@@ -9,7 +9,7 @@ const NAV_ITEMS = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gh-border bg-gh-bg/80 backdrop-blur" data-testid="site-header">
+    <header className="sticky top-0 z-50 w-full border-b border-gh-border bg-gh-bg" data-testid="site-header">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <Link
           href="/"

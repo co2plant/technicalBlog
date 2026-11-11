@@ -32,16 +32,15 @@ export default function ToolsPage() {
     <div className="relative z-10 space-y-8">
       <div className="border-b border-gh-border/60 pb-6">
         <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-gh-text" data-testid="tools-page-heading">
-          <span className="inline-block h-8 w-1.5 rounded-full bg-gradient-to-b from-cyan-500 to-amber-500" />
           도구
         </h1>
-        <p className="ml-4 mt-3 text-lg text-gh-muted">개발 중 반복해서 쓰는 계산기와 보조 도구를 모아둡니다.</p>
+        <p className="mt-3 text-lg text-gh-muted">개발 중 반복해서 쓰는 계산기와 보조 도구를 모아둡니다.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {TOOLS.map((tool) => (
           <Link key={tool.href} href={tool.href} className="group block h-full" data-testid={`tool-card-${tool.href.split("/").pop()}`}>
-            <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-gh-border/70 bg-gh-surface/60 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-gh-accent/30 hover:shadow-xl hover:shadow-cyan-500/5">
+            <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-gh-border bg-gh-surface p-6 transition-colors hover:border-gh-accent">
               <div className="flex-1 space-y-4">
                 <div className="flex flex-wrap gap-2">
                   {tool.labels.map((label) => (
@@ -58,7 +57,6 @@ export default function ToolsPage() {
               <div className="mt-6 border-t border-gh-border/50 pt-4 text-sm font-semibold text-gh-accent-strong">
                 열기
               </div>
-              <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-cyan-500/0 via-amber-500/0 to-emerald-500/0 transition-all duration-300 group-hover:from-cyan-500/40 group-hover:via-amber-500/40 group-hover:to-emerald-500/40" />
             </article>
           </Link>
         ))}

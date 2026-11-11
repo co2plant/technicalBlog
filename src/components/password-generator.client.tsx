@@ -235,7 +235,7 @@ export function PasswordGenerator() {
   return (
     <div className="space-y-6" data-testid="password-generator">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5">
             <h2 className="text-xl font-semibold text-gh-text">조건</h2>
             <p className="mt-1 text-sm text-gh-muted">길이와 포함할 문자 종류를 정합니다.</p>
@@ -335,7 +335,7 @@ export function PasswordGenerator() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gh-text">결과</h2>

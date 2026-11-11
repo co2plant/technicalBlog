@@ -180,7 +180,7 @@ export function GoldenRatioCalculator() {
   return (
     <div className="space-y-6" data-testid="golden-ratio-calculator">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5">
             <h2 className="text-xl font-semibold text-gh-text">스케일</h2>
             <p className="mt-1 text-sm text-gh-muted">폰트, 간격, 컴포넌트 크기를 1.618 기준으로 계산합니다.</p>
@@ -227,7 +227,7 @@ export function GoldenRatioCalculator() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5">
             <h2 className="text-xl font-semibold text-gh-text">프레임</h2>
             <p className="mt-1 text-sm text-gh-muted">가로형과 세로형 화면 비율을 같은 기준값에서 함께 계산합니다.</p>
@@ -295,7 +295,7 @@ export function GoldenRatioCalculator() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+      <section className="rounded-lg border border-gh-border bg-gh-surface p-5">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gh-text">CSS</h2>

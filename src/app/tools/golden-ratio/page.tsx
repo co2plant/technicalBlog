@@ -11,10 +11,9 @@ export default function GoldenRatioPage() {
     <div className="relative z-10 space-y-8">
       <div className="border-b border-gh-border/60 pb-6">
         <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-gh-text" data-testid="golden-ratio-page-heading">
-          <span className="inline-block h-8 w-1.5 rounded-full bg-gradient-to-b from-amber-500 to-cyan-500" />
           황금비율 계산기
         </h1>
-        <p className="ml-4 mt-3 text-lg text-gh-muted">1.618 비율로 화면 크기, 카드, 썸네일, 여백 스케일을 계산합니다.</p>
+        <p className="mt-3 text-lg text-gh-muted">1.618 비율로 화면 크기, 카드, 썸네일, 여백 스케일을 계산합니다.</p>
       </div>
 
       <GoldenRatioCalculator />
