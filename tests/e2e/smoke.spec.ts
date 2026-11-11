@@ -101,3 +101,37 @@ test("app shell and critical routes render", async ({ page }) => {
     await expect(page.getByTestId("not-found-page")).toBeVisible();
   });
 });
+
+test("search engines and feed readers can discover posts", async ({ page, request }) => {
+  await test.step("robots.txt points at the sitemap", async () => {
+    const response = await request.get("/robots.txt");
+
+    expect(response.ok()).toBe(true);
+    expect(await response.text()).toMatch(/^Sitemap: https?:\/\/\S+\/sitemap\.xml$/m);
+  });
+
+  await test.step("RSS feed lists public posts but not the portfolio", async () => {
+    const response = await request.get("/rss.xml");
+    const feed = await response.text();
+
+    expect(response.ok()).toBe(true);
+    expect(response.headers()["content-type"]).toContain("application/rss+xml");
+    expect(feed).toContain("<title>[Git] Commit Message Convention</title>");
+    expect(feed).toMatch(/<link>\S+\/posts\/1<\/link>/);
+    expect(feed).not.toMatch(/\/posts\/11</);
+  });
+
+  await test.step("post pages advertise the feed and carry BlogPosting data", async () => {
+    await page.goto(smokeRoutes.gitPost);
+    await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", /\/rss\.xml$/);
+
+    const jsonLd = JSON.parse((await page.getByTestId("post-json-ld").textContent()) ?? "{}");
+    expect(jsonLd).toMatchObject({ "@type": "BlogPosting", headline: "[Git] Commit Message Convention" });
+  });
+
+  await test.step("portfolio posts carry no structured data", async () => {
+    await page.goto(smokeRoutes.portfolioPost);
+    await expect(page.getByTestId("post-detail-heading")).toBeVisible();
+    await expect(page.getByTestId("post-json-ld")).toHaveCount(0);
+  });
+});
