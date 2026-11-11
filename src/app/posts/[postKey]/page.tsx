@@ -4,7 +4,8 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { MermaidRenderer } from "@/components/mermaid-renderer.client";
 import { PdfViewer } from "@/components/pdf-viewer.client";
 import { getPostByPostKey, getPublishedPosts } from "@/lib/content";
-import { DEFAULT_OPEN_GRAPH_IMAGE, SITE_NAME } from "@/lib/site-metadata";
+import { buildBlogPostingJsonLd, getPostDescription, serializeJsonLd } from "@/lib/seo";
+import { DEFAULT_OPEN_GRAPH_IMAGE, getSiteUrl, RSS_FEED_ALTERNATES, SITE_NAME } from "@/lib/site-metadata";
 
 export const dynamicParams = true;
 export const revalidate = 300;
@@ -36,6 +37,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   }
 
   const shouldHideFromSearch = post.category === "portfolio";
+  const description = getPostDescription(post);
   const openGraphImages = post.coverImage
     ? [
         {
@@ -47,7 +49,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   return {
     title: post.title,
-    description: post.description,
+    description,
     robots: shouldHideFromSearch
       ? {
           index: false,
@@ -62,10 +64,11 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       : undefined,
     alternates: {
       canonical: `/posts/${post.slug}`,
+      types: RSS_FEED_ALTERNATES,
     },
     openGraph: {
       title: post.title,
-      description: post.description,
+      description,
       type: "article",
       url: `/posts/${post.slug}`,
       siteName: SITE_NAME,
@@ -80,7 +83,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     twitter: {
       card: "summary_large_image",
       title: post.title,
-      description: post.description,
+      description,
       images: openGraphImages,
     },
   };
@@ -102,9 +105,14 @@ export default async function PostDetailPage({ params }: PostPageProps) {
   const secondaryAttachments = post.embeddedPdf
     ? post.attachments.filter((attachment) => attachment.url !== post.embeddedPdf)
     : post.attachments;
+  // Portfolio posts are noindex, so they get no structured data either.
+  const jsonLd = post.category === "portfolio" ? null : buildBlogPostingJsonLd(post, getSiteUrl());
 
   return (
     <article className="max-w-3xl mx-auto py-10 px-4 w-full">
+      {jsonLd ? (
+        <script type="application/ld+json" data-testid="post-json-ld" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
+      ) : null}
       <header className="mb-10 text-center md:text-left">
         <div className="inline-flex items-center gap-2 mb-4">
           <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
