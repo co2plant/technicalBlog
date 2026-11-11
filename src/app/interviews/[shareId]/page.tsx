@@ -89,7 +89,7 @@ function InterviewSection({ interview }: { interview: InterviewRecord }) {
   const metaItems = [interview.position, interview.stage].filter(Boolean);
 
   return (
-    <section className="rounded-xl border border-gh-border/70 bg-gh-surface/50 p-5 backdrop-blur-sm md:p-6">
+    <section className="rounded-xl border border-gh-border bg-gh-surface p-5 md:p-6">
       <header className="flex flex-col gap-3 border-b border-gh-border/50 pb-5 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-sm font-semibold text-gh-accent-strong">{interview.interviewDate ?? "일정 미정"}</p>

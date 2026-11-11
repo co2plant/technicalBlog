@@ -115,7 +115,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
       ) : null}
       <header className="mb-10 text-center md:text-left">
         <div className="inline-flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full bg-gh-accent shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+          <span className="w-2 h-2 rounded-full bg-gh-accent"></span>
           <span className="text-gh-accent-strong font-semibold tracking-wider uppercase text-sm">{formatCategory(post.category)}</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gh-text mb-6 leading-[1.15]" data-testid="post-detail-heading">

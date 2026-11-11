@@ -883,7 +883,7 @@ function TechCatalog({
   onQueryChange,
 }: TechCatalogProps) {
   return (
-    <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+    <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
       <div className="mb-5">
         <h2 className="text-xl font-semibold text-gh-text">기술 검색</h2>
         <p className="mt-1 text-sm text-gh-muted">기술명을 검색하거나 카테고리에서 골라 바로 추가합니다.</p>
@@ -1225,7 +1225,7 @@ export function TechStackGenerator() {
           onQueryChange={setCatalogQuery}
         />
 
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gh-text">기술 목록</h2>
@@ -1262,7 +1262,7 @@ export function TechStackGenerator() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <h2 className="text-xl font-semibold text-gh-text">옵션</h2>
 
           <div className="mt-5 grid gap-4 md:grid-cols-[minmax(12rem,0.8fr)_minmax(10rem,0.7fr)_minmax(12rem,0.7fr)]">
@@ -1314,7 +1314,7 @@ export function TechStackGenerator() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5">
             <h2 className="text-xl font-semibold text-gh-text">미리보기</h2>
             <p className="mt-1 text-sm text-gh-muted">아이콘 묶음과 버전 배지가 포트폴리오에 들어갈 형태로 표시됩니다.</p>
@@ -1355,7 +1355,7 @@ export function TechStackGenerator() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gh-border/70 bg-gh-surface/60 p-5 backdrop-blur-md">
+        <div className="rounded-lg border border-gh-border bg-gh-surface p-5">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gh-text">복사와 다운로드</h2>
