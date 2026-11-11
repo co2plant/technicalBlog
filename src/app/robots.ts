@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-metadata";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,5 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/interviews/", "/portfolio", "/posts/my-portfolio-pdf"],
       },
     ],
+    sitemap: `${getSiteUrl()}/sitemap.xml`,
   };
 }

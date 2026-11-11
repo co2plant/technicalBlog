@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SiteHeader } from "@/components/site-header";
-import { DEFAULT_OPEN_GRAPH_IMAGE, getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-metadata";
+import { DEFAULT_OPEN_GRAPH_IMAGE, getSiteUrl, RSS_FEED_ALTERNATES, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-metadata";
 import "./globals.css";
 
 const siteUrl = getSiteUrl();
@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  alternates: {
+    types: RSS_FEED_ALTERNATES,
+  },
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,

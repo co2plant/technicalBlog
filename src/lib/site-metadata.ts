@@ -8,6 +8,13 @@ export const DEFAULT_OPEN_GRAPH_IMAGE = {
   alt: SITE_NAME,
 } as const;
 
+export const RSS_FEED_PATH = "/rss.xml";
+
+// Pages that set their own `alternates` replace the layout's, so they must spread this in too.
+export const RSS_FEED_ALTERNATES = {
+  "application/rss+xml": [{ url: RSS_FEED_PATH, title: SITE_NAME }],
+};
+
 export function getSiteUrl(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return normalizeUrl(process.env.NEXT_PUBLIC_SITE_URL);
