@@ -8,6 +8,7 @@ import { AdminNotFoundError, AdminRequestError, AdminUpstreamError } from "@/lib
 import { prisma } from "@/lib/prisma";
 import { assertSupportedPostSyntax } from "@/lib/content";
 import { mapBlogPostFromDatabase } from "@/lib/posts-db";
+import { summarizePostMarkdown } from "@/lib/post-summary";
 
 const ADMIN_POST_INCLUDE = {
   category: true,
@@ -149,6 +150,7 @@ export async function savePostContentPreservingStatus(
 }
 
 export async function publishPost(id: number, input: AdminPostInput): Promise<number> {
+  input = withAutomaticSummary(input);
   for (let attempt = 1; attempt <= PUBLISH_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
       return await prisma.$transaction(
@@ -342,6 +344,7 @@ function writePost(
   shouldCreateRevision = true,
 ) {
   assertAdminPostSyntax(input.bodyMarkdown, input.extension, String(id));
+  input = withAutomaticSummary(input);
 
   return prisma.$transaction(async (tx) => {
     const existing = await tx.blogPost.findFirst({
@@ -376,6 +379,11 @@ function writePost(
 
     revalidatePostSurfaces(existing.publishedNumber ?? undefined);
   });
+}
+
+function withAutomaticSummary(input: AdminPostInput): AdminPostInput {
+  const summary = summarizePostMarkdown(input.bodyMarkdown);
+  return { ...input, description: summary, excerpt: summary };
 }
 
 function postWriteData(input: AdminPostInput, categoryId: number) {

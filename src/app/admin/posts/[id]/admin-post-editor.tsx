@@ -2,9 +2,10 @@
 
 import "@toast-ui/editor/dist/toastui-editor.css";
 import Link from "next/link";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSessionTimer } from "@/app/admin/admin-session-timer";
+import { summarizePostMarkdown } from "@/lib/post-summary";
 import {
   adminEditorSaveStateReducer,
   createAdminEditorSaveState,
@@ -160,6 +161,7 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
 
   const publicPostUrl = draft.status === "published" && draft.publishedNumber ? `/posts/${draft.publishedNumber}` : null;
   const selectedCategory = categories.find((category) => category.slug === draft.categorySlug);
+  const automaticSummary = useMemo(() => summarizePostMarkdown(draft.bodyMarkdown), [draft.bodyMarkdown]);
   const hasUnsavedContent = hasUnsavedChanges(saveState);
   const saveInFlight = isSaveInFlight(saveState);
   const hasPendingAction = Object.keys(pendingActions).length > 0;
@@ -1187,13 +1189,6 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
         }`}
       >
         <section className="min-w-0" data-testid="admin-editor-writing-pane">
-          <textarea
-            aria-label="글 설명"
-            value={draft.description}
-            onChange={(event) => updateDraft("description", event.target.value)}
-            className="mb-4 min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-surface px-4 py-3 text-base leading-relaxed text-gh-text outline-none focus:border-indigo-400"
-            placeholder="검색과 공유에 쓰일 설명을 입력하세요"
-          />
           <div aria-live="polite" className="min-h-6">
             {imageUploadState === "uploading" ? (
               <p className="mb-2 flex items-center gap-2 text-sm text-gh-muted">
@@ -1313,14 +1308,12 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
                     </div>
                   ) : null}
 
-                  <FieldLabel label="요약">
-                    <textarea
-                      value={draft.excerpt}
-                      onChange={(event) => updateDraft("excerpt", event.target.value)}
-                      className="min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm leading-relaxed text-gh-text outline-none focus:border-indigo-400"
-                      placeholder="목록 카드에 보일 요약"
-                    />
-                  </FieldLabel>
+                  <div>
+                    <p className="mb-2 text-body-xs font-semibold text-gh-muted">자동 요약 · 검색 설명</p>
+                    <p data-testid="admin-post-summary" className="text-body-s text-gh-text [overflow-wrap:anywhere]">
+                      {automaticSummary || "본문을 입력하면 자동으로 표시됩니다."}
+                    </p>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <FieldLabel label="작성자">
@@ -1567,11 +1560,13 @@ function FieldLabel({ label, children }: { label: string; children: React.ReactN
 }
 
 function currentPayload(draft: AdminEditorPost, editor: ToastEditorInstance | null) {
+  const bodyMarkdown = editor?.getMarkdown() ?? draft.bodyMarkdown;
+  const summary = summarizePostMarkdown(bodyMarkdown);
   return {
     title: draft.title,
-    description: draft.description,
-    excerpt: draft.excerpt,
-    bodyMarkdown: editor?.getMarkdown() ?? draft.bodyMarkdown,
+    description: summary,
+    excerpt: summary,
+    bodyMarkdown,
     extension: draft.extension,
     author: draft.author,
     categorySlug: draft.categorySlug,

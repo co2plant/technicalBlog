@@ -41,7 +41,7 @@ describe("post description", () => {
       "<p>다음&nbsp;문단</p>",
     ].join("\n");
 
-    expect(summarizeHtml(html)).toBe("정의 SQL을 그대로 실행하지 않습니다 & 비용을 <추정>합니다. — 끝 다음 문단");
+    expect(summarizeHtml(html)).toBe("SQL을 그대로 실행하지 않습니다 & 비용을 <추정>합니다. — 끝 다음 문단");
   });
 
   it("truncates long text at a word boundary within the limit", () => {

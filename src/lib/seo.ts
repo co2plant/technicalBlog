@@ -2,8 +2,8 @@ import type { Post } from "@/lib/content";
 import { DEFAULT_OPEN_GRAPH_IMAGE, RSS_FEED_PATH, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-metadata";
 
 const SUMMARY_MAX_LENGTH = 160;
-// Code and diagrams read as noise in a search snippet, so they are dropped before the text is taken.
-const NON_PROSE_BLOCK_PATTERN = /<(pre|script|style|svg|figure)\b[\s\S]*?<\/\1>/gi;
+// Headings, code and diagrams are excluded from the opening prose.
+const NON_PROSE_BLOCK_PATTERN = /<(h[1-6]|pre|script|style|svg|figure)\b[\s\S]*?<\/\1>/gi;
 const NAMED_ENTITIES: Record<string, string> = {
   amp: "&",
   lt: "<",
@@ -20,7 +20,10 @@ export function getPostDescription(post: PostSummarySource): string {
 }
 
 export function summarizeHtml(html: string, maxLength = SUMMARY_MAX_LENGTH): string {
-  const text = decodeHtmlEntities(html.replace(NON_PROSE_BLOCK_PATTERN, " ").replace(/<[^>]*>/g, " "))
+  const text = decodeHtmlEntities(html
+    .replace(NON_PROSE_BLOCK_PATTERN, " ")
+    .replace(/<\/(?:p|div|li|blockquote|tr|td|th)\b[^>]*>|<br\b[^>]*>/gi, " ")
+    .replace(/<[^>]*>/g, ""))
     .replace(/\s+/g, " ")
     .trim();
 

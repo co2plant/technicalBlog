@@ -118,6 +118,8 @@ describe("database blog post mapper", () => {
 
     expect(post.slug).toBe("3");
     expect(post.category).toBe("backend");
+    expect(post.description).toBe("본문입니다.");
+    expect(post.excerpt).toBe("본문입니다.");
     expect(post.publishedAt).toBe("2026-07-01");
     expect(post.updatedAt).toBe("2026-07-02");
     expect(post.coverImage).toBe("/posts/legacy-post-slug/cover.png");
