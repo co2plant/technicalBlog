@@ -30,6 +30,11 @@ test.describe("post summary", () => {
     expect(await saveDraft(page)).toMatchObject({ description: "직접 쓴 요약입니다.", excerpt: "직접 쓴 요약입니다." });
     await page.reload();
     await expect(field).toHaveValue("직접 쓴 요약입니다.");
+
+    // The summary repeats the opening prose, so the preview header shows only the title.
+    await page.goto(`${new URL(page.url()).pathname}/preview`);
+    await expect(page.locator("article header h1")).toBeVisible();
+    await expect(page.locator("article header")).not.toContainText("직접 쓴 요약입니다.");
   });
 });
 
@@ -41,6 +46,9 @@ test("published posts keep their written summary in lists, metadata and feeds", 
   const card = page.getByRole("list", { name: "게시글 목록" }).getByRole("link", { name: "[Git] Commit Message Convention" });
   await expect(card.locator("p")).toHaveText(excerpt);
   await card.click();
+  await expect(page.getByTestId("post-detail-heading")).toBeVisible();
+  // The summary repeats the opening prose, so the header under the title does not show it.
+  await expect(page.locator("article header")).not.toContainText(description);
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", description);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", description);
   const jsonLd = await page.locator('script[type="application/ld+json"]').textContent();
