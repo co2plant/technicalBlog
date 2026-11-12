@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import type { Post, PostAttachment } from "@/lib/content";
 import { renderPostMarkdown } from "./post-rendering";
-import { summarizePostMarkdown } from "./post-summary";
+import { resolvePostSummaries } from "./post-summary";
 
 const BLOG_DATABASE_URL_ENV = process.env.NODE_ENV === "test" ? "DATABASE_URL_TEST" : "POSTGRES_PRISMA_URL";
 
@@ -164,14 +164,14 @@ export function mapBlogPostFromDatabase(databasePost: DatabaseBlogPost): Post {
   const updatedAt = optionalDateOnlyToString(databasePost.updatedAt, "blog_posts.updated_at");
   const slug = databasePost.publishedNumber ? String(databasePost.publishedNumber) : `draft-${databasePost.id}`;
   const attachments = mapAttachments(databasePost);
-  const summary = summarizePostMarkdown(databasePost.bodyMarkdown);
+  const summaries = resolvePostSummaries(databasePost);
 
   return {
     title: databasePost.title,
     slug,
     category: databasePost.category.slug,
-    description: summary,
-    excerpt: summary,
+    description: summaries.description,
+    excerpt: summaries.excerpt,
     publishedAt,
     updatedAt,
     author: databasePost.author,

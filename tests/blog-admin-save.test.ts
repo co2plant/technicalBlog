@@ -118,24 +118,28 @@ describe("savePostContentPreservingStatus", () => {
     expect(mocks.tx.blogPostRevision.create).not.toHaveBeenCalled();
   });
 
-  it.each(["autosave", "manual", "publish"] as const)("derives both summary fields from the body for %s", async (mode) => {
-    const bodyInput = { ...input, bodyMarkdown: "# 제목\n\n**실제 본문**입니다." };
+  it.each([
+    ["autosave", "직접 쓴 요약"],
+    ["manual", "직접 쓴 요약"],
+    ["publish", "직접 쓴 요약"],
+    ["autosave", ""],
+    ["manual", ""],
+    ["publish", ""],
+  ] as const)("stores the summary field as written for %s (%j)", async (mode, summary) => {
+    const bodyInput = { ...input, description: summary, excerpt: summary, bodyMarkdown: "# 제목\n\n**실제 본문**입니다." };
     if (mode === "publish") {
       await publishPost(42, bodyInput);
     } else {
       await savePostContentPreservingStatus(42, bodyInput, { createRevision: mode === "manual" });
     }
     expect(mocks.tx.blogPost.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ description: "실제 본문입니다.", excerpt: "실제 본문입니다." }),
+      data: expect.objectContaining({ description: summary, excerpt: summary }),
     }));
     if (mode !== "autosave") {
       expect(mocks.tx.blogPostRevision.create).toHaveBeenCalledWith(expect.objectContaining({
-        data: expect.objectContaining({ snapshot: expect.objectContaining({
-          description: "실제 본문입니다.", excerpt: "실제 본문입니다.",
-        }) }),
+        data: expect.objectContaining({ snapshot: expect.objectContaining({ description: summary, excerpt: summary }) }),
       }));
     }
-    expect(bodyInput.description).toBe("설명");
   });
 
   it("creates exactly one revision for a manual save without changing status", async () => {

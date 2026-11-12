@@ -1309,10 +1309,26 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
                   ) : null}
 
                   <div>
-                    <p className="mb-2 text-body-xs font-semibold text-gh-muted">자동 요약 · 검색 설명</p>
-                    <p data-testid="admin-post-summary" className="text-body-s text-gh-text [overflow-wrap:anywhere]">
-                      {automaticSummary || "본문을 입력하면 자동으로 표시됩니다."}
-                    </p>
+                    <FieldLabel label="요약 · 검색 설명">
+                      <textarea
+                        value={draft.description}
+                        onChange={(event) => updateDraft("description", event.target.value)}
+                        aria-describedby={draft.description.trim() ? undefined : "admin-post-summary-hint"}
+                        className="min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm leading-relaxed text-gh-text outline-none focus:border-gh-accent"
+                        placeholder="목록과 검색 결과에 보일 요약"
+                      />
+                    </FieldLabel>
+                    {draft.description.trim() ? null : (
+                      <p
+                        id="admin-post-summary-hint"
+                        data-testid="admin-post-summary-hint"
+                        className="mt-2 text-body-xs text-gh-muted [overflow-wrap:anywhere]"
+                      >
+                        {automaticSummary
+                          ? `비워 두면 이 내용이 쓰입니다: ${automaticSummary}`
+                          : "본문에 문단을 쓰면 비워 둘 때 쓰일 요약이 여기에 보입니다."}
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -1560,13 +1576,12 @@ function FieldLabel({ label, children }: { label: string; children: React.ReactN
 }
 
 function currentPayload(draft: AdminEditorPost, editor: ToastEditorInstance | null) {
-  const bodyMarkdown = editor?.getMarkdown() ?? draft.bodyMarkdown;
-  const summary = summarizePostMarkdown(bodyMarkdown);
   return {
     title: draft.title,
-    description: summary,
-    excerpt: summary,
-    bodyMarkdown,
+    // One field feeds both columns; an empty field stays empty so the public pages keep following the body.
+    description: draft.description,
+    excerpt: draft.description,
+    bodyMarkdown: editor?.getMarkdown() ?? draft.bodyMarkdown,
     extension: draft.extension,
     author: draft.author,
     categorySlug: draft.categorySlug,

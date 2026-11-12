@@ -7,7 +7,6 @@ import {
   type PostLookupResult,
 } from "./posts-db";
 import { renderPostMarkdown } from "./post-rendering";
-import { summarizePostMarkdown } from "./post-summary";
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 const POST_ASSETS_DIR = path.join(process.cwd(), "public", "posts");
@@ -125,12 +124,9 @@ async function readPostFile({ category, fullPath, fileName }: PostFile): Promise
   const { frontmatter, body } = parseFrontmatter(fileContent, slugFromFileName);
   assertSupportedPostSyntax(body, extension, slugFromFileName);
   const attachments = await readAttachments(frontmatter.slug);
-  const summary = summarizePostMarkdown(body);
 
   return {
     ...frontmatter,
-    description: summary,
-    excerpt: summary,
     category,
     extension,
     body,

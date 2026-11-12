@@ -118,8 +118,8 @@ describe("database blog post mapper", () => {
 
     expect(post.slug).toBe("3");
     expect(post.category).toBe("backend");
-    expect(post.description).toBe("본문입니다.");
-    expect(post.excerpt).toBe("본문입니다.");
+    expect(post.description).toBe("DB에서 읽은 설명");
+    expect(post.excerpt).toBe("DB에서 읽은 요약");
     expect(post.publishedAt).toBe("2026-07-01");
     expect(post.updatedAt).toBe("2026-07-02");
     expect(post.coverImage).toBe("/posts/legacy-post-slug/cover.png");
@@ -133,5 +133,41 @@ describe("database blog post mapper", () => {
     ]);
     expect(post.html).toContain("<h1>제목</h1>");
     expect(post.draft).toBe(false);
+  });
+
+  it.each([
+    ["both empty", "", "", "본문 첫 문단입니다.", "본문 첫 문단입니다."],
+    ["only a description", "직접 쓴 설명", "", "직접 쓴 설명", "직접 쓴 설명"],
+    ["only an excerpt", "  ", "직접 쓴 요약", "직접 쓴 요약", "직접 쓴 요약"],
+  ])("fills a missing summary field when %s", (_case, description, excerpt, expectedDescription, expectedExcerpt) => {
+    const now = new Date("2026-07-07T00:00:00.000Z");
+    const post = mapBlogPostFromDatabase({
+      id: 11,
+      publishedNumber: 4,
+      legacySlug: null,
+      title: "요약을 비운 글",
+      description,
+      excerpt,
+      bodyMarkdown: "# 제목\n\n**본문** 첫 문단입니다.",
+      extension: "md",
+      status: "published",
+      author: "co2plant",
+      categoryId: 1,
+      publishedAt: now,
+      updatedAt: null,
+      originalUrl: null,
+      coverImageUrl: null,
+      embeddedPdfUrl: null,
+      allowPdfDownload: false,
+      createdAt: now,
+      modifiedAt: now,
+      deletedAt: null,
+      category: { id: 1, slug: "backend", name: "Backend", sortOrder: 10, createdAt: now },
+      tags: [],
+      assets: [],
+    } satisfies DatabaseBlogPost);
+
+    expect(post.description).toBe(expectedDescription);
+    expect(post.excerpt).toBe(expectedExcerpt);
   });
 });
