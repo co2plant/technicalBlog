@@ -35,6 +35,14 @@
 
 읽고 난 뒤 “나도 이 개념을 설명할 수 있겠다”는 느낌이 남는 글을 쓰고 싶습니다.
 
+## 글 작성
+
+위지윅 편집기의 코드 블록 오른쪽 위에서 언어를 선택합니다. 마크다운 모드에서는 코드 펜스의 여는 백틱 세 개 뒤에 `java`, `ts`, `sql` 같은 언어명을 소문자로 적습니다. 구문 강조는 위지윅·미리보기·발행 화면에 적용됩니다.
+
+지원 언어는 Java, JavaScript, TypeScript, JSX·TSX, HTML·XML, CSS, JSON, YAML, SQL, Bash, Groovy, Python입니다. 언어를 지정하지 않거나 미지원 언어를 입력하면 일반 코드로 표시합니다. `mermaid`는 기존처럼 다이어그램으로 렌더링합니다.
+
+편집기는 [TOAST UI 공식 Prism 플러그인](https://github.com/nhn/tui.editor/tree/master/plugins/code-syntax-highlight)을 사용하며, 게시 글도 같은 Prism 언어 설정과 색 테마를 사용합니다.
+
 ## 로컬 실행과 테스트
 
 Node.js 20.19 이상(20.x) 또는 22.12 이상(22.x), 실행 중인 Docker Desktop이 필요합니다.

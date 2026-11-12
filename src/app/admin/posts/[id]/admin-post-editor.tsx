@@ -1,6 +1,7 @@
 "use client";
 
 import "@toast-ui/editor/dist/toastui-editor.css";
+import "@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css";
 import Link from "next/link";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -424,10 +425,13 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
     const editorSyncTimeouts = editorSyncTimeoutsRef.current;
 
     async function mountEditor() {
-      const [{ default: Editor }] = await Promise.all([
+      const [{ default: Editor }, { default: codeSyntaxHighlight }] = await Promise.all([
         import("@toast-ui/editor"),
+        import("@toast-ui/editor-plugin-code-syntax-highlight"),
         import("@toast-ui/editor/dist/i18n/ko-kr"),
       ]);
+      // The plugin disables Prism's automatic DOM scan before Prism loads in the browser.
+      const { prism } = await import("@/lib/code-highlighting");
 
       if (!mounted || !editorHostRef.current || editorRef.current) {
         return;
@@ -443,6 +447,7 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
         previewStyle: editorLayout.previewStyle,
         language: "ko-KR",
         usageStatistics: false,
+        plugins: [[codeSyntaxHighlight, { highlighter: prism }]],
         toolbarItems: [
           ["heading", "bold", "italic", "strike"],
           ["hr", "quote"],

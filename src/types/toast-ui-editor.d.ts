@@ -33,6 +33,7 @@ declare module "@toast-ui/editor" {
     language?: string;
     usageStatistics?: boolean;
     toolbarItems?: ToolbarItem[][];
+    plugins?: unknown[];
     hooks?: {
       addImageBlobHook?: AddImageBlobHook;
     };
