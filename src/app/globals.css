@@ -79,6 +79,10 @@
 }
 
 @layer base {
+  html {
+    overflow-y: scroll;
+  }
+
   /* Light values follow KRDS. */
   :root {
     --gh-bg: #ffffff;
