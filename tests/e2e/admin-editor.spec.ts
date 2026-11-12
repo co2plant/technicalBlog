@@ -426,6 +426,38 @@ test.describe("admin post editor", () => {
     expect(requireDraftPayload(draftPayloads[1] ?? null).saveMode).toBe("manual");
     await expect(page.getByText(/^저장됨 /)).toBeVisible();
   });
+
+  test("keeps every tag added without a slug after saving and reloading", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/admin/login");
+    await page.getByLabel("비밀번호").fill(process.env.ADMIN_ACCESS_SECRET ?? "");
+    await Promise.all([page.waitForURL("**/admin"), page.getByRole("button", { name: "로그인" }).click()]);
+    const href = await page.locator('a[href^="/admin/posts/"]').filter({ hasText: "[Local] 에디터 로컬 초안" }).first().getAttribute("href");
+    expect(href).not.toBeNull();
+    await page.goto(href!);
+    await expect(page.locator(".toastui-editor-defaultUI")).toBeVisible();
+
+    const suffix = Date.now();
+    const tagNames = [`Java ${suffix}`, `Spring ${suffix}`];
+    for (const name of tagNames) {
+      await page.getByPlaceholder("태그 이름").fill(name);
+      await page.getByRole("button", { name: "태그 추가" }).click();
+    }
+
+    // Real draft API: the E2E fixtures live in an isolated database.
+    const saved = page.waitForResponse((response) =>
+      response.request().method() === "POST" && response.url().endsWith("/draft") && response.ok(),
+    );
+    await page.getByRole("button", { name: "임시저장", exact: true }).click();
+    await saved;
+    await page.reload();
+    await expect(page.locator(".toastui-editor-defaultUI")).toBeVisible();
+
+    const tagChips = page.locator('button[title="클릭하면 삭제됩니다"]');
+    for (const name of tagNames) {
+      await expect(tagChips.filter({ hasText: name })).toHaveCount(1);
+    }
+  });
 });
 
 function requireDraftPayload(payload: DraftSavePayload | null): DraftSavePayload {
