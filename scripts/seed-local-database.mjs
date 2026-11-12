@@ -45,9 +45,51 @@ const fixtures = [
   },
 ];
 
+if (mode === "development") {
+  const lorem = [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.",
+  ];
+
+  fixtures.push(...[
+    {
+      publishedNumber: 12,
+      title: "[Local] Lorem ipsum 짧은 글",
+      body: lorem.slice(0, 2).join("\n\n"),
+    },
+    {
+      publishedNumber: 13,
+      title: "[Local] Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt",
+      body: [
+        ...lorem,
+        "## Lorem ipsum dolor sit amet",
+        ...lorem,
+        "> Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+        "## Consectetur adipiscing elit",
+        ...lorem,
+        "- Lorem ipsum dolor sit amet\n- Consectetur adipiscing elit\n- Sed do eiusmod tempor incididunt",
+        ...lorem,
+      ].join("\n\n"),
+    },
+  ].map((post) => ({
+    ...post,
+    legacySlug: `local-lorem-fixture-${post.publishedNumber}`,
+    status: "published",
+    description: lorem[0],
+    excerpt: lorem[0],
+    extension: "md",
+    author: "local",
+    category: "backend",
+    tags: ["local", "lorem-ipsum"],
+    publishedAt: "2026-11-12",
+    allowPdfDownload: true,
+  })));
+}
+
 try {
   const result = await prisma.$transaction(async (tx) => {
-    // Never replace another post at /posts/1 or /posts/11, even in E2E mode.
+    // Never replace another post at a fixture's published number, even in E2E mode.
     for (const fixture of fixtures.filter((post) => post.publishedNumber !== null)) {
       const existing = await tx.blogPost.findUnique({
         where: { publishedNumber: fixture.publishedNumber },
