@@ -6,6 +6,7 @@ type PdfViewerProps = {
   allowDownload: boolean;
   file: string;
   title: string;
+  variant?: "default" | "portfolio";
 };
 
 const PdfViewerInner = dynamic(

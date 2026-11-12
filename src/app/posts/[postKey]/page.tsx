@@ -102,6 +102,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
   }
 
   const post = result.post;
+  const isPortfolio = post.category === "portfolio";
   const secondaryAttachments = post.embeddedPdf
     ? post.attachments.filter((attachment) => attachment.url !== post.embeddedPdf)
     : post.attachments;
@@ -109,10 +110,19 @@ export default async function PostDetailPage({ params }: PostPageProps) {
   const jsonLd = post.category === "portfolio" ? null : buildBlogPostingJsonLd(post, getSiteUrl());
 
   return (
-    <article className="max-w-3xl mx-auto py-10 px-4 w-full">
+    <article className={isPortfolio
+      ? "relative left-1/2 w-[calc(100vw-2rem)] max-w-6xl -translate-x-1/2 py-10 lg:w-[calc(100vw-5rem)]"
+      : "max-w-3xl mx-auto py-10 px-4 w-full"}>
       {jsonLd ? (
         <script type="application/ld+json" data-testid="post-json-ld" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       ) : null}
+      {isPortfolio ? (
+        <header className="mb-8 text-left">
+          <h1 className="text-heading-m font-bold tracking-tight text-gh-text md:text-heading-l" data-testid="post-detail-heading">
+            {post.title}
+          </h1>
+        </header>
+      ) : (
       <header className="mb-10 text-center md:text-left">
         <div className="inline-flex items-center gap-2 mb-4">
           <span className="w-2 h-2 rounded-full bg-gh-accent"></span>
@@ -163,13 +173,14 @@ export default async function PostDetailPage({ params }: PostPageProps) {
           </div>
         )}
       </header>
+      )}
 
       <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
       <MermaidRenderer />
 
       {post.embeddedPdf ? (
         <>
-          <PdfViewer allowDownload={post.allowPdfDownload} file={post.embeddedPdf} title={post.title} />
+          <PdfViewer allowDownload={post.allowPdfDownload} file={post.embeddedPdf} title={post.title} variant={isPortfolio ? "portfolio" : "default"} />
         </>
       ) : null}
 
