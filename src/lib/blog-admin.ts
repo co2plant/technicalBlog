@@ -95,6 +95,13 @@ export async function getAdminCategories() {
   });
 }
 
+export async function getAdminBlogTags() {
+  return prisma.blogTag.findMany({
+    select: { name: true, slug: true },
+    orderBy: [{ name: "asc" }, { slug: "asc" }],
+  });
+}
+
 export async function createBlogCategory(input: {
   name: string;
   slug: string;
