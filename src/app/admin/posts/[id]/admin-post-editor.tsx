@@ -82,6 +82,7 @@ type UploadedAssetResponse = {
 
 type AdminPostEditorProps = {
   initialPost: AdminEditorPost;
+  availableTags: AdminEditorTag[];
   initialCategories: AdminEditorCategory[];
   sessionExpiresAt: number | null;
   messages: {
@@ -99,7 +100,7 @@ const MOBILE_EDITOR_BREAKPOINT = 768;
 const EDITOR_VERTICAL_PREVIEW_MIN_WIDTH = 960;
 const DESKTOP_SETTINGS_BREAKPOINT = 1280;
 
-export function AdminPostEditor({ initialPost, initialCategories, sessionExpiresAt, messages }: AdminPostEditorProps) {
+export function AdminPostEditor({ initialPost, availableTags, initialCategories, sessionExpiresAt, messages }: AdminPostEditorProps) {
   const editorHostRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<ToastEditorInstance | null>(null);
   const inlineImageInputRef = useRef<HTMLInputElement | null>(null);
@@ -120,6 +121,8 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
   const [assets, setAssets] = useState(initialPost.assets);
   const [tagName, setTagName] = useState("");
   const [tagSlug, setTagSlug] = useState("");
+  const [tagSearch, setTagSearch] = useState("");
+  const tagSearchRef = useRef<HTMLInputElement | null>(null);
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [categorySlug, setCategorySlug] = useState("");
@@ -163,6 +166,11 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
   const hasUnsavedContent = hasUnsavedChanges(saveState);
   const saveInFlight = isSaveInFlight(saveState);
   const hasPendingAction = Object.keys(pendingActions).length > 0;
+  const selectedTagSlugs = new Set(draft.tags.map((tag) => tag.slug ?? slugify(tag.name)));
+  const tagQuery = tagSearch.trim().toLowerCase();
+  const matchingTags = availableTags.filter((tag) =>
+    tag.name.toLowerCase().includes(tagQuery) || (tag.slug ?? "").includes(tagQuery),
+  );
 
   const transitionSaveState = useCallback((action: AdminEditorSaveAction): AdminEditorSaveState => {
     const nextState = adminEditorSaveStateReducer(saveStateRef.current, action);
@@ -959,7 +967,7 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
 
     replaceDraft((current) => ({
       ...current,
-      tags: uniqueTags([...current.tags, { name, slug: slug === generatedSlug ? undefined : slug }]),
+      tags: uniqueTags([...current.tags, { name, slug }]),
     }));
     setTagName("");
     setTagSlug("");
@@ -971,6 +979,17 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
     replaceDraft((current) => ({
       ...current,
       tags: current.tags.filter((_, tagIndex) => tagIndex !== index),
+    }));
+    markDirty();
+  }
+
+  function toggleExistingTag(tag: AdminEditorTag) {
+    const slug = tag.slug ?? slugify(tag.name);
+    replaceDraft((current) => ({
+      ...current,
+      tags: current.tags.some((selected) => (selected.slug ?? slugify(selected.name)) === slug)
+        ? current.tags.filter((selected) => (selected.slug ?? slugify(selected.name)) !== slug)
+        : [...current.tags, tag],
     }));
     markDirty();
   }
@@ -1349,14 +1368,78 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
                       <button
                         key={`${tag.name}-${tag.slug ?? index}`}
                         type="button"
-                        onClick={() => removeTag(index)}
-                        className="rounded-full border border-gh-border bg-gh-bg px-3 py-1 text-sm text-gh-text hover:border-red-400 hover:text-red-300"
+                        aria-label={`${tag.name} 태그 제거`}
+                        onClick={(event) => {
+                          const buttons = event.currentTarget.parentElement?.querySelectorAll("button");
+                          const next = buttons?.[index + 1] ?? buttons?.[index - 1]
+                            ?? event.currentTarget.closest("section")?.querySelector("summary");
+                          next?.focus();
+                          removeTag(index);
+                        }}
+                        className="max-w-full cursor-pointer rounded-full border border-gh-border bg-gh-bg px-3 py-1 text-sm text-gh-text [overflow-wrap:anywhere] hover:border-gh-danger hover:text-gh-danger"
                         title="클릭하면 삭제됩니다"
                       >
                         {tag.name}
                       </button>
                     ))}
                   </div>
+                  <details
+                    className="rounded-md border border-gh-border bg-gh-bg"
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape" && event.currentTarget.open) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.currentTarget.open = false;
+                        event.currentTarget.querySelector("summary")?.focus();
+                      }
+                    }}
+                  >
+                    <summary className="cursor-pointer rounded-md px-3 py-3 text-body-s text-gh-text hover:bg-gh-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gh-accent">
+                      기존 태그 선택 <span className="text-gh-muted">({draft.tags.length}개 선택)</span>
+                    </summary>
+                    <div className="space-y-3 border-t border-gh-border p-3">
+                      <div className="flex gap-2">
+                        <label className="min-w-0 flex-1">
+                          <span className="sr-only">기존 태그 검색</span>
+                          <input
+                            ref={tagSearchRef}
+                            type="search"
+                            value={tagSearch}
+                            onChange={(event) => setTagSearch(event.target.value)}
+                            placeholder="이름 또는 slug 검색"
+                            className="min-h-11 w-full rounded border border-gh-border bg-gh-bg px-2 text-body-s text-gh-text focus:border-gh-accent"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          aria-label="태그 검색 지우기"
+                          onClick={() => {
+                            setTagSearch("");
+                            tagSearchRef.current?.focus();
+                          }}
+                          className="min-h-11 cursor-pointer rounded px-2 text-body-xs text-gh-muted hover:bg-gh-hover hover:text-gh-text"
+                        >
+                          지우기
+                        </button>
+                      </div>
+                      <fieldset className="max-h-48 min-w-0 space-y-1 overflow-y-auto overscroll-contain" aria-label="기존 태그">
+                        {matchingTags.map((tag) => {
+                          const slug = tag.slug ?? slugify(tag.name);
+                          const selected = selectedTagSlugs.has(slug);
+                          return (
+                            <label key={slug} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded border px-2 py-2 hover:border-gh-accent ${selected ? "border-gh-accent bg-gh-accent/10" : "border-gh-border bg-gh-bg"}`}>
+                              <input type="checkbox" value={slug} checked={selected} onChange={() => toggleExistingTag(tag)} className="h-4 w-4 shrink-0 accent-gh-accent" />
+                              <span className="min-w-0 text-body-s text-gh-text [overflow-wrap:anywhere]">
+                                {tag.name}
+                                {tag.name.toLowerCase() !== slug ? <span className="ml-2 text-body-xs text-gh-muted"> {slug}</span> : null}
+                              </span>
+                            </label>
+                          );
+                        })}
+                        {matchingTags.length === 0 ? <p role="status" className="py-2 text-body-s text-gh-muted">{availableTags.length ? "검색 결과가 없습니다." : "아직 사용한 태그가 없습니다."}</p> : null}
+                      </fieldset>
+                    </div>
+                  </details>
                   <div className="mt-3 grid gap-2">
                     <input
                       aria-label="태그 이름"
@@ -1368,14 +1451,14 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
                           addTag();
                         }
                       }}
-                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-gh-accent"
                       placeholder="태그 이름"
                     />
                     <input
                       aria-label="태그 slug"
                       value={tagSlug}
                       onChange={(event) => setTagSlug(event.target.value)}
-                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-indigo-400"
+                      className="w-full rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm text-gh-text outline-none focus:border-gh-accent"
                       placeholder="한글 태그용 slug"
                     />
                     <button

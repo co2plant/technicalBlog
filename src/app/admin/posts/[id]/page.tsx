@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminPostEditor, type AdminEditorAsset, type AdminEditorPost } from "./admin-post-editor";
 import { getAdminSessionExpiry, requireAdminSession } from "@/lib/admin-auth";
-import { getAdminBlogPost, getAdminCategories } from "@/lib/blog-admin";
+import { getAdminBlogPost, getAdminBlogTags, getAdminCategories } from "@/lib/blog-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +30,10 @@ export default async function AdminPostEditPage({
     notFound();
   }
 
-  const [post, categories, query, sessionExpiresAt] = await Promise.all([
+  const [post, categories, tags, query, sessionExpiresAt] = await Promise.all([
     getAdminBlogPost(id),
     getAdminCategories(),
+    getAdminBlogTags(),
     searchParams,
     getAdminSessionExpiry(),
   ]);
@@ -44,6 +45,7 @@ export default async function AdminPostEditPage({
   return (
     <AdminPostEditor
       initialPost={toEditorPost(post)}
+      availableTags={tags}
       sessionExpiresAt={sessionExpiresAt}
       initialCategories={categories.map((category) => ({
         id: category.id,
@@ -78,7 +80,7 @@ function toEditorPost(post: NonNullable<Awaited<ReturnType<typeof getAdminBlogPo
     categorySlug: post.category.slug,
     tags: post.tags.map((entry) => ({
       name: entry.tag.name,
-      slug: shouldShowTagSlug(entry.tag.name, entry.tag.slug) ? entry.tag.slug : undefined,
+      slug: entry.tag.slug,
     })),
     originalUrl: post.originalUrl ?? "",
     coverImageUrl: post.coverImageUrl ?? assets.find((asset) => asset.role === "cover")?.publicUrl ?? "",
@@ -100,16 +102,4 @@ function toEditorAsset(assetLink: NonNullable<Awaited<ReturnType<typeof getAdmin
     altText: assetLink.asset.altText ?? undefined,
     caption: assetLink.asset.caption ?? undefined,
   };
-}
-
-function shouldShowTagSlug(name: string, slug: string): boolean {
-  return slugify(name) !== slug;
-}
-
-function slugify(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }

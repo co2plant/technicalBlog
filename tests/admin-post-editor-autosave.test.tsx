@@ -119,6 +119,11 @@ describe("AdminPostEditor autosave wiring", () => {
               sortOrder: 10,
             },
           ]}
+          availableTags={[
+            { name: "Java", slug: "java" },
+            { name: "Spring Boot", slug: "spring-boot" },
+            { name: "자바", slug: "java-ko" },
+          ]}
           sessionExpiresAt={null}
           messages={{}}
         />,
@@ -239,6 +244,51 @@ describe("AdminPostEditor autosave wiring", () => {
     }
 
     expect(container.querySelectorAll('button[title="클릭하면 삭제됩니다"]')).toHaveLength(1);
+  });
+
+  it("mixes existing multi-select tags with manual input and preserves saved slugs", async () => {
+    for (const slug of ["java", "spring-boot", "java-ko"]) {
+      await act(async () => {
+        container.querySelector<HTMLInputElement>(`input[type="checkbox"][value="${slug}"]`)!.click();
+      });
+    }
+    await act(async () => {
+      const input = container.querySelector<HTMLInputElement>('input[aria-label="태그 이름"]')!;
+      setNativeInputValue(input, "Java");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      [...container.querySelectorAll<HTMLButtonElement>("button")].find(button => button.textContent?.trim() === "태그 추가")!.click();
+      container.querySelector<HTMLInputElement>('input[value="spring-boot"]')!.click();
+    });
+    expect(container.querySelectorAll('button[title="클릭하면 삭제됩니다"]')).toHaveLength(2);
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(payload.tags).toEqual([{ name: "Java", slug: "java" }, { name: "자바", slug: "java-ko" }]);
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('button[aria-label="Java 태그 제거"]')!.click();
+    });
+    expect(document.activeElement).toBe(container.querySelector('button[aria-label="자바 태그 제거"]'));
+    expect(container.querySelector<HTMLInputElement>('input[type="checkbox"][value="java"]')!.checked).toBe(false);
+  });
+
+  it("filters by tag name or slug without dirtying the post and restores search focus", async () => {
+    const search = container.querySelector<HTMLInputElement>('input[type="search"]')!;
+    for (const [query, count] of [["JAVA", 2], ["없는 태그", 0]] as const) {
+      await act(async () => {
+        setNativeInputValue(search, query);
+        search.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      expect(container.querySelectorAll('fieldset[aria-label="기존 태그"] input')).toHaveLength(count);
+    }
+    expect(container.textContent).toContain("검색 결과가 없습니다.");
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('button[aria-label="태그 검색 지우기"]')!.click();
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(document.activeElement).toBe(search);
+    expect(container.querySelectorAll('fieldset[aria-label="기존 태그"] input')).toHaveLength(3);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("changes layout preferences without dirtying or remounting the editor", async () => {
