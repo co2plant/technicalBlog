@@ -69,18 +69,20 @@ test("app shell and critical routes render", async ({ page }) => {
     await expect(page.getByTestId("pdf-download-link")).toHaveCount(0);
   });
 
-  await test.step("portfolio index renders portfolio entry point", async () => {
+  await test.step("portfolio entry opens the portfolio post directly", async () => {
     await page.goto(smokeRoutes.portfolio);
-    await expect(page.getByTestId("portfolio-page-heading")).toBeVisible();
-    await expect(page.locator('a[href="/posts/11"]').first()).toBeVisible();
+    await expect(page).toHaveURL(/\/posts\/11$/);
+    await expect(page.getByTestId("post-detail-heading")).toHaveText("[Portfolio] 조영재의 포트폴리오");
+    await expect(page.getByTestId("portfolio-page-heading")).toHaveCount(0);
   });
 
-  await test.step("tools index renders golden ratio tool entry point", async () => {
+  await test.step("tools entry opens a tool and exposes the icon navigation", async () => {
     await page.goto(smokeRoutes.tools);
-    await expect(page.getByTestId("tools-page-heading")).toBeVisible();
-    await expect(page.locator('a[href="/tools/password-generator"]').first()).toBeVisible();
-    await expect(page.locator('a[href="/tools/tech-stack"]').first()).toBeVisible();
-    await expect(page.locator('a[href="/tools/golden-ratio"]').first()).toBeVisible();
+    await expect(page).toHaveURL(/\/tools\/password-generator$/);
+    await page.getByRole("button", { name: "도구 메뉴 펼치기", exact: true }).click();
+    const tools = page.getByRole("navigation", { name: "도구", exact: true });
+    await expect(tools.getByRole("link")).toHaveCount(3);
+    await expect(page.getByTestId("tools-page-heading")).toHaveCount(0);
   });
 
   await test.step("password generator renders and creates a password", async () => {
