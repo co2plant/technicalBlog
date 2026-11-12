@@ -177,6 +177,9 @@
   }
   .post-detail__body img {
     @apply block w-full max-w-full h-auto border border-gh-border rounded-xl bg-gh-bg my-6;
+    box-shadow:
+      0 4px 6px -1px color-mix(in srgb, var(--gh-text) 10%, transparent),
+      0 2px 4px -2px color-mix(in srgb, var(--gh-text) 10%, transparent);
   }
   .post-detail__body table {
     @apply w-full border-collapse mb-4;
