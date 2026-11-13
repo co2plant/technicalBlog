@@ -164,7 +164,8 @@ export function mapBlogPostFromDatabase(databasePost: DatabaseBlogPost): Post {
   const updatedAt = optionalDateOnlyToString(databasePost.updatedAt, "blog_posts.updated_at");
   const slug = databasePost.publishedNumber ? String(databasePost.publishedNumber) : `draft-${databasePost.id}`;
   const attachments = mapAttachments(databasePost);
-  const summaries = resolvePostSummaries(databasePost);
+  const html = renderPostMarkdown(databasePost.bodyMarkdown);
+  const summaries = resolvePostSummaries({ description: databasePost.description, excerpt: databasePost.excerpt, html });
 
   return {
     title: databasePost.title,
@@ -183,7 +184,7 @@ export function mapBlogPostFromDatabase(databasePost: DatabaseBlogPost): Post {
     draft: databasePost.status !== "published",
     extension: databasePost.extension === "mdx" ? "mdx" : "md",
     body: databasePost.bodyMarkdown,
-    html: renderPostMarkdown(databasePost.bodyMarkdown),
+    html,
     attachments,
   };
 }

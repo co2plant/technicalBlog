@@ -1,7 +1,8 @@
 import { Marked } from "marked";
-import { summarizeHtml } from "./seo";
+import type { Post } from "@/lib/content";
+import { getPostDescription, summarizeHtml } from "./seo";
 
-// This lightweight renderer is shared with the editor; syntax highlighting is unnecessary here.
+// The editor hint summarizes the draft in the browser; syntax highlighting is unnecessary here.
 const markdown = new Marked({
   async: false,
   gfm: true,
@@ -14,18 +15,16 @@ export function summarizePostMarkdown(source: string): string {
   return summarizeHtml(markdown.parse(source, { async: false }));
 }
 
-// Written values win. The body is summarized only when both are empty, and that result is never stored,
+// Written values win. The rendered body is summarized only when both are empty, and that result is never stored,
 // so a post left blank keeps following its body.
-export function resolvePostSummaries(post: { description: string; excerpt: string; bodyMarkdown: string }): {
+export function resolvePostSummaries(post: Pick<Post, "description" | "excerpt" | "html">): {
   description: string;
   excerpt: string;
 } {
-  const description = post.description.trim();
-  const excerpt = post.excerpt.trim();
-  const automatic = description || excerpt ? "" : summarizePostMarkdown(post.bodyMarkdown);
+  const description = getPostDescription(post);
 
   return {
-    description: description || excerpt || automatic,
-    excerpt: excerpt || description || automatic,
+    description,
+    excerpt: post.excerpt.trim() || description,
   };
 }
