@@ -54,12 +54,12 @@ if (mode === "development") {
 
   fixtures.push(...[
     {
-      publishedNumber: 12,
+      key: 12,
       title: "[Local] Lorem ipsum 짧은 글",
       body: lorem.slice(0, 2).join("\n\n"),
     },
     {
-      publishedNumber: 13,
+      key: 13,
       title: "[Local] Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt",
       body: [
         ...lorem,
@@ -72,9 +72,12 @@ if (mode === "development") {
         ...lorem,
       ].join("\n\n"),
     },
-  ].map((post) => ({
+  ].map(({ key, ...post }) => ({
     ...post,
-    legacySlug: `local-lorem-fixture-${post.publishedNumber}`,
+    // Keeps the first seed's names so databases seeded earlier preserve these posts instead of duplicating them.
+    legacySlug: `local-lorem-fixture-${key}`,
+    // A developer may already have published a post at /posts/12, so these take the next free numbers.
+    publishedNumber: "next",
     status: "published",
     description: lorem[0],
     excerpt: lorem[0],
@@ -89,8 +92,8 @@ if (mode === "development") {
 
 try {
   const result = await prisma.$transaction(async (tx) => {
-    // Never replace another post at a fixture's published number, even in E2E mode.
-    for (const fixture of fixtures.filter((post) => post.publishedNumber !== null)) {
+    // Never replace another post at a fixture's fixed published number, even in E2E mode.
+    for (const fixture of fixtures.filter((post) => typeof post.publishedNumber === "number")) {
       const existing = await tx.blogPost.findUnique({
         where: { publishedNumber: fixture.publishedNumber },
       });
@@ -125,7 +128,9 @@ try {
         ? new Date(Math.max(Date.now(), (latest._max.modifiedAt?.getTime() ?? 0) + 1))
         : dateOrNull(fixture.updatedAt ?? fixture.publishedAt);
       const data = {
-        publishedNumber: fixture.publishedNumber,
+        publishedNumber: fixture.publishedNumber === "next"
+          ? ((await tx.blogPost.aggregate({ _max: { publishedNumber: true } }))._max.publishedNumber ?? 0) + 1
+          : fixture.publishedNumber,
         title: fixture.title,
         description: fixture.description,
         excerpt: fixture.excerpt,
