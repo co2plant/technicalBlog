@@ -15,7 +15,8 @@ describe("renderPostMarkdown", () => {
   it("renders non-mermaid code blocks with a language class", () => {
     const html = renderPostMarkdown("```ts\nconst answer = 42;\n```");
 
-    expect(html).toContain('<pre tabindex="0" aria-label="코드 블록"><code class="language-ts">');
+    // A named, focusable scroll container needs a role, or screen readers drop the name.
+    expect(html).toContain('<pre role="region" tabindex="0" aria-label="코드 블록"><code class="language-ts">');
     const container = document.createElement("div");
     container.innerHTML = html;
     expect(container.querySelector("code")?.textContent).toBe("const answer = 42;");

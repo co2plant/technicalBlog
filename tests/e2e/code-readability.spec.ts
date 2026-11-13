@@ -19,6 +19,8 @@ test("code stays readable in published posts, editor modes and preview", async (
   await page.goto("/posts/1");
   const publishedCode = page.locator(".post-detail__body pre:not(.mermaid) code").first();
   await expectReadableCode(publishedCode);
+  // Keyboard users reach the scrollable block by its name.
+  await expect(page.getByRole("region", { name: "코드 블록", exact: true }).first()).toBeVisible();
   await expectReadableCode(page.locator(".post-detail__body :not(pre) > code").first());
   const source = await publishedCode.textContent();
   await expect(publishedCode.locator("..")).toHaveCSS("white-space", "pre");

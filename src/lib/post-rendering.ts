@@ -21,7 +21,7 @@ const markdown = new Marked({
         ? prism.highlight(text, grammar, language)
         : escapeHtml(text);
 
-      return `<pre tabindex="0" aria-label="코드 블록"><code${languageClass}>${code}</code></pre>`;
+      return `<pre role="region" tabindex="0" aria-label="코드 블록"><code${languageClass}>${code}</code></pre>`;
     },
     link({ href, title, tokens }) {
       const text = this.parser.parseInline(tokens);
