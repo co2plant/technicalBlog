@@ -16,9 +16,10 @@ type PdfViewerInnerProps = {
   allowDownload: boolean;
   file: string;
   title: string;
+  variant?: "default" | "portfolio";
 };
 
-export function PdfViewerInner({ allowDownload, file, title }: PdfViewerInnerProps) {
+export function PdfViewerInner({ allowDownload, file, title, variant = "default" }: PdfViewerInnerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageCount, setPageCount] = useState(0);
@@ -123,15 +124,17 @@ export function PdfViewerInner({ allowDownload, file, title }: PdfViewerInnerPro
 
   return (
     <section
-      className="relative left-1/2 mt-10 w-[calc(100vw-2rem)] max-w-6xl -translate-x-1/2 space-y-5"
+      className={variant === "portfolio"
+        ? "mt-8 w-full space-y-5"
+        : "relative left-1/2 mt-10 w-[calc(100vw-2rem)] max-w-6xl -translate-x-1/2 space-y-5"}
       aria-label="PDF 미리보기"
       data-testid="pdf-viewer-section"
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
+      <div className={`flex flex-col gap-3 md:flex-row md:items-center ${variant === "portfolio" ? "items-end md:justify-end" : "md:justify-between"}`}>
+        {variant !== "portfolio" && <div>
           <h2 className="text-2xl font-bold text-gh-text">PDF 미리보기</h2>
           <p className="text-sm text-gh-muted">포트폴리오 문서를 페이지 단위로 확인할 수 있습니다.</p>
-        </div>
+        </div>}
 
         <div className="flex flex-wrap gap-2">
           <a
@@ -219,7 +222,7 @@ export function PdfViewerInner({ allowDownload, file, title }: PdfViewerInnerPro
         </button>
 
         <p className="text-center text-sm text-gh-muted" aria-live="polite">
-          {title} · {pageCount === 0 ? "로딩 중" : `${pageNumber} / ${pageCount} 페이지`}
+          {variant !== "portfolio" ? `${title} · ` : ""}{pageCount === 0 ? "로딩 중" : `${pageNumber} / ${pageCount} 페이지`}
         </p>
 
         <button

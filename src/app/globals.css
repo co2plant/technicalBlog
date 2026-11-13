@@ -34,6 +34,9 @@
   --color-gh-danger: var(--gh-danger);
 }
 
+/* <html data-tools-sidebar="open"> is set before first paint (see TOOLS_SIDEBAR_BOOT_SCRIPT in src/lib/tools.ts). */
+@custom-variant tools-open ([data-tools-sidebar="open"] &);
+
 @layer components {
   .admin-toast-editor .toastui-editor-defaultUI {
     border: 0;
