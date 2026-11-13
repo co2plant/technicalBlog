@@ -63,12 +63,14 @@ export default async function AdminPostEditPage({
 
 function toEditorPost(post: NonNullable<Awaited<ReturnType<typeof getAdminBlogPost>>>): AdminEditorPost {
   const assets = post.assets.map(toEditorAsset);
+  // The editor has one summary field. Older posts may hold only an excerpt, so it fills in for an empty description.
+  const summary = post.description.trim() ? post.description : post.excerpt;
 
   return {
     id: post.id,
     title: post.title,
-    description: post.description,
-    excerpt: post.excerpt,
+    description: summary,
+    excerpt: summary,
     author: post.author,
     status: post.status,
     publishedNumber: post.publishedNumber,

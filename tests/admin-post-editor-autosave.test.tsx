@@ -170,6 +170,30 @@ describe("AdminPostEditor autosave wiring", () => {
     });
   });
 
+  it("saves the one summary field to both description and excerpt and hides the automatic hint", async () => {
+    const summaryInput = container.querySelector<HTMLTextAreaElement>('textarea[placeholder="목록과 검색 결과에 보일 요약"]');
+
+    expect(summaryInput).not.toBeNull();
+    expect(container.querySelector('[data-testid="admin-post-summary-hint"]')?.textContent).toContain("본문에 문단을 쓰면");
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set?.call(summaryInput, "직접 쓴 요약");
+      summaryInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    expect(container.querySelector('[data-testid="admin-post-summary-hint"]')).toBeNull();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+
+    const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(options.body))).toMatchObject({
+      description: "직접 쓴 요약",
+      excerpt: "직접 쓴 요약",
+    });
+  });
+
   it("keeps an automatically generated category slug in sync while typing", async () => {
     const toggle = container.querySelector<HTMLButtonElement>('button[aria-label="카테고리 추가"]');
 

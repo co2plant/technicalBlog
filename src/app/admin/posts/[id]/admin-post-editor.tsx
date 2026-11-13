@@ -2,9 +2,10 @@
 
 import "@toast-ui/editor/dist/toastui-editor.css";
 import Link from "next/link";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminSessionTimer } from "@/app/admin/admin-session-timer";
+import { summarizePostMarkdown } from "@/lib/post-summary";
 import {
   adminEditorSaveStateReducer,
   createAdminEditorSaveState,
@@ -160,6 +161,7 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
 
   const publicPostUrl = draft.status === "published" && draft.publishedNumber ? `/posts/${draft.publishedNumber}` : null;
   const selectedCategory = categories.find((category) => category.slug === draft.categorySlug);
+  const automaticSummary = useMemo(() => summarizePostMarkdown(draft.bodyMarkdown), [draft.bodyMarkdown]);
   const hasUnsavedContent = hasUnsavedChanges(saveState);
   const saveInFlight = isSaveInFlight(saveState);
   const hasPendingAction = Object.keys(pendingActions).length > 0;
@@ -1187,13 +1189,6 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
         }`}
       >
         <section className="min-w-0" data-testid="admin-editor-writing-pane">
-          <textarea
-            aria-label="글 설명"
-            value={draft.description}
-            onChange={(event) => updateDraft("description", event.target.value)}
-            className="mb-4 min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-surface px-4 py-3 text-base leading-relaxed text-gh-text outline-none focus:border-indigo-400"
-            placeholder="검색과 공유에 쓰일 설명을 입력하세요"
-          />
           <div aria-live="polite" className="min-h-6">
             {imageUploadState === "uploading" ? (
               <p className="mb-2 flex items-center gap-2 text-sm text-gh-muted">
@@ -1313,14 +1308,28 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
                     </div>
                   ) : null}
 
-                  <FieldLabel label="요약">
-                    <textarea
-                      value={draft.excerpt}
-                      onChange={(event) => updateDraft("excerpt", event.target.value)}
-                      className="min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm leading-relaxed text-gh-text outline-none focus:border-indigo-400"
-                      placeholder="목록 카드에 보일 요약"
-                    />
-                  </FieldLabel>
+                  <div>
+                    <FieldLabel label="요약 · 검색 설명">
+                      <textarea
+                        value={draft.description}
+                        onChange={(event) => updateDraft("description", event.target.value)}
+                        aria-describedby={draft.description.trim() ? undefined : "admin-post-summary-hint"}
+                        className="min-h-24 w-full resize-y rounded-md border border-gh-border bg-gh-bg px-3 py-2 text-sm leading-relaxed text-gh-text outline-none focus:border-gh-accent"
+                        placeholder="목록과 검색 결과에 보일 요약"
+                      />
+                    </FieldLabel>
+                    {draft.description.trim() ? null : (
+                      <p
+                        id="admin-post-summary-hint"
+                        data-testid="admin-post-summary-hint"
+                        className="mt-2 text-body-xs text-gh-muted [overflow-wrap:anywhere]"
+                      >
+                        {automaticSummary
+                          ? `비워 두면 이 내용이 쓰입니다: ${automaticSummary}`
+                          : "본문에 문단을 쓰면 비워 둘 때 쓰일 요약이 여기에 보입니다."}
+                      </p>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <FieldLabel label="작성자">
@@ -1569,8 +1578,9 @@ function FieldLabel({ label, children }: { label: string; children: React.ReactN
 function currentPayload(draft: AdminEditorPost, editor: ToastEditorInstance | null) {
   return {
     title: draft.title,
+    // One field feeds both columns; an empty field stays empty so the public pages keep following the body.
     description: draft.description,
-    excerpt: draft.excerpt,
+    excerpt: draft.description,
     bodyMarkdown: editor?.getMarkdown() ?? draft.bodyMarkdown,
     extension: draft.extension,
     author: draft.author,

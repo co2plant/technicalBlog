@@ -17,6 +17,9 @@ describe("content loader", () => {
     expect(post?.originalUrl).toBe("https://velog.io/@co2plant/Git-Commit-Message-Convention");
     expect(post?.html).toContain("Git Commit Message Convention");
     expect(post?.coverImage).toBe("/posts/git-commit-message-convention/cover.png");
+    // Written frontmatter values win over the automatic summary.
+    expect(post?.description).toBe("난잡한 커밋 메시지를 줄이고 협업 탐색성을 높이기 위한 Git Commit Message Convention 정리");
+    expect(post?.excerpt).toBe("커밋 메시지를 규칙 없이 작성했을 때의 문제를 짚고, type/subject/body/footer 구조와 실전 예시를 정리합니다.");
   });
 
   it("returns published posts in descending date order", async () => {

@@ -36,7 +36,6 @@ export default async function AdminPostPreviewPage({
         </Link>
         <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-indigo-400">{post.category}</p>
         <h1 className="mt-2 text-4xl font-extrabold leading-tight text-gh-text">{post.title}</h1>
-        <p className="mt-4 text-lg leading-relaxed text-gh-muted">{post.description}</p>
       </header>
       <section className="post-detail__body" dangerouslySetInnerHTML={{ __html: post.html }} />
       <MermaidRenderer />

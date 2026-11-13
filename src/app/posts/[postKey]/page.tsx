@@ -121,10 +121,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gh-text mb-6 leading-[1.15]" data-testid="post-detail-heading">
           {post.title}
         </h1>
-        <p className="text-xl text-gh-muted leading-relaxed mb-6">
-          {post.description}
-        </p>
-        
+
         <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gh-muted border-b border-gh-border/60 pb-8">
           <div className="flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
