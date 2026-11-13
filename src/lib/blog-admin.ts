@@ -64,6 +64,7 @@ const IMAGE_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "imag
 const PDF_MIME_TYPE = "application/pdf";
 const SITE_TIME_ZONE = "Asia/Seoul";
 const PUBLISH_TRANSACTION_ATTEMPTS = 3;
+const PORTFOLIO_CATEGORY_SLUG = "portfolio";
 
 export type AdminBlogPost = Prisma.BlogPostGetPayload<{
   include: typeof ADMIN_POST_INCLUDE;
@@ -166,6 +167,7 @@ export async function publishPost(id: number, input: AdminPostInput): Promise<nu
           }
 
           const category = await upsertCategory(tx, input.categorySlug);
+          await assertSinglePublishedPortfolio(tx, id, category);
           const publishedNumber = existing.publishedNumber ?? (await nextPublishedNumber(tx));
           const publishedAt = existing.publishedAt ?? new Date(`${todayDateOnly()}T00:00:00.000Z`);
 
@@ -356,6 +358,11 @@ function writePost(
     }
 
     const category = await upsertCategory(tx, input.categorySlug);
+
+    if ((status ?? existing.status) === "published") {
+      await assertSinglePublishedPortfolio(tx, id, category);
+    }
+
     await tx.blogPost.update({
       where: {
         id,
@@ -509,6 +516,28 @@ async function getDefaultCategory() {
     },
     update: {},
   });
+}
+
+// The portfolio is one post that gets updated, so only one portfolio post may be published at a time.
+async function assertSinglePublishedPortfolio(
+  tx: Prisma.TransactionClient,
+  postId: number,
+  category: { id: number; slug: string },
+): Promise<void> {
+  if (category.slug !== PORTFOLIO_CATEGORY_SLUG) {
+    return;
+  }
+
+  const publishedPortfolio = await tx.blogPost.findFirst({
+    where: { id: { not: postId }, categoryId: category.id, status: "published", deletedAt: null },
+    select: { publishedNumber: true },
+  });
+
+  if (publishedPortfolio) {
+    throw new AdminRequestError(
+      `포트폴리오는 하나만 발행할 수 있습니다. 새로 발행하지 말고 기존 포트폴리오 글(/posts/${publishedPortfolio.publishedNumber})을 수정해 주세요.`,
+    );
+  }
 }
 
 function upsertCategory(tx: Prisma.TransactionClient, slug: string) {
