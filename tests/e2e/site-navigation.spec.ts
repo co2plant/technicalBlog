@@ -143,3 +143,13 @@ test("narrow screens keep tools labeled and reachable without covering the page"
   await page.goto("/admin/login");
   await expect(tools).toHaveCount(0);
 });
+
+test("a remembered open sidebar is in place before the page hydrates", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem("tools-sidebar-collapsed", "false"));
+  // With the app bundles blocked the page stays as first painted, so React cannot move the content afterwards.
+  await page.route(/\/_next\/static\/.+\.js(\?.*)?$/, (route) => route.abort());
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/posts");
+  await expect(page.getByTestId("tools-sidebar-space")).toHaveCSS("width", "48px");
+  await expect(page.getByTestId("tools-navigation")).toBeVisible();
+});

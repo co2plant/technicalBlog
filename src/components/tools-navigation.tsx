@@ -3,38 +3,56 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
-import { TOOLS } from "@/lib/tools";
+import { TOOLS, TOOLS_SIDEBAR_STORAGE_KEY } from "@/lib/tools";
 
-const COLLAPSED_PREFERENCE_KEY = "tools-sidebar-collapsed";
+const PREFERENCE_EVENT = "tools-sidebar-change";
 
-function readCollapsedPreference() {
-  try {
-    return window.localStorage.getItem(COLLAPSED_PREFERENCE_KEY) !== "false";
-  } catch {
-    return true;
+// <html data-tools-sidebar="open"> is the single source of truth: the boot script in layout.tsx sets it
+// before first paint and the CSS `tools-open` variant sizes the layout from it.
+function readCollapsed() {
+  return document.documentElement.dataset.toolsSidebar !== "open";
+}
+
+function applyCollapsed(collapsed: boolean) {
+  if (collapsed) {
+    delete document.documentElement.dataset.toolsSidebar;
+  } else {
+    document.documentElement.dataset.toolsSidebar = "open";
   }
 }
 
 function subscribeToPreference(listener: () => void) {
-  window.addEventListener("storage", listener);
-  return () => window.removeEventListener("storage", listener);
+  function syncFromOtherTab(event: StorageEvent) {
+    if (event.key !== null && event.key !== TOOLS_SIDEBAR_STORAGE_KEY) {
+      return;
+    }
+
+    applyCollapsed(event.newValue !== "false");
+    listener();
+  }
+
+  window.addEventListener("storage", syncFromOtherTab);
+  window.addEventListener(PREFERENCE_EVENT, listener);
+  return () => {
+    window.removeEventListener("storage", syncFromOtherTab);
+    window.removeEventListener(PREFERENCE_EVENT, listener);
+  };
 }
 
 export function ToolsNavigation() {
   const pathname = usePathname();
   const [dismissedTooltip, setDismissedTooltip] = useState<string | null>(null);
-  const storedCollapsed = useSyncExternalStore(subscribeToPreference, readCollapsedPreference, () => true);
-  const [localCollapsed, setLocalCollapsed] = useState<boolean | null>(null);
-  const collapsed = localCollapsed ?? storedCollapsed;
+  const collapsed = useSyncExternalStore(subscribeToPreference, readCollapsed, () => true);
 
   function toggleSidebar() {
     const next = !collapsed;
-    setLocalCollapsed(next);
+    applyCollapsed(next);
     try {
-      window.localStorage.setItem(COLLAPSED_PREFERENCE_KEY, String(next));
+      window.localStorage.setItem(TOOLS_SIDEBAR_STORAGE_KEY, String(next));
     } catch {
-      // Keep the in-memory preference for this visit.
+      // The attribute keeps the choice for this visit.
     }
+    window.dispatchEvent(new Event(PREFERENCE_EVENT));
   }
 
   if (/^\/(admin|interviews)(\/|$)/.test(pathname)) {
@@ -45,13 +63,13 @@ export function ToolsNavigation() {
     <>
       <div
         data-testid="tools-sidebar-space"
-        className={`sticky top-14 z-40 lg:h-0 lg:shrink-0 lg:transition-[width] lg:duration-200 lg:ease-linear lg:motion-reduce:transition-none lg:motion-reduce:duration-0 ${collapsed ? "lg:w-0" : "lg:w-12"}`}
+        className="sticky top-14 z-40 lg:h-0 lg:shrink-0 lg:transition-[width] lg:duration-200 lg:ease-linear lg:motion-reduce:transition-none lg:motion-reduce:duration-0 lg:w-0 lg:tools-open:w-12"
       >
         <nav
           id="site-tools-menu"
           aria-label="도구"
           data-testid="tools-navigation"
-          className={`flex items-center justify-center gap-3 border-b border-gh-border bg-gh-bg px-4 py-2 lg:fixed lg:top-14 lg:bottom-0 lg:left-0 lg:w-12 lg:flex-col lg:justify-start lg:gap-2 lg:border-r lg:border-b-0 lg:px-1 lg:py-4 ${collapsed ? "lg:invisible" : ""}`}
+          className="flex items-center justify-center gap-3 border-b border-gh-border bg-gh-bg px-4 py-2 lg:fixed lg:top-14 lg:bottom-0 lg:left-0 lg:w-12 lg:flex-col lg:justify-start lg:gap-2 lg:border-r lg:border-b-0 lg:px-1 lg:py-4 lg:invisible lg:tools-open:visible"
         >
           {TOOLS.map((tool) => {
             const active = pathname === tool.href || pathname.startsWith(`${tool.href}/`);
@@ -93,7 +111,7 @@ export function ToolsNavigation() {
         aria-controls="site-tools-menu"
         title={collapsed ? "도구 메뉴 펼치기" : "도구 메뉴 접기"}
         onClick={toggleSidebar}
-        className={`fixed top-3 left-2 z-[55] hidden h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gh-border hover:bg-gh-hover hover:text-gh-accent-strong focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gh-accent lg:flex ${collapsed ? "bg-gh-bg text-gh-muted" : "bg-gh-accent/10 text-gh-accent-strong"}`}
+        className="fixed top-3 left-2 z-[55] hidden h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gh-border hover:bg-gh-hover hover:text-gh-accent-strong focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gh-accent lg:flex bg-gh-bg text-gh-muted tools-open:bg-gh-accent/10 tools-open:text-gh-accent-strong"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
           <path d="M4 6h16M4 12h16M4 18h16" />
