@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* <html data-tools-sidebar="open"> is set before first paint (see TOOLS_SIDEBAR_BOOT_SCRIPT in src/lib/tools.ts). */
-@custom-variant tools-open ([data-tools-sidebar="open"] &);
-
 @theme {
   /* Pretendard Variable is loaded from jsDelivr in layout.tsx. */
   --font-sans: "Pretendard GOV", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
@@ -36,6 +33,9 @@
   --color-gh-warning: var(--gh-warning);
   --color-gh-danger: var(--gh-danger);
 }
+
+/* <html data-tools-sidebar="open"> is set before first paint (see TOOLS_SIDEBAR_BOOT_SCRIPT in src/lib/tools.ts). */
+@custom-variant tools-open ([data-tools-sidebar="open"] &);
 
 @layer components {
   .admin-toast-editor .toastui-editor-defaultUI {
