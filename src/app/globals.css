@@ -1,25 +1,29 @@
 @import "tailwindcss";
 
+/* Web subsets of D2Coding ligature 1.4.0 Regular, renamed under the OFL (public/fonts/co2plant-code/README.md).
+   The browser fetches each file only for text in its unicode-range, and synthesizes bold from Regular. */
 @font-face {
-  font-family: "D2Coding";
-  src: url("/fonts/d2coding/D2Coding-Regular.woff2") format("woff2");
+  font-family: "co2plant Code";
+  src: url("/fonts/co2plant-code/co2plant-code-latin.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+20A9, U+20AC, U+2190-21FF, U+2500-257F, U+FFFD;
 }
 
 @font-face {
-  font-family: "D2Coding";
-  src: url("/fonts/d2coding/D2Coding-Bold.woff2") format("woff2");
-  font-weight: 700;
+  font-family: "co2plant Code";
+  src: url("/fonts/co2plant-code/co2plant-code-hangul.woff2") format("woff2");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+3000-303F, U+3131-318E, U+AC00-D7A3, U+FF01-FF60, U+FFE0-FFE6;
 }
 
 @theme {
   /* Pretendard Variable is loaded from jsDelivr in layout.tsx. */
   --font-sans: "Pretendard GOV", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-  --font-mono: "D2Coding", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: "co2plant Code", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* KRDS type scale (https://getdesign.kr/services/krds/DESIGN.md). */
   --text-heading-l: 2rem; /* 32px */

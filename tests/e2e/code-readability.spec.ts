@@ -2,17 +2,36 @@ import { expect, test, type Locator } from "@playwright/test";
 
 async function expectReadableCode(code: Locator) {
   await expect(code).toBeVisible();
-  await expect(code).toHaveCSS("font-family", /^D2Coding,/);
+  await expect(code).toHaveCSS("font-family", /^"co2plant Code",/);
   await expect(code).toHaveCSS("font-size", "16px");
   await expect(code).toHaveCSS("font-variant-ligatures", "none");
   await expect(code).toHaveCSS("letter-spacing", /^(normal|0px)$/);
   const fontLoaded = await code.evaluate(async (element) => {
     const style = getComputedStyle(element);
-    const fonts = await document.fonts.load(`${style.fontWeight} ${style.fontSize} D2Coding`, "Java 한글");
+    const fonts = await document.fonts.load(`${style.fontWeight} ${style.fontSize} "co2plant Code"`, "Java 한글");
     return fonts.some((font) => font.status === "loaded");
   });
   expect(fontLoaded).toBe(true);
 }
+
+test("a post with code downloads only the small code font subsets", async ({ page }) => {
+  await page.goto("/posts/1");
+  await expect(page.locator(".post-detail__body pre:not(.mermaid) code").first()).toBeVisible();
+  const fonts = await page.evaluate(async () => {
+    await document.fonts.ready;
+    return performance.getEntriesByType("resource")
+      .map((entry) => entry as PerformanceResourceTiming)
+      .filter((entry) => new URL(entry.name).pathname.startsWith("/fonts/"))
+      .map((entry) => ({ path: new URL(entry.name).pathname, bytes: entry.decodedBodySize }));
+  });
+
+  // Only the Regular subsets exist: bold is synthesized, and rarely used glyphs fall back to the next font.
+  expect(fonts.length).toBeGreaterThan(0);
+  for (const font of fonts) {
+    expect(font.path).toMatch(/^\/fonts\/co2plant-code\/co2plant-code-(latin|hangul)\.woff2$/);
+  }
+  expect(fonts.reduce((total, font) => total + font.bytes, 0)).toBeLessThan(400 * 1024);
+});
 
 test("code stays readable in published posts, editor modes and preview", async ({ page }, testInfo) => {
   await page.emulateMedia({ colorScheme: "light" });
@@ -96,6 +115,12 @@ test("syntax highlighting survives editing, saving and preview", async ({ page, 
   expect(await previewBlocks.nth(0).textContent()).toBe(java);
   expect(await previewBlocks.nth(1).textContent()).toBe(sql);
   await expect(previewBlocks.nth(0).locator(".token.keyword").first()).toHaveCSS("color", "rgb(11, 80, 208)");
+  // Bold tokens are synthesized from Regular and must stay on the 8px (0.5em at 16px) monospace grid.
+  const boldToken = previewBlocks.nth(0).locator(".token.class-name, .token.function").first();
+  await expect(boldToken).toHaveCSS("font-weight", "700");
+  const boldText = (await boldToken.textContent()) ?? "";
+  expect(boldText.length).toBeGreaterThan(0);
+  expect((await boldToken.boundingBox())!.width).toBeCloseTo(boldText.length * 8, 0);
   await expect(previewBlocks.nth(2).locator(".token, script")).toHaveCount(0);
   expect(await previewBlocks.nth(2).textContent()).toBe(unknown);
   await previewBlocks.nth(0).locator("..").screenshot({ path: testInfo.outputPath("preview-java-highlight.png") });

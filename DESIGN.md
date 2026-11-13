@@ -13,7 +13,7 @@ typography:
   sans:
     fontFamily: '"Pretendard GOV", "Pretendard Variable", Pretendard, system-ui, sans-serif'
   mono:
-    fontFamily: '"D2Coding", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+    fontFamily: '"co2plant Code", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     fontSize: 1rem
     lineHeight: 1.65
 rounded:
@@ -72,7 +72,7 @@ components:
 
 구문 강조는 TOAST UI 공식 Prism 플러그인과 게시 글 렌더러가 `src/lib/code-highlighting.ts`의 언어 설정을 공유한다. Java, JavaScript, TypeScript, JSX·TSX, HTML·XML, CSS, JSON, YAML, SQL, Bash, Groovy, Python을 지원한다. 코드 블록의 언어를 지정하면 위지윅·미리보기·발행 화면에 적용되며, 마크다운 원문 편집은 기존 표시를 유지한다. 언어 미지정·미지원 언어는 일반 코드로 표시하고 Mermaid는 기존 다이어그램 렌더링을 따른다. 키워드·숫자는 `--gh-accent-strong`, 문자열은 `--gh-success`, 주석은 `--gh-muted`, 함수·클래스명은 `--gh-text`와 굵기로 구분한다.
 
-코드 웹폰트는 D2Coding 1.4.0의 Regular(400)·Bold(700)를 `public/fonts/d2coding/`에서 직접 제공한다. 원본과 라이선스는 같은 폴더에 기록한다. CSS의 `@font-face`를 통해 필요한 굵기만 불러오고, 합자는 꺼서 연산자와 기호를 그대로 표시한다. 본문용 Pretendard 설정은 유지한다.
+코드 웹폰트 `co2plant Code`는 D2Coding ligature 1.4.0 Regular를 웹용으로 나눈 서브셋이며 `public/fonts/co2plant-code/`에서 직접 제공한다. 영문·Latin-1·문장부호·₩·€·화살표·상자 선 파일(약 30KB)은 코드가 있는 화면에서 받고, 자주 쓰는 한글 2,350자(KS X 1001)와 한글 자모·CJK 문장부호·전각 문자 파일(약 276KB)은 그 글자가 있을 때만 받는다(`unicode-range`). 나머지 한글 음절·한자·가나·기타 기호는 스택의 다음 고정폭 글꼴로 표시한다. Bold 파일은 두지 않고 굵은 글자는 브라우저가 Regular를 굵게 합성한다. 서브셋은 OFL의 수정본이라 예약 글꼴 이름 D2Coding을 쓰지 않는다. 만드는 방법과 라이선스는 같은 폴더에 기록한다. 합자는 꺼서 연산자와 기호를 그대로 표시한다. 본문용 Pretendard 설정은 유지한다.
 
 ## Layout
 
