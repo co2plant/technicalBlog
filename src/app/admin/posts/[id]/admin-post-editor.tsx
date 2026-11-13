@@ -1205,6 +1205,9 @@ export function AdminPostEditor({ initialPost, initialCategories, sessionExpires
               <p className="mb-2 text-sm font-medium text-emerald-500">✓ 이미지를 업로드했습니다.</p>
             ) : null}
           </div>
+          <p className="mb-2 text-body-xs text-gh-muted">
+            잘 읽히는 글을 위한 글·그림·코드의 참고 비율은 약 13 : 1 : 1입니다.
+          </p>
           <div className="admin-toast-editor rounded-lg border border-gh-border bg-white">
             {!editorReady ? <div className="p-6 text-sm text-slate-500">에디터를 불러오는 중입니다.</div> : null}
             <div ref={editorHostRef} data-testid="admin-toast-editor-host" />
