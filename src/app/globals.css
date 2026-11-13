@@ -1,8 +1,29 @@
 @import "tailwindcss";
 
+/* Web subsets of D2Coding ligature 1.4.0 Regular, renamed under the OFL (public/fonts/co2plant-code/README.md).
+   The browser fetches each file only for text in its unicode-range, and synthesizes bold from Regular. */
+@font-face {
+  font-family: "co2plant Code";
+  src: url("/fonts/co2plant-code/co2plant-code-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2000-206F, U+20A9, U+20AC, U+2190-21FF, U+2500-257F, U+FFFD;
+}
+
+@font-face {
+  font-family: "co2plant Code";
+  src: url("/fonts/co2plant-code/co2plant-code-hangul.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+3131-318E, U+AC00-D7A3, U+FF01-FF60, U+FFE0-FFE6;
+}
+
 @theme {
   /* Pretendard Variable is loaded from jsDelivr in layout.tsx. */
   --font-sans: "Pretendard GOV", "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --font-mono: "co2plant Code", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* KRDS type scale (https://getdesign.kr/services/krds/DESIGN.md). */
   --text-heading-l: 2rem; /* 32px */
@@ -53,8 +74,7 @@
   }
 
   .admin-toast-editor .ProseMirror,
-  .admin-toast-editor .toastui-editor-md-container .toastui-editor-md-marked-text,
-  .admin-toast-editor .toastui-editor-md-container .toastui-editor-md-code {
+  .admin-toast-editor .toastui-editor-md-container .toastui-editor-md-marked-text {
     font-family: var(--font-sans);
     line-height: 1.8;
   }
@@ -157,15 +177,6 @@
   .post-detail__body blockquote {
     @apply pl-4 border-l-4 border-gh-border text-gh-muted italic my-4;
   }
-  .post-detail__body code {
-    @apply px-1.5 py-0.5 rounded-md bg-gh-surface text-[0.9em] font-mono border border-gh-border;
-  }
-  .post-detail__body pre {
-    @apply overflow-x-auto p-4 rounded-xl bg-[#0d1117] text-[#e2e8f0] my-4 border border-gh-border;
-  }
-  .post-detail__body pre code {
-    @apply p-0 bg-transparent text-inherit border-none;
-  }
   .post-detail__body pre.mermaid {
     @apply flex justify-center bg-transparent border-none p-0 my-6 overflow-x-auto;
   }
@@ -188,4 +199,130 @@
   .post-detail__body th {
     @apply bg-gh-surface font-semibold;
   }
+}
+
+/* Toast UI's styles are unlayered; scoped code overrides use the same cascade level. */
+.post-detail__body :not(pre) > code,
+.admin-toast-editor .toastui-editor-contents :not(pre) > code {
+  padding: 2px 4px;
+  border: 1px solid var(--gh-border);
+  border-radius: 4px;
+  background-color: var(--gh-surface);
+  color: var(--gh-text);
+  font-family: var(--font-mono);
+  font-size: max(0.95em, 1rem);
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-detail__body pre:not(.mermaid),
+.admin-toast-editor .toastui-editor-contents pre {
+  max-width: 100%;
+  margin: 16px 0;
+  padding: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--gh-border);
+  border-radius: 8px;
+  background-color: var(--gh-surface);
+  color: var(--gh-text);
+  caret-color: var(--gh-text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-variant-ligatures: none;
+  line-height: 1.65;
+  letter-spacing: 0;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  tab-size: 4;
+}
+
+.post-detail__body pre:not(.mermaid) code,
+.admin-toast-editor .toastui-editor-contents pre code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-variant-ligatures: none;
+  letter-spacing: inherit;
+  white-space: inherit;
+}
+
+.admin-toast-editor .toastui-editor-contents :is(.toastui-editor-ww-code-block, .toastui-editor-ww-code-block-highlighting) pre {
+  padding-top: 48px;
+}
+
+.admin-toast-editor .toastui-editor-contents :is(.toastui-editor-ww-code-block, .toastui-editor-ww-code-block-highlighting)::after {
+  border-radius: 4px;
+  background-color: var(--gh-hover);
+  color: var(--gh-text);
+}
+
+.admin-toast-editor .toastui-editor-md-container .toastui-editor-md-code,
+.admin-toast-editor .toastui-editor-md-container .toastui-editor-md-code-block {
+  background-color: var(--gh-surface);
+  color: var(--gh-text);
+  caret-color: var(--gh-text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-variant-ligatures: none;
+  line-height: 1.65;
+  letter-spacing: 0;
+}
+
+.admin-toast-editor .toastui-editor-md-code-block-line-background {
+  background-color: var(--gh-surface);
+}
+
+.admin-toast-editor .toastui-editor-md-code.toastui-editor-md-delimiter {
+  color: var(--gh-muted);
+}
+
+/* Shared Prism theme for WYSIWYG, Markdown preview and published posts. */
+:is(.post-detail__body, .admin-toast-editor) pre :is(.token.comment, .token.prolog, .token.doctype, .token.cdata) {
+  color: var(--gh-muted);
+}
+
+:is(.post-detail__body, .admin-toast-editor) pre :is(.token.keyword, .token.atrule, .token.boolean, .token.number, .token.tag) {
+  color: var(--gh-accent-strong);
+}
+
+:is(.post-detail__body, .admin-toast-editor) pre :is(.token.string, .token.char, .token.attr-value, .token.regex) {
+  color: var(--gh-success);
+}
+
+:is(.post-detail__body, .admin-toast-editor) pre :is(.token.function, .token.class-name, .token.builtin) {
+  color: var(--gh-text);
+  font-weight: 700;
+}
+
+.admin-toast-editor :is(.toastui-editor-code-block-language-input, .toastui-editor-code-block-language-list) {
+  border-color: var(--gh-border);
+  border-radius: 4px;
+  background-color: var(--gh-bg);
+}
+
+.admin-toast-editor :is(.toastui-editor-code-block-language-input input, .toastui-editor-code-block-language-list button) {
+  background-color: var(--gh-bg);
+  color: var(--gh-text);
+}
+
+.admin-toast-editor .toastui-editor-code-block-language-input input::placeholder {
+  color: var(--gh-muted);
+}
+
+.admin-toast-editor .toastui-editor-code-block-language-list button.active {
+  color: var(--gh-accent-strong);
+}
+
+.admin-toast-editor .toastui-editor-code-block-language-list button:hover {
+  background-color: var(--gh-hover);
+}
+
+.admin-toast-editor .toastui-editor-code-block-language :focus-visible {
+  outline: 2px solid var(--gh-accent);
+  outline-offset: -2px;
 }

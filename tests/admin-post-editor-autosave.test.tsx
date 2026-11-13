@@ -45,6 +45,10 @@ vi.mock("@toast-ui/editor/dist/i18n/ko-kr", () => ({
   default: {},
 }));
 
+vi.mock("@toast-ui/editor-plugin-code-syntax-highlight", () => ({
+  default: vi.fn(),
+}));
+
 describe("AdminPostEditor autosave wiring", () => {
   let container: HTMLDivElement;
   let root: Root | null;
@@ -124,7 +128,7 @@ describe("AdminPostEditor autosave wiring", () => {
         />,
       );
 
-      await Promise.resolve();
+      await vi.dynamicImportSettled();
     });
   });
 

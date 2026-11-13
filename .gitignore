@@ -4,6 +4,8 @@
 
 # Dependencies
 node_modules/
+# Python tools for scripts/subset-code-font.py
+.font-venv/
 
 # Build outputs
 .next/

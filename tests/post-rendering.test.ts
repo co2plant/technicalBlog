@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { renderPostMarkdown } from "../src/lib/post-rendering";
 
@@ -14,8 +15,56 @@ describe("renderPostMarkdown", () => {
   it("renders non-mermaid code blocks with a language class", () => {
     const html = renderPostMarkdown("```ts\nconst answer = 42;\n```");
 
-    expect(html).toContain('<pre><code class="language-ts">');
-    expect(html).toContain("const answer = 42;");
+    // A named, focusable scroll container needs a role, or screen readers drop the name.
+    expect(html).toContain('<pre role="region" tabindex="0" aria-label="코드 블록"><code class="language-ts">');
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    expect(container.querySelector("code")?.textContent).toBe("const answer = 42;");
+  });
+
+  it.each([
+    ["java", 'public class Example { String text = "안녕하세요"; }'],
+    ["ts", "const count: number = 42;"],
+    ["tsx", "const view = <button disabled={false}>확인</button>;"],
+    ["sql", "SELECT * FROM posts WHERE id = 1;"],
+    ["xml", '<bean id="service" />'],
+    ["json", '{"enabled": true}'],
+    ["yaml", "enabled: true"],
+    ["bash", 'echo "$HOME"'],
+    ["groovy", 'plugins { id "java" }'],
+    ["python", 'print("안녕하세요")'],
+  ])("highlights %s without changing the source text", (language, source) => {
+    const html = renderPostMarkdown(`\`\`\`${language}\n${source}\n\`\`\``);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    expect(container.querySelector("code .token")).not.toBeNull();
+    expect(container.querySelector("code")?.textContent).toBe(source);
+  });
+
+  it("accepts an uppercase language and ignores extra fence metadata", () => {
+    const html = renderPostMarkdown("```TS filename=example.ts\nconst value = 1;\n```");
+    expect(html).toContain('class="language-ts"');
+    expect(html).toContain('class="token keyword"');
+  });
+
+  it.each(["unknown-language", "constructor", "__proto__", "extend", "text", ""])(
+    "keeps %s code as escaped plain text",
+    (language) => {
+      const html = renderPostMarkdown(`\`\`\`${language}\n<script>alert("코드")</script>\n\`\`\``);
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      expect(container.querySelector("script, .token")).toBeNull();
+      expect(container.querySelector("code")?.textContent).toBe('<script>alert("코드")</script>');
+    },
+  );
+
+  it("preserves code indentation and escapes markup inside keyboard-focusable blocks", () => {
+    const html = renderPostMarkdown("```html\n<div>\n\t<span>내용</span>\n</div>\n```");
+    expect(html).toContain('tabindex="0"');
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    expect(container.querySelector("code")?.textContent).toBe("<div>\n\t<span>내용</span>\n</div>");
+    expect(container.querySelector("code > div")).toBeNull();
   });
 
   it("escapes diagram source so injected markup cannot execute", () => {

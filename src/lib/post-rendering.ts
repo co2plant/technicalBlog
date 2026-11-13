@@ -1,4 +1,5 @@
 import { Marked } from "marked";
+import { prism } from "./code-highlighting";
 
 const markdown = new Marked({
   async: false,
@@ -9,13 +10,18 @@ const markdown = new Marked({
       return "";
     },
     code({ text, lang }) {
-      if (lang === "mermaid") {
+      const language = lang?.trim().split(/\s+/, 1)[0].toLowerCase() ?? "";
+      if (language === "mermaid") {
         return `<pre class="mermaid">${escapeHtml(text)}</pre>`;
       }
 
-      const languageClass = lang ? ` class="language-${escapeAttribute(lang)}"` : "";
+      const languageClass = language ? ` class="language-${escapeAttribute(language)}"` : "";
+      const grammar = Object.hasOwn(prism.languages, language) ? prism.languages[language] : undefined;
+      const code = grammar && typeof grammar === "object"
+        ? prism.highlight(text, grammar, language)
+        : escapeHtml(text);
 
-      return `<pre><code${languageClass}>${escapeHtml(text)}</code></pre>`;
+      return `<pre role="region" tabindex="0" aria-label="코드 블록"><code${languageClass}>${code}</code></pre>`;
     },
     link({ href, title, tokens }) {
       const text = this.parser.parseInline(tokens);

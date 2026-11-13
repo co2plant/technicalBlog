@@ -13,7 +13,7 @@ typography:
   sans:
     fontFamily: '"Pretendard GOV", "Pretendard Variable", Pretendard, system-ui, sans-serif'
   mono:
-    fontFamily: 'ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+    fontFamily: '"co2plant Code", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     fontSize: 1rem
     lineHeight: 1.65
 rounded:
@@ -68,6 +68,12 @@ components:
 
 `--font-sans`의 기존 한글 글꼴 스택을 사용한다. 페이지 제목은 모바일 `text-heading-m`(24px), 데스크톱 `text-heading-l`(32px)이다. 글 제목은 `text-heading-s`(19px), 안내는 `text-body-m`(17px), 요약은 `text-body-s`(15px), 날짜·분류·태그는 `text-body-xs`(13px)를 사용한다. 제목은 700, 일반 텍스트는 400이며 영문 표기는 원문을 유지한다.
 
+코드 블록과 편집기의 마크다운 코드 영역은 `--font-mono` 고정폭 글꼴, 16px, 줄 간격 1.65, 기본 자간을 사용한다. 인라인 코드는 주변 글자의 0.95배로 표시하되 최소 16px을 유지한다.
+
+구문 강조는 TOAST UI 공식 Prism 플러그인과 게시 글 렌더러가 `src/lib/code-highlighting.ts`의 언어 설정을 공유한다. Java, JavaScript, TypeScript, JSX·TSX, HTML·XML, CSS, JSON, YAML, SQL, Bash, Groovy, Python을 지원한다. 코드 블록의 언어를 지정하면 위지윅·미리보기·발행 화면에 적용되며, 마크다운 원문 편집은 기존 표시를 유지한다. 언어 미지정·미지원 언어는 일반 코드로 표시하고 Mermaid는 기존 다이어그램 렌더링을 따른다. 키워드·숫자는 `--gh-accent-strong`, 문자열은 `--gh-success`, 주석은 `--gh-muted`, 함수·클래스명은 `--gh-text`와 굵기로 구분한다.
+
+코드 웹폰트 `co2plant Code`는 D2Coding ligature 1.4.0 Regular를 웹용으로 나눈 서브셋이며 `public/fonts/co2plant-code/`에서 직접 제공한다. 영문·Latin-1·문장부호·₩·€·화살표·상자 선 파일(약 30KB)은 코드가 있는 화면에서 받고, 자주 쓰는 한글 2,350자(KS X 1001)와 한글 자모·CJK 문장부호·전각 문자 파일(약 276KB)은 그 글자가 있을 때만 받는다(`unicode-range`). 나머지 한글 음절·한자·가나·기타 기호는 스택의 다음 고정폭 글꼴로 표시한다. Bold 파일은 두지 않고 굵은 글자는 브라우저가 Regular를 굵게 합성한다. 서브셋은 OFL의 수정본이라 예약 글꼴 이름 D2Coding을 쓰지 않는다. 만드는 방법과 라이선스는 같은 폴더에 기록한다. 합자는 꺼서 연산자와 기호를 그대로 표시한다. 본문용 Pretendard 설정은 유지한다.
+
 ## Layout
 
 기존 `max-w-5xl`과 좌우 16px 여백을 유지한다. 공개 글은 날짜·카테고리, 제목, 요약, 태그 순으로 한 행에 하나씩 표시한다. 행의 위아래 여백은 각각 24px이며 사이에 1px 구분선을 둔다. 요약이 없으면 해당 영역을 만들지 않는다. 공개 글 목록은 최대 768px(`max-w-3xl`) 너비로 가운데 배치한다. 요약은 모든 화면에서 최대 두 줄까지 표시하고 넘치는 부분은 말줄임한다. 긴 제목과 태그는 줄바꿈한다.
@@ -89,6 +95,8 @@ components:
 `src/app/globals.css`에서 키보드 포커스를 강조색 2px 실선과 2px 간격으로 표시한다. `src/app/layout.tsx`의 첫 링크는 본문 바로가기이며 헤더 위에 표시되고 `main-content`로 이동한다.
 
 색 변화만 짧게 사용하고 모션 감소 설정을 따른다. 아이콘은 필요한 경우 SVG를 사용한다. 목록에는 장식용 아이콘이나 애니메이션을 추가하지 않는다.
+
+코드 스타일은 `src/app/globals.css`에서 공유한다. 블록은 `--gh-surface` 배경과 `--gh-text` 글자색, 16px 여백, 8px 모서리를 사용한다. 기존 테마 토큰을 따라 라이트·다크 모두 대비를 유지한다. 긴 줄은 블록 안에서 가로로 스크롤하고 들여쓰기와 공백은 보존한다. 발행·미리보기 코드 블록은 키보드로 포커스할 수 있고, `role="region"`과 `코드 블록`이라는 이름이 있어 화면 낭독기가 이름을 읽는다. Mermaid 다이어그램에는 코드 패널 스타일을 적용하지 않는다.
 
 ## Do's and Don'ts
 
