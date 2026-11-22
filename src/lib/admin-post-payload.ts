@@ -87,7 +87,8 @@ function parseTags(value: unknown): AdminTagInput[] {
       throw new AdminRequestError(`tag "${name}" needs an ASCII slug.`);
     }
 
-    tags.set(slug ?? generatedSlug, {
+    // An omitted slug arrives as "", so fall back with || rather than ??.
+    tags.set(slug || generatedSlug, {
       name,
       slug: slug || undefined,
     });
