@@ -50,8 +50,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className="min-h-screen bg-gh-bg text-gh-text font-sans antialiased selection:bg-gh-accent/20 flex flex-col relative overflow-x-hidden">
         <div className="flex min-h-screen flex-col" data-testid="app-shell">
+          <a
+            href="#main-content"
+            className="sr-only z-[60] rounded-md border border-gh-accent bg-gh-bg px-4 py-3 text-body-m font-bold text-gh-accent-strong focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+          >
+            본문 바로가기
+          </a>
           <SiteHeader />
-          <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-8 md:py-12 relative z-10">{children}</main>
+          <main id="main-content" tabIndex={-1} className="relative z-10 mx-auto w-full min-w-0 max-w-5xl flex-1 scroll-mt-20 px-4 py-8 md:py-12">{children}</main>
           <footer className="border-t border-gh-border py-6 md:py-0 relative z-10 bg-gh-surface">
             <div className="mx-auto flex max-w-5xl items-center justify-center h-16 px-4">
               <p className="text-sm text-gh-muted">

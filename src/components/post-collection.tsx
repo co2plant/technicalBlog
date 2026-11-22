@@ -11,6 +11,7 @@ type PostCollectionProps = {
   accent: Accent;
   headingTestId: string;
   primaryBadgeLabel?: string;
+  layout?: "cards" | "list";
 };
 
 const ACCENT_STYLES: Record<
@@ -51,22 +52,67 @@ export function PostCollection({
   accent,
   headingTestId,
   primaryBadgeLabel,
+  layout = "cards",
 }: PostCollectionProps) {
   const styles = ACCENT_STYLES[accent];
 
   return (
-    <div className="relative z-10 space-y-8">
+    <div className={`relative z-10 ${layout === "list" ? "mx-auto w-full max-w-3xl" : ""} ${layout === "list" && posts.length > 0 ? "space-y-0" : "space-y-8"}`}>
       <div className="border-b border-gh-border/60 pb-6">
-        <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-gh-text" data-testid={headingTestId}>
+        <h1
+          id={headingTestId}
+          className={`font-bold ${layout === "list" ? "text-heading-m text-gh-muted md:text-heading-l" : "flex items-center gap-3 text-3xl tracking-tight text-gh-text"}`}
+          data-testid={headingTestId}
+        >
           {title}
         </h1>
-        <p className="mt-3 text-lg text-gh-muted">{description}</p>
+        <p className={`mt-3 text-gh-muted ${layout === "list" ? "text-body-m" : "text-lg"}`}>{description}</p>
       </div>
 
       {posts.length === 0 ? (
-        <div className="flex items-center justify-center rounded-2xl border border-dashed border-gh-border bg-gh-surface py-20">
-          <p className="text-lg font-medium text-gh-muted">{emptyMessage}</p>
+        <div className={`flex items-center justify-center border border-dashed border-gh-border bg-gh-surface ${layout === "list" ? "rounded-lg px-4 py-16" : "rounded-2xl py-20"}`}>
+          <p className={`text-gh-muted ${layout === "list" ? "text-body-m" : "text-lg font-medium"}`}>{emptyMessage}</p>
         </div>
+      ) : layout === "list" ? (
+        <ul aria-labelledby={headingTestId} className="divide-y divide-gh-border border-b border-gh-border">
+          {posts.map((post) => (
+            <li key={post.slug}>
+              <Link
+                href={`/posts/${post.slug}`}
+                aria-labelledby={`post-title-${post.slug}`}
+                className="group block rounded py-6"
+              >
+                <article className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-body-xs text-gh-muted">
+                    <time dateTime={post.publishedAt} className="tabular-nums">{post.publishedAt}</time>
+                    <span className="border-l border-gh-border pl-3 [overflow-wrap:anywhere]">{formatCategory(post.category)}</span>
+                    {post.embeddedPdf ? (
+                      <span className="rounded border border-gh-border px-2 py-1 font-bold">PDF</span>
+                    ) : null}
+                  </div>
+                  <h2
+                    id={`post-title-${post.slug}`}
+                    className="mt-3 break-keep text-heading-s font-bold text-gh-text underline-offset-4 transition-colors [overflow-wrap:anywhere] group-hover:text-gh-accent-strong group-hover:underline motion-reduce:transition-none"
+                  >
+                    {post.title}
+                  </h2>
+                  {post.excerpt ? (
+                    <p className="mt-2 line-clamp-2 text-body-s text-gh-muted [overflow-wrap:anywhere]">{post.excerpt}</p>
+                  ) : null}
+                  {post.tags.length > 0 ? (
+                    <ul aria-label="태그" className="mt-4 flex flex-wrap gap-2">
+                      {post.tags.map((tag) => (
+                        <li key={tag} className="max-w-full rounded border border-gh-border bg-gh-surface px-2 py-1 text-body-xs text-gh-muted [overflow-wrap:anywhere]">
+                          {tag}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </article>
+              </Link>
+            </li>
+          ))}
+        </ul>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (

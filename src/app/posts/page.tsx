@@ -12,6 +12,7 @@ export default async function PostsPage() {
       posts={posts}
       accent="indigo"
       headingTestId="posts-page-heading"
+      layout="list"
     />
   );
 }

@@ -13,6 +13,34 @@ const smokeRoutes = {
   missing: "/does-not-exist",
 } as const;
 
+test("published posts can be reached from the skip link with a keyboard", async ({ page }, testInfo) => {
+  await page.goto(smokeRoutes.posts);
+  const list = page.getByRole("list", { name: "게시글 목록" });
+  await expect(list).toBeVisible();
+  await expect(list.getByRole("link")).toHaveCount(1);
+
+  await page.screenshot({ path: testInfo.outputPath("posts-desktop.png"), fullPage: true });
+  await page.setViewportSize({ width: 375, height: 812 });
+  const listBounds = await list.boundingBox();
+  expect(listBounds).not.toBeNull();
+  expect(listBounds!.x).toBeGreaterThanOrEqual(0);
+  expect(listBounds!.x + listBounds!.width).toBeLessThanOrEqual(375);
+  await page.screenshot({ path: testInfo.outputPath("posts-mobile.png"), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  await page.keyboard.press("Tab");
+  const skipLink = page.getByRole("link", { name: "본문 바로가기" });
+  await expect(skipLink).toBeFocused();
+  await expect(skipLink).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#main-content")).toBeFocused();
+
+  await page.keyboard.press("Tab");
+  await expect(list.getByRole("link", { name: "[Git] Commit Message Convention" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("post-detail-heading")).toHaveText("[Git] Commit Message Convention");
+});
+
 test("app shell and critical routes render", async ({ page }) => {
   await test.step("home shell renders", async () => {
     await page.goto(smokeRoutes.home);

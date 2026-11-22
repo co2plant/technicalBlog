@@ -119,6 +119,11 @@
     line-height: var(--text-body-m--line-height);
   }
 
+  :focus-visible {
+    outline: 2px solid var(--gh-accent);
+    outline-offset: 2px;
+  }
+
   /* markdown prose styling replacement for vanilla .post-detail__body */
   .post-detail__body {
     @apply text-[1.05rem] leading-[1.8];
